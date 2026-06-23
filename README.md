@@ -22,8 +22,8 @@ A web-based salary management system for HR teams to manage employee compensatio
 Frontend and backend run as separate services on separate ports within a single monorepo.
 
 ```
-frontend/  → React app (Port 8000)
-backend/   → Express API (Port 3000)
+frontend/  → React app (Port 3000)
+backend/   → Express API (Port 8000)
 docs/      → Requirements, architecture, trade-offs
 ```
 
@@ -49,11 +49,11 @@ npm install
 ### Run
 
 ```bash
-# Start backend (Port 3000)
+# Start backend (Port 8000)
 cd backend
 npm run dev
 
-# Start frontend (Port 8000)
+# Start frontend (Port 3000)
 cd frontend
 npm run dev
 ```

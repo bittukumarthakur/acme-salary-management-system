@@ -5,8 +5,8 @@
 ```mermaid
 flowchart TB
     subgraph Monorepo["Single Repository (Monorepo)"]
-        FE["Frontend Service<br/>React + TypeScript + Vite<br/>Port 8000"]
-        BE["Backend Service<br/>Node.js + Express + TypeScript<br/>Port 3000"]
+        FE["Frontend Service<br/>React + TypeScript + Vite<br/>Port 3000"]
+        BE["Backend Service<br/>Node.js + Express + TypeScript<br/>Port 8000"]
     end
 
     FE -->|"HTTPS / REST API"| BE
