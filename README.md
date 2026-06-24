@@ -7,8 +7,8 @@ A web-based salary management system for HR teams to manage employee compensatio
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React, TypeScript, Vite, Material UI, React Query, Recharts |
-| Backend | Node.js, Express, TypeScript, Prisma |
-| Database | SQLite |
+| Backend | Node.js, Express 5, TypeScript 6 |
+| Database | SQLite (planned, currently hardcoded) |
 
 ## Features
 
@@ -32,18 +32,18 @@ docs/      → Requirements, architecture, trade-offs
 ### Prerequisites
 
 - Node.js (v18+)
-- npm
+- Yarn
 
 ### Setup
 
 ```bash
 # Install backend dependencies
 cd backend
-npm install
+yarn install
 
 # Install frontend dependencies
-cd frontend
-npm install
+cd ../frontend
+yarn install
 ```
 
 ### Run
@@ -51,12 +51,22 @@ npm install
 ```bash
 # Start backend (Port 8000)
 cd backend
-npm run dev
+yarn dev
 
 # Start frontend (Port 3000)
 cd frontend
-npm run dev
+yarn dev
 ```
+
+## API Endpoints
+
+### Employees
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/employees` | List employees (paginated, searchable, filterable) |
+| GET | `/api/employees/:id` | Get single employee by ID or employeeId |
+
 
 ## Documentation
 
