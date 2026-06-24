@@ -42,3 +42,18 @@ Every plan tracking file must include these sections:
 - Update status to `in-progress` once work begins
 - Update status to `completed` when all steps are done
 - Each plan gets its own file — do not combine multiple plans into one file
+
+---
+
+# Testing Requirements
+
+Every feature or code change **must** include corresponding tests.
+
+## Rules
+
+- Write unit tests for all new functions, methods, and services
+- Update existing tests when modifying behavior of existing code
+- Tests must be written in the same PR/commit as the feature code — never defer testing to a later step
+- Aim for meaningful coverage: test happy paths, edge cases, and error scenarios
+- Use the project's established testing framework and conventions (e.g., Jest for backend)
+- Test files should follow the existing directory structure (e.g., `test/` mirroring `src/`)
