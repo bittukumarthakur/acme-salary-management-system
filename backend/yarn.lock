@@ -437,6 +437,11 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.28.1.tgz#10064ee44f4347b90c9a02b446bbf80a91632b12"
   integrity sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A==
 
+"@faker-js/faker@^8.1.0":
+  version "8.4.1"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-8.4.1.tgz#5d5e8aee8fce48f5e189bf730ebd1f758f491451"
+  integrity sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==
+
 "@hono/node-server@1.19.11":
   version "1.19.11"
   resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.19.11.tgz#dc419f0826dd2504e9fc86ad289d5636a0444e2f"

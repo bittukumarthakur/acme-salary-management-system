@@ -58,6 +58,16 @@ cd frontend
 yarn dev
 ```
 
+### Seed Data
+```bash
+yarn seed 
+```
+
+### Prisma Studio
+```bash
+npx -p better-sqlite3 -p prisma prisma studio --url file:./dev.db
+```
+
 ## API Endpoints
 
 ### Employees
