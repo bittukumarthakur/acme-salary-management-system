@@ -57,3 +57,11 @@ Every feature or code change **must** include corresponding tests.
 - Aim for meaningful coverage: test happy paths, edge cases, and error scenarios
 - Use the project's established testing framework and conventions (e.g., Jest for backend)
 - Test files should follow the existing directory structure (e.g., `test/` mirroring `src/`)
+
+- Use the project's established testing framework and conventions (e.g., Jest for backend).
+- Use Yarn as the package manager for installing dependencies and running scripts. Example commands:
+
+```
+yarn install
+yarn test
+```
