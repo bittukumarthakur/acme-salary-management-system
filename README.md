@@ -28,7 +28,7 @@ Frontend and backend run as separate services on separate ports within a single 
 
 ```
 frontend/  → React app (Port 3000) — planned
-backend/   → Express API (Port 8000)
+backend/   → Express API (Port 8080)
 docs/      → Requirements, architecture, trade-offs
 .github/   → CI/CD workflows (tests + Prisma Compute deploy)
 ```
@@ -51,7 +51,7 @@ yarn install
 # Configure environment
 # Create backend/.env with your PostgreSQL connection string:
 #   DATABASE_URL="postgresql://user:password@localhost:5432/acme"
-#   PORT=8000
+#   PORT=8080
 
 # Apply database migrations and generate the Prisma client
 yarn prisma migrate deploy   # or: yarn prisma migrate dev
@@ -63,7 +63,7 @@ yarn prisma generate
 ### Run
 
 ```bash
-# Start backend (Port 8000)
+# Start backend (Port 8080)
 cd backend
 yarn dev
 ```
@@ -84,7 +84,7 @@ yarn prisma studio
 
 ## API Endpoints
 
-Base URL: `http://localhost:8000`
+Base URL: `http://localhost:8080`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|

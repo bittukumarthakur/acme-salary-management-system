@@ -6,7 +6,7 @@
 flowchart TB
     subgraph Monorepo["Single Repository (Monorepo)"]
         FE["Frontend Service<br/>React + TypeScript + Vite<br/>Port 3000 (planned)"]
-        BE["Backend Service<br/>Node.js + Express + TypeScript<br/>Port 8000"]
+        BE["Backend Service<br/>Node.js + Express + TypeScript<br/>Port 8080"]
     end
 
     FE -->|"HTTPS / REST API"| BE
