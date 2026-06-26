@@ -36,4 +36,4 @@ coverage/
 
 
 # Local development database
-dev.db
+/generated/prisma
