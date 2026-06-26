@@ -43,6 +43,10 @@ jobs:
           artifact-path: backend/dist
           entrypoint: src/main.js
           bun-install: "false"
+          env-vars: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            NODE_ENV=dev
+            LOG_LEVEL=info
 
       - name: Print deployment info
         run: |
