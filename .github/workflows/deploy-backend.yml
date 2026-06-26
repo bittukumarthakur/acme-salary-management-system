@@ -1,8 +1,11 @@
-name: Deploy
+name: Deploy Backend
 
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -64,8 +67,12 @@ jobs:
           echo "===== Deployment result ====="
           jq . deploy-result.json
 
+          APP_NAME="$(jq -r '.data.appName // "unknown"' deploy-result.json)"
+
           {
-            echo "## 🚀 Prisma Compute deployment"
+            echo "## 🚀 Backend Deployment — ${APP_NAME}"
+            echo ""
+            echo "**Service:** \`backend\`  •  **App:** ${APP_NAME}"
             echo ""
             echo "| Field | Value |"
             echo "| --- | --- |"
@@ -80,3 +87,4 @@ jobs:
               "| Previous deployment | `\(.previousDeploymentId // "—")` (\(.previousDeploymentAction // "none")) |"
             ] | .[]' deploy-result.json
           } >> "$GITHUB_STEP_SUMMARY"
+
