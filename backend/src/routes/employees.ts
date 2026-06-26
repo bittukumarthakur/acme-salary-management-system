@@ -1,12 +1,19 @@
 import { Router, Request, Response } from 'express';
 import { getEmployeeById, getEmployees } from '../services/employeeService';
+import { parseEmployeeQuery } from '../services/employeeQuery';
 
 const router = Router();
 
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
+  const parsed = parseEmployeeQuery(req.query as Record<string, unknown>);
+  if (!parsed.ok) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
   try {
-    const employees = await getEmployees();
-    res.json({ data: employees });
+    const result = await getEmployees(parsed.value);
+    res.json(result);
   } catch (error) {
     console.error('Failed to fetch employees:', error);
     res.status(500).json({ error: 'Failed to fetch employees' });

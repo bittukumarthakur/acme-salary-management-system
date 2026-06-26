@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { createApp } from '../../src/app';
 import { getEmployees, getEmployeeById } from '../../src/services/employeeService';
+import { alice, bob } from '../data/employees';
 
 jest.mock('../../src/services/employeeService', () => ({
   getEmployees: jest.fn(),
@@ -12,43 +13,42 @@ const mockedGetEmployeeById = getEmployeeById as jest.MockedFunction<typeof getE
 
 const app = createApp();
 
-const alice = {
-  id: 1,
-  employeeId: 'EMP00001',
-  name: 'Alice Johnson',
-  email: 'alice.johnson@acme.com',
-  country: 'USA',
-  department: 'Engineering',
-  designation: 'Software Engineer',
-  employmentType: 'Full-Time',
-  joiningDate: '2021-03-15',
-  status: 'Active',
-};
-
-const bob = {
-  ...alice,
-  id: 2,
-  employeeId: 'EMP00002',
-  name: 'Bob Smith',
-  email: 'bob.smith@acme.com',
-};
+function paginated(data: (typeof alice)[], overrides = {}) {
+  return {
+    data,
+    pagination: {
+      page: 1,
+      pageSize: 20,
+      totalItems: data.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      ...overrides,
+    },
+  };
+}
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
 describe('GET /api/employees', () => {
-  it('returns 200 with all employees', async () => {
-    mockedGetEmployees.mockResolvedValue([alice, bob]);
+  it('returns 200 with a page of employees and pagination metadata', async () => {
+    mockedGetEmployees.mockResolvedValue(paginated([alice, bob], { totalItems: 2 }));
 
     const res = await request(app).get('/api/employees');
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(2);
+    expect(res.body.pagination).toMatchObject({
+      page: 1,
+      pageSize: 20,
+      totalItems: 2,
+    });
   });
 
   it('returns employees with expected fields', async () => {
-    mockedGetEmployees.mockResolvedValue([alice]);
+    mockedGetEmployees.mockResolvedValue(paginated([alice]));
 
     const res = await request(app).get('/api/employees');
     const employee = res.body.data[0];
@@ -57,6 +57,39 @@ describe('GET /api/employees', () => {
     expect(employee).toHaveProperty('employeeId');
     expect(employee).toHaveProperty('name');
     expect(employee).toHaveProperty('email');
+  });
+
+  it('passes parsed pagination, sorting and filters to the service', async () => {
+    mockedGetEmployees.mockResolvedValue(paginated([alice]));
+
+    await request(app)
+      .get('/api/employees')
+      .query({
+        page: '2',
+        pageSize: '5',
+        sortBy: 'name',
+        sortOrder: 'desc',
+        country: 'USA',
+        search: 'ali',
+      });
+
+    expect(mockedGetEmployees).toHaveBeenCalledWith(
+      expect.objectContaining({
+        page: 2,
+        pageSize: 5,
+        sortBy: 'name',
+        sortOrder: 'desc',
+        filters: expect.objectContaining({ country: 'USA', search: 'ali' }),
+      }),
+    );
+  });
+
+  it('returns 400 for an invalid query parameter without calling the service', async () => {
+    const res = await request(app).get('/api/employees').query({ pageSize: '0' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+    expect(mockedGetEmployees).not.toHaveBeenCalled();
   });
 
   it('returns 500 when the service throws', async () => {
