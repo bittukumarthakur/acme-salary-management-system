@@ -18,7 +18,47 @@ permissions:
   deployments: write # For automatic GitHub deployment tracking
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: backend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests with coverage
+        run: yarn test:ci
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          {
+            echo "## 🧪 Backend Test Coverage"
+            echo ""
+            if [ -f coverage/coverage-summary.json ]; then
+              echo "| Metric | Covered | Total | % |"
+              echo "| --- | --- | --- | --- |"
+              jq -r '.total | to_entries[]
+                | select(.key != "linesCovered")
+                | "| \(.key) | \(.value.covered) | \(.value.total) | \(.value.pct)% |"' \
+                coverage/coverage-summary.json
+            else
+              echo "_No coverage summary found._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'dev' }}
     defaults:
