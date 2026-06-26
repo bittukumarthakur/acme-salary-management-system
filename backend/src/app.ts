@@ -1,12 +1,15 @@
 import express from 'express';
-import employeesRouter from './routes/employees.js';
+import router from './routes/employees';
 
-export const app = express();
+export const createApp = () => {
+  const app = express();
+  app.use(express.json());
 
-app.use(express.json());
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok' });
+  });
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
+  app.use('/api/employees', router);
 
-app.use('/api/employees', employeesRouter);
+  return app;
+};

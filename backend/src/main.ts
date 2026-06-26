@@ -1,7 +1,11 @@
-import { app } from './app.js';
+import { createApp } from './app';
 
-const PORT = process.env.PORT || 8000;
+const main = async () => {
+  const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  createApp().listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+main();

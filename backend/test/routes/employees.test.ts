@@ -1,5 +1,7 @@
 import request from 'supertest';
-import { app } from '../../src/app';
+import { createApp } from '../../src/app';
+
+const app = createApp();
 
 describe('GET /api/employees', () => {
   it('returns 200 with all employees', async () => {
