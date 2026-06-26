@@ -12,7 +12,7 @@
     "test:watch": "jest --watch",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "seed": "tsx ./src/script/seed.ts"
+    "seed": "tsx src/scripts/seed.ts"
   },
   "keywords": [],
   "author": "",

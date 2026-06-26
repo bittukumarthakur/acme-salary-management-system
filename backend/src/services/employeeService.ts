@@ -1,89 +1,40 @@
-export interface Employee {
-  id: number;
-  employeeId: string;
-  name: string;
-  email: string;
-  country: string;
-  department: string;
-  designation: string;
-  employmentType: string;
-  joiningDate: string;
-  status: string;
+import { prisma } from '../../lib/prisma';
+import type { Employee, EmployeeRow } from '../models/employee';
+
+function toEmployee(row: EmployeeRow): Employee {
+  return {
+    id: row.id,
+    employeeId: row.employeeId,
+    name: row.name,
+    email: row.email,
+    country: row.country,
+    department: row.department,
+    designation: row.designation,
+    employmentType: row.employmentType,
+    joiningDate: row.joiningDate.toISOString().split('T')[0] as string,
+    status: row.status,
+  };
 }
 
-const employees: Employee[] = [
-  {
-    id: 1,
-    employeeId: 'EMP00001',
-    name: 'Alice Johnson',
-    email: 'alice.johnson@acme.com',
-    country: 'USA',
-    department: 'Engineering',
-    designation: 'Software Engineer',
-    employmentType: 'Full-Time',
-    joiningDate: '2021-03-15',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    employeeId: 'EMP00002',
-    name: 'Bob Smith',
-    email: 'bob.smith@acme.com',
-    country: 'UK',
-    department: 'Product',
-    designation: 'Product Manager',
-    employmentType: 'Full-Time',
-    joiningDate: '2020-07-01',
-    status: 'Active',
-  },
-  {
-    id: 3,
-    employeeId: 'EMP00003',
-    name: 'Priya Patel',
-    email: 'priya.patel@acme.com',
-    country: 'India',
-    department: 'Engineering',
-    designation: 'Senior Software Engineer',
-    employmentType: 'Full-Time',
-    joiningDate: '2019-11-20',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    employeeId: 'EMP00004',
-    name: 'Carlos Müller',
-    email: 'carlos.muller@acme.com',
-    country: 'Germany',
-    department: 'Design',
-    designation: 'Senior Designer',
-    employmentType: 'Contract',
-    joiningDate: '2022-01-10',
-    status: 'Active',
-  },
-  {
-    id: 5,
-    employeeId: 'EMP00005',
-    name: 'Yuki Tanaka',
-    email: 'yuki.tanaka@acme.com',
-    country: 'Japan',
-    department: 'Marketing',
-    designation: 'Marketing Specialist',
-    employmentType: 'Full-Time',
-    joiningDate: '2023-05-08',
-    status: 'On Leave',
-  },
-];
+export async function getEmployees(): Promise<Employee[]> {
+  const rows = await prisma.employee.findMany({
+    orderBy: { id: 'asc' },
+  });
 
-export function getEmployees(): Employee[] {
-  return employees;
+  return rows.map(toEmployee);
 }
 
-export function getEmployeeById(id: string): Employee | null {
-  const numericId = Number(id);
-
-  if (!isNaN(numericId)) {
-    return employees.find((e) => e.id === numericId) ?? null;
+export async function getEmployeeById(id: string): Promise<Employee | null> {
+  if (id === '') {
+    return null;
   }
 
-  return employees.find((e) => e.employeeId === id) ?? null;
+  const numericId = Number(id);
+  const isNumericId = !isNaN(numericId) && Number.isInteger(numericId);
+
+  const row = isNumericId
+    ? await prisma.employee.findUnique({ where: { id: numericId } })
+    : await prisma.employee.findUnique({ where: { employeeId: id } });
+
+  return row ? toEmployee(row) : null;
 }
