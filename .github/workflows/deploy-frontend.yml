@@ -1,11 +1,11 @@
-name: Deploy Backend
+name: Deploy Frontend
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-backend.yml'
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -31,19 +31,19 @@ jobs:
         with:
           node-version: 22
           cache: yarn
-          cache-dependency-path: backend/yarn.lock
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
       - name: Run tests with coverage
-        run: yarn test:ci
+        run: yarn test:coverage
 
       - name: Coverage summary
         if: always()
         run: |
           {
-            echo "## 🧪 Backend Test Coverage"
+            echo "## 🧪 Frontend Test Coverage"
             echo ""
             if [ -f coverage/coverage-summary.json ]; then
               echo "| Metric | Covered | Total | % |"
@@ -63,7 +63,7 @@ jobs:
     environment: ${{ github.event.inputs.environment || 'dev' }}
     defaults:
       run:
-        working-directory: backend
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -72,31 +72,32 @@ jobs:
         with:
           node-version: 22
           cache: yarn
-          cache-dependency-path: backend/yarn.lock
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
       - name: Build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         run: yarn build
 
       - name: Deploy to Prisma Compute (CLI)
         id: deploy
         env:
           PRISMA_API_TOKEN: ${{ secrets.PRISMA_API_TOKEN }}
-          BACKEND_COMPUTE_SERVICE_ID: ${{ vars.BACKEND_COMPUTE_SERVICE_ID }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PORT: ${{ vars.BACKEND_PORT }}
+          FRONTEND_COMPUTE_SERVICE_ID: ${{ vars.FRONTEND_COMPUTE_SERVICE_ID }}
+          PORT: ${{ vars.FRONTEND_PORT }}
         run: |
           set -o pipefail
           npx --yes @prisma/compute-cli@0.31.0 deploy \
-            --service "$BACKEND_COMPUTE_SERVICE_ID" \
+            --service "$FRONTEND_COMPUTE_SERVICE_ID" \
             --skip-build \
             --path dist \
-            --entrypoint src/main.js \
+            --static \
+            --spa \
             --http-port "$PORT" \
             --env "PORT=$PORT" \
-            --env "DATABASE_URL=$DATABASE_URL" \
             --env "NODE_ENV=dev" \
             --env "LOG_LEVEL=info" \
             --json | tee deploy-result.json
@@ -110,9 +111,9 @@ jobs:
           APP_NAME="$(jq -r '.data.appName // "unknown"' deploy-result.json)"
 
           {
-            echo "## 🚀 Backend Deployment — ${APP_NAME}"
+            echo "## 🚀 Frontend Deployment — ${APP_NAME}"
             echo ""
-            echo "**Service:** \`backend\`  •  **App:** ${APP_NAME}"
+            echo "**Service:** \`frontend\`  •  **App:** ${APP_NAME}"
             echo ""
             echo "| Field | Value |"
             echo "| --- | --- |"
@@ -127,4 +128,3 @@ jobs:
               "| Previous deployment | `\(.previousDeploymentId // "—")` (\(.previousDeploymentAction // "none")) |"
             ] | .[]' deploy-result.json
           } >> "$GITHUB_STEP_SUMMARY"
-

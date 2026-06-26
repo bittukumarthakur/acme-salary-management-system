@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: Number(process.env.PORT) || 3000,
     // Optional local dev convenience: proxy /api calls to the backend so the
     // frontend can use relative URLs during development. Feature plans that add
     // the API client may rely on VITE_API_BASE_URL instead.
@@ -24,7 +24,7 @@ export default defineConfig({
     css: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov', 'html'],
+      reporter: ['text', 'lcov', 'html', 'json-summary'],
     },
   },
 })
