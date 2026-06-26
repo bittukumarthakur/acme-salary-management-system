@@ -3,6 +3,12 @@ name: Deploy (pre-built)
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target GitHub environment to deploy to"
+        type: environment
+        default: dev
 
 permissions:
   contents: read
@@ -11,15 +17,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ${{ github.event.inputs.environment || 'dev' }}
     defaults:
       run:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Bun (required by prisma/compute-deploy)
-        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,22 +37,18 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Deploy to Prisma Compute
-        id: deploy
-        uses: prisma/compute-deploy@main
-        with:
-          api-token: ${{ secrets.PRISMA_API_TOKEN }}
-          compute-service-id: ${{ vars.COMPUTE_SERVICE_ID }}
-          artifact-path: backend/dist
-          entrypoint: src/main.js
-          bun-install: "false"
-          env-vars: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            NODE_ENV=dev
-            LOG_LEVEL=info
-
-      - name: Print deployment info
+      - name: Deploy to Prisma Compute (CLI)
+        env:
+          PRISMA_API_TOKEN: ${{ secrets.PRISMA_API_TOKEN }}
+          COMPUTE_SERVICE_ID: ${{ vars.COMPUTE_SERVICE_ID }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          echo "Version: ${{ steps.deploy.outputs.version-id }}"
-          echo "Service endpoint: ${{ steps.deploy.outputs.service-endpoint-domain }}"
-          echo "Version endpoint: ${{ steps.deploy.outputs.version-endpoint-domain }}"
+          npx --yes @prisma/compute-cli@0.31.0 deploy \
+            --service "$COMPUTE_SERVICE_ID" \
+            --skip-build \
+            --path dist \
+            --entrypoint src/main.js \
+            --env "DATABASE_URL=$DATABASE_URL" \
+            --env "NODE_ENV=dev" \
+            --env "LOG_LEVEL=info" \
+            --json
