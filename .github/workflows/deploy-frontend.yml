@@ -15,7 +15,6 @@ on:
 
 permissions:
   contents: read
-  deployments: write # For automatic GitHub deployment tracking
 
 jobs:
   test:
@@ -80,52 +79,30 @@ jobs:
       - name: Build
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-        run: |
-          yarn build
-          cp server.mjs dist/server.mjs
+        run: yarn build
 
-      - name: Deploy to Prisma Compute (CLI)
+      - name: Deploy to Cloudflare Pages
         id: deploy
-        env:
-          PRISMA_API_TOKEN: ${{ secrets.PRISMA_API_TOKEN }}
-          FRONTEND_COMPUTE_SERVICE_ID: ${{ vars.FRONTEND_COMPUTE_SERVICE_ID }}
-          PORT: ${{ vars.FRONTEND_PORT }}
-        run: |
-          set -o pipefail
-          npx --yes @prisma/compute-cli@0.31.0 deploy \
-            --service "$FRONTEND_COMPUTE_SERVICE_ID" \
-            --skip-build \
-            --path dist \
-            --entrypoint server.mjs \
-            --http-port "$PORT" \
-            --env "PORT=$PORT" \
-            --env "NODE_ENV=dev" \
-            --env "LOG_LEVEL=info" \
-            --json | tee deploy-result.json
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: frontend
+          command: >-
+            pages deploy dist
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+            --branch=${{ github.ref_name }}
 
-      - name: Print deployment result
+      - name: Deployment summary
         if: success()
         run: |
-          echo "===== Deployment result ====="
-          jq . deploy-result.json
-
-          APP_NAME="$(jq -r '.data.appName // "unknown"' deploy-result.json)"
-
           {
-            echo "## 🚀 Frontend Deployment — ${APP_NAME}"
+            echo "## 🚀 Frontend Deployment — Cloudflare Pages"
             echo ""
-            echo "**Service:** \`frontend\`  •  **App:** ${APP_NAME}"
+            echo "**Project:** \`${{ vars.CLOUDFLARE_PAGES_PROJECT }}\`  •  **Branch:** \`${{ github.ref_name }}\`"
             echo ""
             echo "| Field | Value |"
             echo "| --- | --- |"
-            jq -r '.data | [
-              "| App | \(.appName) |",
-              "| Region | \(.region) |",
-              "| Deployment ID | `\(.deploymentId)` |",
-              "| Service URL | \(.appEndpointDomain) |",
-              "| Version URL | \(.deploymentEndpointDomain) |",
-              "| Promoted | \(.promoted) |",
-              "| HTTP port | \(.resolvedConfig.portMapping.http) |",
-              "| Previous deployment | `\(.previousDeploymentId // "—")` (\(.previousDeploymentAction // "none")) |"
-            ] | .[]' deploy-result.json
+            echo "| Deployment URL | ${{ steps.deploy.outputs.deployment-url }} |"
           } >> "$GITHUB_STEP_SUMMARY"
+
