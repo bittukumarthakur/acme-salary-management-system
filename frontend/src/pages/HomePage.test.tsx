@@ -25,19 +25,23 @@ describe('HomePage', () => {
   })
 
   it('should show loading state on initial render', () => {
-    const mockFetch = vi.fn()
-      .mockImplementation(() => new Promise(() => {})) // Never resolves
+    const mockFetch = vi.fn().mockImplementation(() => new Promise(() => {})) // Never resolves
     vi.mocked(dashboardApi.fetchDashboardData).mockImplementation(mockFetch)
 
     render(<HomePage />)
 
     // Verify the main dashboard page title is rendered
-    const dashboardHeading = screen.getByRole('heading', { level: 4, name: 'Dashboard' })
+    const dashboardHeading = screen.getByRole('heading', {
+      level: 4,
+      name: 'Dashboard',
+    })
     expect(dashboardHeading).toBeInTheDocument()
   })
 
   it('should display summary cards with populated values when data loads successfully', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(mockDashboardData)
+    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
+      mockDashboardData,
+    )
 
     render(<HomePage />)
 
@@ -50,7 +54,9 @@ describe('HomePage', () => {
   })
 
   it('should display payroll summary months when data loads', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(mockDashboardData)
+    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
+      mockDashboardData,
+    )
 
     render(<HomePage />)
 
@@ -63,19 +69,22 @@ describe('HomePage', () => {
 
   it('should display error state when API fails', async () => {
     vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValue(
-      new Error('Network error')
+      new Error('Network error'),
     )
 
     render(<HomePage />)
 
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(screen.getByRole('alert')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
   })
 
   it('should show retry button in error state', async () => {
     vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValue(
-      new Error('Network error')
+      new Error('Network error'),
     )
 
     render(<HomePage />)
@@ -123,20 +132,26 @@ describe('HomePage', () => {
   })
 
   it('should display Recent Payrolls section as Coming soon', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(mockDashboardData)
+    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
+      mockDashboardData,
+    )
 
     render(<HomePage />)
 
     await waitFor(() => {
-      const recentPayrollsSection = screen.getByText('Recent Payrolls')
-        .closest('div')
-        ?.parentElement?.parentElement
-      expect(within(recentPayrollsSection!).getByText('Coming soon')).toBeInTheDocument()
+      const recentPayrollsSection = screen
+        .getByText('Recent Payrolls')
+        .closest('div')?.parentElement?.parentElement
+      expect(
+        within(recentPayrollsSection!).getByText('Coming soon'),
+      ).toBeInTheDocument()
     })
   })
 
   it('should display Quick Actions section as Coming soon', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(mockDashboardData)
+    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
+      mockDashboardData,
+    )
 
     render(<HomePage />)
 
@@ -147,7 +162,9 @@ describe('HomePage', () => {
   })
 
   it('should render all summary card labels', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(mockDashboardData)
+    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
+      mockDashboardData,
+    )
 
     render(<HomePage />)
 

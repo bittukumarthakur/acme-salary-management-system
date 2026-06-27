@@ -36,11 +36,7 @@ const appTheme = createTheme({
 })
 
 function renderWithTheme(component: React.ReactNode) {
-  return render(
-    <ThemeProvider theme={appTheme}>
-      {component}
-    </ThemeProvider>
-  )
+  return render(<ThemeProvider theme={appTheme}>{component}</ThemeProvider>)
 }
 
 describe('HomePage - Dashboard Data Integration', () => {
@@ -59,9 +55,9 @@ describe('HomePage - Dashboard Data Integration', () => {
                   summaryCards: [],
                   payrollSummary: { months: [], values: [] },
                 }),
-              1000
-            )
-          )
+              1000,
+            ),
+          ),
       )
 
       renderWithTheme(<HomePage />)
@@ -127,21 +123,21 @@ describe('HomePage - Dashboard Data Integration', () => {
   describe('Error State', () => {
     it('should display error state when fetch fails', async () => {
       vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValueOnce(
-        new Error('Failed to fetch data')
+        new Error('Failed to fetch data'),
       )
 
       renderWithTheme(<HomePage />)
 
       await waitFor(() => {
         expect(
-          screen.queryByText(/error|failed|try again/i)
+          screen.queryByText(/error|failed|try again/i),
         ).toBeInTheDocument()
       })
     })
 
     it('should show retry button when in error state', async () => {
       vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValueOnce(
-        new Error('Failed to fetch data')
+        new Error('Failed to fetch data'),
       )
 
       renderWithTheme(<HomePage />)
