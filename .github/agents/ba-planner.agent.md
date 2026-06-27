@@ -43,7 +43,8 @@ saved under `docs/story/`. You plan and document — you do NOT write or modify 
      `cp`, or `mv`) and no unrelated terminal commands.
    - If chat does not expose a local source file path for the image, ask one direct follow-up for
      a source path (or ask the user to place the file in `docs/assets/`) and then continue.
-   - Embed every provided screenshot in the story with a descriptive caption.
+   - Embed every provided screenshot in the story with a descriptive caption, a clickable link, and
+     a collapsible preview block.
 5. **Write the story** — Create the markdown file using the naming and template below.
 6. **Confirm** — Summarize the story and list any open questions / assumptions for the user to review.
 
@@ -84,7 +85,14 @@ As a <persona>, I want <capability> so that <benefit>.
 - [ ] ...
 
 ## Screenshots / Mockups
+- [<file>.png](../assets/<file>.png)
+
+<details>
+<summary>Preview: <caption></summary>
+
 ![<caption>](../assets/<file>.png)
+
+</details>
 
 ## Open Questions
 - <unresolved question>

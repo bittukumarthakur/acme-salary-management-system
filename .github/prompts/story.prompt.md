@@ -30,7 +30,9 @@ proceed with explicit assumptions under **Open Questions / Assumptions**.
      required command(s) for saving (for example `mkdir -p`, `cp`, or `mv`).
    - If automatic save is not possible, ask one direct follow-up for the source path, filename,
      and placement under `docs/assets/`.
-   - Embed every provided image in **Screenshots / Mockups** with a descriptive caption.
+   - Embed every provided image in **Screenshots / Mockups** with this format: a clickable markdown
+     link to `../assets/<file>` and a `<details>` block containing a markdown image preview with a
+     descriptive caption.
 4. Write the story to `docs/story/YYYY-MM-DD-<kebab-case-feature-name>.md` using the standard
    story template (User Story, Background, Scope, Brainstorm Notes, Acceptance Criteria,
    Screenshots / Mockups, Open Questions).
