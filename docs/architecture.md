@@ -5,7 +5,7 @@
 ```mermaid
 flowchart TB
     subgraph Monorepo["Single Repository (Monorepo)"]
-        FE["Frontend Service<br/>React + TypeScript + Vite<br/>Port 3000 (planned)"]
+    FE["Frontend Service<br/>React + TypeScript + Vite<br/>Port 5173 (dev)"]
         BE["Backend Service<br/>Node.js + Express + TypeScript<br/>Port 8080"]
     end
 
@@ -47,9 +47,18 @@ flowchart TB
 
 * Employee APIs (list with pagination/filtering/sorting, get by id) — *implemented*
 * Salary APIs — *planned*
-* Dashboard APIs — *planned*
+* Dashboard APIs (`GET /api/v1/dashboard`) — *implemented*
 * Salary history management — *planned*
 * Validation and business logic
+
+### Dashboard API (implemented)
+
+`GET /api/v1/dashboard` is implemented with:
+
+* Query validation for `countryCode` and `limit`
+* Backend currency conversion and conversion metadata (`rate`, `convertedAt`)
+* Response sections: `summaryCards`, `recentPayrolls`, `meta`
+* Data sourced from Prisma `Payroll` records
 
 ### Query parsing
 
@@ -91,10 +100,11 @@ variable. Schema and migrations live under `backend/prisma/`.
   JUnit report (`jest-junit`) for CI integrations
 * Typed fixtures under `test/data/` validated against domain types
 
-### Frontend *(planned)*
+### Frontend
 
-* Component tests
-* User interaction tests
+* Component/page tests (Vitest + Testing Library)
+* Hook/service tests for dashboard data flow
+* Mock service contract tests for dashboard API stub
 
 ## CI/CD
 

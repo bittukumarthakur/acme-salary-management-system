@@ -1,5 +1,6 @@
 import express from 'express';
-import router from './routes/employees';
+import employeesRouter from './routes/employees';
+import dashboardRouter from './routes/dashboard';
 
 export const createApp = () => {
   const app = express();
@@ -9,7 +10,8 @@ export const createApp = () => {
     res.json({ status: 'ok' });
   });
 
-  app.use('/api/employees', router);
+  app.use('/api/employees', employeesRouter);
+  app.use('/api/v1/dashboard', dashboardRouter);
 
   return app;
 };

@@ -1,0 +1,40 @@
+import type { PayrollRow } from '../../src/models/dashboard';
+
+export const payrollRows: PayrollRow[] = [
+  {
+    id: 1,
+    payrollId: 'PAY-2024-06',
+    payrollPeriod: 'June 2024',
+    payoutDate: new Date('2024-06-30T00:00:00.000Z'),
+    status: 'Completed',
+    totalAmount: 28000000,
+    totalDeductions: 4000000,
+    netAmount: 24000000,
+    currency: 'INR',
+    country: 'IN',
+  },
+  {
+    id: 2,
+    payrollId: 'PAY-2024-05',
+    payrollPeriod: 'May 2024',
+    payoutDate: new Date('2024-05-31T00:00:00.000Z'),
+    status: 'Completed',
+    totalAmount: 24800000,
+    totalDeductions: 3450000,
+    netAmount: 21350000,
+    currency: 'INR',
+    country: 'IN',
+  },
+  {
+    id: 3,
+    payrollId: 'PAY-2024-04',
+    payrollPeriod: 'April 2024',
+    payoutDate: new Date('2024-04-30T00:00:00.000Z'),
+    status: 'Completed',
+    totalAmount: 22650000,
+    totalDeductions: 3200000,
+    netAmount: 19450000,
+    currency: 'INR',
+    country: 'IN',
+  },
+] satisfies PayrollRow[];
