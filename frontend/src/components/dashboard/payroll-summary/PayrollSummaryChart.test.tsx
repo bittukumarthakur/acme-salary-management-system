@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { ThemeProvider, createTheme } from '@mui/material'
-import { PayrollChart } from './PayrollChart'
+import { PayrollSummaryChart } from './PayrollSummaryChart'
 import type { PayrollSummary } from '../../../types/dashboard'
 
 const theme = createTheme()
@@ -14,15 +14,15 @@ const mockPayrollData: PayrollSummary = {
 const renderWithTheme = (component: React.ReactElement) =>
   render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
 
-describe('<PayrollChart />', () => {
+describe('<PayrollSummaryChart />', () => {
   it('should render payroll summary heading', () => {
-    renderWithTheme(<PayrollChart data={mockPayrollData} />)
+    renderWithTheme(<PayrollSummaryChart data={mockPayrollData} />)
 
     expect(screen.getByText('Payroll Summary')).toBeInTheDocument()
   })
 
   it('should render This Month button', () => {
-    renderWithTheme(<PayrollChart data={mockPayrollData} />)
+    renderWithTheme(<PayrollSummaryChart data={mockPayrollData} />)
 
     expect(
       screen.getByRole('button', { name: /This Month/i }),
@@ -30,14 +30,16 @@ describe('<PayrollChart />', () => {
   })
 
   it('should display loading skeleton when isLoading is true', () => {
-    const { container } = renderWithTheme(<PayrollChart isLoading={true} />)
+    const { container } = renderWithTheme(
+      <PayrollSummaryChart isLoading={true} />,
+    )
 
     const skeleton = container.querySelector('[class*="MuiSkeleton"]')
     expect(skeleton).toBeInTheDocument()
   })
 
   it('should render months from data', () => {
-    renderWithTheme(<PayrollChart data={mockPayrollData} />)
+    renderWithTheme(<PayrollSummaryChart data={mockPayrollData} />)
 
     expect(screen.getByText('Dec')).toBeInTheDocument()
     expect(screen.getByText('May')).toBeInTheDocument()
@@ -45,7 +47,7 @@ describe('<PayrollChart />', () => {
 
   it('should render SVG chart when data is provided', () => {
     const { container } = renderWithTheme(
-      <PayrollChart data={mockPayrollData} />,
+      <PayrollSummaryChart data={mockPayrollData} />,
     )
 
     const svg = container.querySelector('svg')

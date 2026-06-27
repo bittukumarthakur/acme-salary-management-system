@@ -17,6 +17,7 @@ const mockData: DashboardData = {
     months: ['Dec', 'Jan'],
     values: [9000000, 12000000],
   },
+  recentPayrolls: [],
 }
 
 const renderWithTheme = (component: React.ReactElement) =>

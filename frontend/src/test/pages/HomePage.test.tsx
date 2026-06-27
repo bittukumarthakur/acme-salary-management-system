@@ -54,6 +54,7 @@ describe('HomePage - Dashboard Data Integration', () => {
                 resolve({
                   summaryCards: [],
                   payrollSummary: { months: [], values: [] },
+                  recentPayrolls: [],
                 }),
               1000,
             ),
@@ -81,6 +82,7 @@ describe('HomePage - Dashboard Data Integration', () => {
           months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
           values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
         },
+        recentPayrolls: [],
       }
 
       vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValueOnce(mockData)
@@ -108,6 +110,7 @@ describe('HomePage - Dashboard Data Integration', () => {
           months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
           values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
         },
+        recentPayrolls: [],
       }
 
       vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValueOnce(mockData)
@@ -129,9 +132,7 @@ describe('HomePage - Dashboard Data Integration', () => {
       renderWithTheme(<HomePage />)
 
       await waitFor(() => {
-        expect(
-          screen.queryByText(/error|failed|try again/i),
-        ).toBeInTheDocument()
+        expect(screen.queryAllByText(/error|failed|try again/i).length).toBe(2)
       })
     })
 
@@ -143,10 +144,10 @@ describe('HomePage - Dashboard Data Integration', () => {
       renderWithTheme(<HomePage />)
 
       await waitFor(() => {
-        const retryButton = screen.queryByRole('button', {
+        const retryButtons = screen.queryAllByRole('button', {
           name: /retry|try again/i,
         })
-        expect(retryButton).toBeInTheDocument()
+        expect(retryButtons.length).toBeGreaterThanOrEqual(1)
       })
     })
 
@@ -162,6 +163,7 @@ describe('HomePage - Dashboard Data Integration', () => {
           months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
           values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
         },
+        recentPayrolls: [],
       }
 
       vi.mocked(dashboardApi.fetchDashboardData)
@@ -171,15 +173,13 @@ describe('HomePage - Dashboard Data Integration', () => {
       renderWithTheme(<HomePage />)
 
       await waitFor(() => {
-        const retryButton = screen.queryByRole('button', {
+        const retryButtons = screen.queryAllByRole('button', {
           name: /retry|try again/i,
         })
-        expect(retryButton).toBeInTheDocument()
+        expect(retryButtons.length).toBeGreaterThanOrEqual(1)
       })
 
-      const retryButton = screen.getByRole('button', {
-        name: /retry|try again/i,
-      })
+      const retryButton = screen.getByLabelText('Retry')
       await userEvent.click(retryButton)
 
       await waitFor(() => {
@@ -203,6 +203,7 @@ describe('HomePage - Dashboard Data Integration', () => {
           months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
           values: [10000000, 15000000, 20000000, 25000000, 30000000, 50000000],
         },
+        recentPayrolls: [],
       }
 
       vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValueOnce(mockData)
@@ -229,6 +230,7 @@ describe('HomePage - Dashboard Data Integration', () => {
           months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
           values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
         },
+        recentPayrolls: [],
       }
 
       vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValueOnce(mockData)
@@ -241,8 +243,8 @@ describe('HomePage - Dashboard Data Integration', () => {
     })
   })
 
-  describe('Scope Boundaries', () => {
-    it('should not populate Recent Payrolls section in this story', async () => {
+  describe('Recent Payrolls', () => {
+    it('should render recent payroll records from API data', async () => {
       const mockData: dashboardApi.DashboardData = {
         summaryCards: [
           { label: 'Total Employees', value: 120 },
@@ -254,6 +256,15 @@ describe('HomePage - Dashboard Data Integration', () => {
           months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
           values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
         },
+        recentPayrolls: [
+          {
+            id: 'pay-2024-05',
+            payrollPeriod: 'May 2024',
+            payoutDate: '2024-06-02',
+            status: 'Paid',
+            amount: '₹4,20,000',
+          },
+        ],
       }
 
       vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValueOnce(mockData)
@@ -264,9 +275,10 @@ describe('HomePage - Dashboard Data Integration', () => {
         expect(screen.getByText('Recent Payrolls')).toBeInTheDocument()
       })
 
-      // Recent Payrolls should still show "Coming soon"
-      const comingSoonTexts = screen.queryAllByText('Coming soon')
-      expect(comingSoonTexts.length).toBeGreaterThan(0)
+      expect(screen.getByText('May 2024')).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /View .* payroll/i }),
+      ).toBeInTheDocument()
     })
   })
 })

@@ -31,6 +31,7 @@ export type DashboardStateValue =
 export interface DashboardData {
   summaryCards: SummaryCard[]
   payrollSummary: PayrollSummary
+  recentPayrolls: RecentPayrollRecord[]
 }
 
 export interface SummaryCard {
@@ -43,4 +44,11 @@ export interface PayrollSummary {
   months: string[]
   values: number[]
 }
-export class Dashboar {}
+
+export interface RecentPayrollRecord {
+  id: string
+  payrollPeriod: string
+  payoutDate: string
+  status: string
+  amount: string
+}

@@ -3,9 +3,9 @@ import { useDashboardData } from '../hooks/useDashboardData'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Header } from '../components/layout/Header'
 import { SummaryCards } from '../components/dashboard/summary/SummaryCards'
-import { PayrollChart } from '../components/dashboard/payroll/PayrollChart'
+import { PayrollSummaryChart } from '../components/dashboard/payroll-summary/PayrollSummaryChart'
 import { QuickActions } from '../components/dashboard/actions/QuickActions'
-import { RecentPayrolls } from '../components/dashboard/recent/RecentPayrolls'
+import { RecentPayrollsSection } from '../components/dashboard/recent-payrolls/RecentPayrollsSection'
 
 export function HomePage() {
   const dashboardData = useDashboardData()
@@ -66,20 +66,26 @@ export function HomePage() {
           <Box sx={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
             <Grid container spacing={2} sx={{ height: '100%' }}>
               <Grid
-                size={{ xs: 12, md: 6, lg: 7 }}
+                size={{ xs: 12, md: 6, lg: 8 }}
                 sx={{ height: '100%', display: 'flex' }}
               >
-                <PayrollChart
+                <PayrollSummaryChart
                   data={dashboardData.data?.payrollSummary}
                   isLoading={dashboardData.state === 'loading'}
                 />
               </Grid>
 
               <Grid
-                size={{ xs: 12, md: 6, lg: 5 }}
+                size={{ xs: 12, md: 6, lg: 4 }}
                 sx={{ height: '100%', display: 'flex' }}
               >
-                <RecentPayrolls />
+                <RecentPayrollsSection
+                  payrolls={dashboardData.data?.recentPayrolls ?? []}
+                  isLoading={dashboardData.state === 'loading'}
+                  isError={dashboardData.state === 'error'}
+                  errorMessage={dashboardData.error ?? undefined}
+                  onRetry={dashboardData.retry}
+                />
               </Grid>
             </Grid>
           </Box>

@@ -71,14 +71,12 @@ describe('App', () => {
     expect(screen.getByLabelText(/notifications/i)).toBeInTheDocument()
     expect(screen.getByText(/hr admin/i)).toBeInTheDocument()
     expect(screen.getByText(/^admin$/i)).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /view all/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /view all/i })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /this month/i }),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /view all/i }))
+    await user.click(screen.getByRole('link', { name: /view all/i }))
     await user.click(screen.getByRole('button', { name: /^employees$/i }))
 
     expect(

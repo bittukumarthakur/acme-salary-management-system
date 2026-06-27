@@ -8,6 +8,7 @@ describe('dashboardApi', () => {
       expect(data).toBeDefined()
       expect(data.summaryCards).toBeDefined()
       expect(data.payrollSummary).toBeDefined()
+      expect(data.recentPayrolls).toBeDefined()
     })
 
     it('should return summary cards with required fields', async () => {
@@ -28,6 +29,19 @@ describe('dashboardApi', () => {
       expect(data.payrollSummary).toHaveProperty('values')
       expect(data.payrollSummary.months).toHaveLength(6)
       expect(data.payrollSummary.values).toHaveLength(6)
+    })
+
+    it('should return recent payrolls aligned to section contract', async () => {
+      const data = await fetchDashboardData()
+
+      expect(data.recentPayrolls.length).toBeGreaterThan(0)
+      data.recentPayrolls.forEach((record) => {
+        expect(record).toHaveProperty('id')
+        expect(record).toHaveProperty('payrollPeriod')
+        expect(record).toHaveProperty('payoutDate')
+        expect(record).toHaveProperty('status')
+        expect(record).toHaveProperty('amount')
+      })
     })
 
     it('should return data asynchronously', async () => {

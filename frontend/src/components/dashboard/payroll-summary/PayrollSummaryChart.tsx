@@ -12,12 +12,15 @@ import {
 import { PAYROLL_CHART, CARD } from '../../../constants/dashboard'
 import type { PayrollSummary } from '../../../types/dashboard'
 
-export interface PayrollChartProps {
+export interface PayrollSummaryChartProps {
   data?: PayrollSummary
   isLoading?: boolean
 }
 
-export function PayrollChart({ data, isLoading }: PayrollChartProps) {
+export function PayrollSummaryChart({
+  data,
+  isLoading,
+}: PayrollSummaryChartProps) {
   return (
     <Card
       variant="outlined"

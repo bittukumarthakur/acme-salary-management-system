@@ -20,6 +20,7 @@ const mockDashboardData: DashboardData = {
     months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
     values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
   },
+  recentPayrolls: [],
 }
 
 const theme = createTheme({
@@ -93,8 +94,8 @@ describe('HomePage', () => {
 
     renderWithTheme(<HomePage />)
 
-    expect(screen.getByRole('alert')).toBeInTheDocument()
-    expect(screen.getByText('Network error')).toBeInTheDocument()
+    expect(screen.getAllByRole('alert')).toHaveLength(2)
+    expect(screen.getAllByText('Network error')).toHaveLength(2)
   })
 
   it('should call retry when retry button is clicked in error state', async () => {
@@ -108,7 +109,7 @@ describe('HomePage', () => {
 
     renderWithTheme(<HomePage />)
 
-    const retryButton = screen.getByRole('button', { name: /Retry/i })
+    const retryButton = screen.getByLabelText('Retry')
     await userEvent.click(retryButton)
 
     expect(mockRetry).toHaveBeenCalled()

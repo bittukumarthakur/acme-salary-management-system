@@ -15,6 +15,7 @@ const mockDashboardData: DashboardData = {
     months: ['Dec', 'Jan', 'Feb', 'Mar'],
     values: [9000000, 12000000, 14000000, 17000000],
   },
+  recentPayrolls: [],
 }
 
 describe('useDashboardData', () => {
