@@ -100,7 +100,10 @@ export function HomePage() {
   }
 
   useEffect(() => {
-    loadData()
+    const load = async () => {
+      await loadData()
+    }
+    load()
   }, [])
 
   const handleRetry = () => {
@@ -458,10 +461,10 @@ export function HomePage() {
                         >
                           <svg
                             viewBox="0 0 500 180"
+                            preserveAspectRatio="xMidYMid meet"
                             style={{
                               width: '100%',
                               height: '100%',
-                              preserveAspectRatio: 'xMidYMid meet',
                             }}
                           >
                             {/* Grid lines */}
