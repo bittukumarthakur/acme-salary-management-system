@@ -48,18 +48,18 @@ but run independently; the frontend is deployable separately (suggested: Vercel)
 
 ## Tech Stack (from docs/architecture.md)
 
-| Concern | Choice | When installed |
-|---------|--------|----------------|
-| Build tool / dev server | Vite | **This plan** |
-| UI framework | React + TypeScript | **This plan** |
-| Testing | Vitest + React Testing Library + jsdom | **This plan** |
-| Lint / format | ESLint + Prettier | **This plan** |
-| Package manager | Yarn | **This plan** |
-| Component library | Material UI (MUI) | Deferred — feature plan |
-| Server state / data fetching | React Query (`@tanstack/react-query`) | Deferred — feature plan |
-| Charts (dashboard, later) | Recharts | Deferred — dashboard plan |
-| Routing | React Router | Deferred — feature plan |
-| API client | axios / native `fetch` | Deferred — feature plan |
+| Concern                      | Choice                                 | When installed            |
+| ---------------------------- | -------------------------------------- | ------------------------- |
+| Build tool / dev server      | Vite                                   | **This plan**             |
+| UI framework                 | React + TypeScript                     | **This plan**             |
+| Testing                      | Vitest + React Testing Library + jsdom | **This plan**             |
+| Lint / format                | ESLint + Prettier                      | **This plan**             |
+| Package manager              | Yarn                                   | **This plan**             |
+| Component library            | Material UI (MUI)                      | Deferred — feature plan   |
+| Server state / data fetching | React Query (`@tanstack/react-query`)  | Deferred — feature plan   |
+| Charts (dashboard, later)    | Recharts                               | Deferred — dashboard plan |
+| Routing                      | React Router                           | Deferred — feature plan   |
+| API client                   | axios / native `fetch`                 | Deferred — feature plan   |
 
 ## Proposed Structure
 
@@ -128,6 +128,7 @@ domain-model boundary).
 
 Even though this is mostly scaffolding, the first piece of real UI (the app
 shell / placeholder page) follows Red-Green-Refactor:
+
 1. **Red** — write a failing test that renders `<App/>` and asserts the
    placeholder page content / title is in the document.
 2. **Green** — implement the shell + page so the test passes.
@@ -167,4 +168,3 @@ shell / placeholder page) follows Red-Green-Refactor:
   `test:coverage`/`format`/`format:check` scripts. Verified: `yarn build`,
   `yarn lint`, `yarn format:check`, `yarn test` all pass and `yarn dev` serves
   `http://localhost:3000` (HTTP 200).
-

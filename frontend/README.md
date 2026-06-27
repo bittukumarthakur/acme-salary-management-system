@@ -11,7 +11,7 @@ REST API.
 ## Tech Stack
 
 | Concern                 | Technology                             |
-|-------------------------|----------------------------------------|
+| ----------------------- | -------------------------------------- |
 | Build tool / dev server | Vite                                   |
 | UI framework            | React + TypeScript                     |
 | Testing                 | Vitest + React Testing Library (jsdom) |
@@ -45,7 +45,7 @@ cp .env.example .env
 ```
 
 | Variable            | Default                 | Description                      |
-|---------------------|-------------------------|----------------------------------|
+| ------------------- | ----------------------- | -------------------------------- |
 | `VITE_API_BASE_URL` | `http://localhost:8080` | Base URL of the backend REST API |
 
 ### Run
@@ -60,7 +60,7 @@ The app is served at **http://localhost:3000**. During development, requests to
 ## Available Scripts
 
 | Script               | Description                                           |
-|----------------------|-------------------------------------------------------|
+| -------------------- | ----------------------------------------------------- |
 | `yarn dev`           | Start the Vite dev server on port 3000 (HMR enabled)  |
 | `yarn build`         | Type-check and produce a production bundle in `dist/` |
 | `yarn preview`       | Serve the production build locally                    |
@@ -115,4 +115,3 @@ yarn test:coverage   # with coverage
 - **Salary Management** — view/update base salary, bonus, and allowances.
 - **Salary Revision History** — audit trail of compensation changes.
 - **Compensation Dashboard** — payroll totals, averages, and distribution charts.
-
