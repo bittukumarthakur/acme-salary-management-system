@@ -17,11 +17,6 @@ export default defineConfig({
       },
     },
   },
-  preview: {
-    port: Number(process.env.PORT) || 3000,
-    host: true,
-    allowedHosts: true,
-  },
   test: {
     globals: true,
     environment: 'jsdom',
