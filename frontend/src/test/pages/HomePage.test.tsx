@@ -4,8 +4,16 @@ import userEvent from '@testing-library/user-event'
 import { HomePage } from '../../pages/HomePage'
 import * as dashboardApi from '../../services/dashboardApi'
 
-// Mock the dashboardApi module
-vi.mock('../../services/dashboardApi')
+vi.mock('../../services/dashboardApi', async () => {
+  const actual = await vi.importActual<
+    typeof import('../../services/dashboardApi')
+  >('../../services/dashboardApi')
+
+  return {
+    ...actual,
+    fetchDashboardData: vi.fn(),
+  }
+})
 
 const appTheme = createTheme({
   palette: {
@@ -66,6 +74,20 @@ describe('HomePage - Dashboard Data Integration', () => {
       // Should show loading skeleton in summary cards
       const loadingElements = screen.queryAllByText(/loading|skeleton/i)
       expect(loadingElements.length).toBeGreaterThanOrEqual(0)
+    })
+
+    it('keeps recent payroll placeholders visible while summary data is loading', () => {
+      vi.mocked(dashboardApi.fetchDashboardData).mockImplementationOnce(
+        () => new Promise(() => {}),
+      )
+
+      renderWithTheme(<HomePage />)
+
+      expect(screen.getByText('Recent Payrolls')).toBeInTheDocument()
+      expect(screen.getByText('May 2024')).toBeInTheDocument()
+      expect(
+        screen.queryByLabelText('Loading recent payrolls section'),
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -132,8 +154,27 @@ describe('HomePage - Dashboard Data Integration', () => {
       renderWithTheme(<HomePage />)
 
       await waitFor(() => {
-        expect(screen.queryAllByText(/error|failed|try again/i).length).toBe(2)
+        expect(screen.queryAllByText(/error|failed|try again/i).length).toBe(1)
       })
+    })
+
+    it('keeps recent payroll placeholders visible when summary fetch fails', async () => {
+      vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValueOnce(
+        new Error('Failed to fetch data'),
+      )
+
+      renderWithTheme(<HomePage />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Retry' }),
+        ).toBeInTheDocument()
+      })
+
+      expect(screen.getByText('May 2024')).toBeInTheDocument()
+      expect(
+        screen.queryAllByRole('button', { name: /retry|try again/i }),
+      ).toHaveLength(1)
     })
 
     it('should show retry button when in error state', async () => {

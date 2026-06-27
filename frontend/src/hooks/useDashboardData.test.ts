@@ -4,7 +4,16 @@ import { useDashboardData } from './useDashboardData'
 import * as dashboardApi from '../services/dashboardApi'
 import type { DashboardData } from '../types/dashboard'
 
-vi.mock('../services/dashboardApi')
+vi.mock('../services/dashboardApi', async () => {
+  const actual = await vi.importActual<
+    typeof import('../services/dashboardApi')
+  >('../services/dashboardApi')
+
+  return {
+    ...actual,
+    fetchDashboardData: vi.fn(),
+  }
+})
 
 const mockDashboardData: DashboardData = {
   summaryCards: [
@@ -30,7 +39,8 @@ describe('useDashboardData', () => {
     const { result } = renderHook(() => useDashboardData())
 
     expect(result.current.state).toBe('loading')
-    expect(result.current.data).toBeNull()
+    expect(result.current.data.recentPayrolls.length).toBeGreaterThan(0)
+    expect(result.current.data.summaryCards).toEqual([])
     expect(result.current.error).toBeNull()
   })
 
@@ -59,7 +69,8 @@ describe('useDashboardData', () => {
       expect(result.current.state).toBe('error')
     })
 
-    expect(result.current.data).toBeNull()
+    expect(result.current.data.recentPayrolls.length).toBeGreaterThan(0)
+    expect(result.current.data.summaryCards).toEqual([])
     expect(result.current.error).toBe('Network error')
   })
 

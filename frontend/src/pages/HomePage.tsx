@@ -58,7 +58,7 @@ export function HomePage() {
 
           {/* Section 1: Summary Cards */}
           <SummaryCards
-            data={dashboardData.data || undefined}
+            data={dashboardData.data}
             isLoading={dashboardData.state === 'loading'}
           />
 
@@ -69,10 +69,7 @@ export function HomePage() {
                 size={{ xs: 12, md: 6, lg: 8 }}
                 sx={{ height: '100%', display: 'flex' }}
               >
-                <PayrollSummaryChart
-                  data={dashboardData.data?.payrollSummary}
-                  isLoading={dashboardData.state === 'loading'}
-                />
+                <PayrollSummaryChart data={dashboardData.data.payrollSummary} />
               </Grid>
 
               <Grid
@@ -80,11 +77,7 @@ export function HomePage() {
                 sx={{ height: '100%', display: 'flex' }}
               >
                 <RecentPayrollsSection
-                  payrolls={dashboardData.data?.recentPayrolls ?? []}
-                  isLoading={dashboardData.state === 'loading'}
-                  isError={dashboardData.state === 'error'}
-                  errorMessage={dashboardData.error ?? undefined}
-                  onRetry={dashboardData.retry}
+                  payrolls={dashboardData.data.recentPayrolls}
                 />
               </Grid>
             </Grid>

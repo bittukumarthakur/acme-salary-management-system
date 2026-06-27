@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react'
-import { fetchDashboardData } from '../services/dashboardApi'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  createPlaceholderDashboardData,
+  fetchDashboardData,
+} from '../services/dashboardApi'
 import type { DashboardStateValue } from '../types/dashboard'
 
 /**
@@ -9,28 +12,40 @@ import type { DashboardStateValue } from '../types/dashboard'
 export function useDashboardData() {
   const [state, setState] = useState<DashboardStateValue>({
     state: 'loading',
-    data: null,
+    data: createPlaceholderDashboardData(),
     error: null,
   })
 
-  const loadData = async () => {
-    setState({ state: 'loading', data: null, error: null })
-    try {
-      const result = await fetchDashboardData()
-      setState({ state: 'success', data: result, error: null })
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch dashboard data'
-      setState({ state: 'error', data: null, error: errorMessage })
-    }
-  }
+  const fetchLatestDashboardData = useCallback(
+    async (
+      placeholderData: ReturnType<typeof createPlaceholderDashboardData>,
+    ) => {
+      try {
+        const result = await fetchDashboardData()
+        setState({ state: 'success', data: result, error: null })
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to fetch dashboard data'
+        setState({ state: 'error', data: placeholderData, error: errorMessage })
+      }
+    },
+    [],
+  )
+
+  const loadData = useCallback(async () => {
+    const placeholderData = createPlaceholderDashboardData()
+
+    setState({ state: 'loading', data: placeholderData, error: null })
+    await fetchLatestDashboardData(placeholderData)
+  }, [fetchLatestDashboardData])
 
   useEffect(() => {
-    const fetchData = async () => {
-      await loadData()
-    }
-    fetchData()
-  }, [])
+    const placeholderData = createPlaceholderDashboardData()
+
+    queueMicrotask(() => {
+      void fetchLatestDashboardData(placeholderData)
+    })
+  }, [fetchLatestDashboardData])
 
   return {
     ...state,

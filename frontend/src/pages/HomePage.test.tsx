@@ -5,6 +5,7 @@ import { HomePage } from './HomePage'
 import { useDashboardData } from '../hooks/useDashboardData'
 import { ThemeProvider, createTheme } from '@mui/material'
 import type { DashboardData } from '../types/dashboard'
+import { createPlaceholderDashboardData } from '../services/dashboardApi'
 
 // Mock the hooks
 vi.mock('../hooks/useDashboardData')
@@ -87,22 +88,23 @@ describe('HomePage', () => {
   it('should render error state when dashboard data fails', () => {
     vi.mocked(useDashboardData).mockReturnValue({
       state: 'error',
-      data: null,
+      data: createPlaceholderDashboardData(),
       error: 'Network error',
       retry: vi.fn(),
     })
 
     renderWithTheme(<HomePage />)
 
-    expect(screen.getAllByRole('alert')).toHaveLength(2)
-    expect(screen.getAllByText('Network error')).toHaveLength(2)
+    expect(screen.getAllByRole('alert')).toHaveLength(1)
+    expect(screen.getAllByText('Network error')).toHaveLength(1)
+    expect(screen.getByText('Recent Payrolls')).toBeInTheDocument()
   })
 
   it('should call retry when retry button is clicked in error state', async () => {
     const mockRetry = vi.fn()
     vi.mocked(useDashboardData).mockReturnValue({
       state: 'error',
-      data: null,
+      data: createPlaceholderDashboardData(),
       error: 'Network error',
       retry: mockRetry,
     })

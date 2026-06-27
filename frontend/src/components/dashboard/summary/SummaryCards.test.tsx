@@ -48,9 +48,16 @@ describe('<SummaryCards />', () => {
   })
 
   it('should display N/A when data is not provided', () => {
-    renderWithTheme(<SummaryCards data={mockData} isLoading={false} />)
+    renderWithTheme(
+      <SummaryCards
+        data={{
+          ...mockData,
+          summaryCards: [],
+        }}
+        isLoading={false}
+      />,
+    )
 
-    // At least one card should be rendered
-    expect(screen.getByText('Total Employees')).toBeInTheDocument()
+    expect(screen.getAllByText('N/A')).toHaveLength(4)
   })
 })

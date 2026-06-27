@@ -7,7 +7,7 @@ export type DashboardState = 'loading' | 'success' | 'error'
 
 export interface DashboardLoadingState {
   state: 'loading'
-  data: null
+  data: DashboardData
   error: null
 }
 
@@ -19,7 +19,7 @@ export interface DashboardSuccessState {
 
 export interface DashboardErrorState {
   state: 'error'
-  data: null
+  data: DashboardData
   error: string
 }
 
