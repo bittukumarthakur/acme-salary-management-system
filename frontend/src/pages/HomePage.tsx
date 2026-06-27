@@ -1,227 +1,14 @@
-import { useEffect, useState } from 'react'
-import MenuIcon from '@mui/icons-material/Menu'
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
-import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
-import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined'
-import { alpha } from '@mui/material/styles'
-import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Grid,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Paper,
-  Skeleton,
-  Stack,
-  Typography,
-  Alert,
-} from '@mui/material'
-import {
-  fetchDashboardData,
-  type DashboardData,
-  type SummaryCard,
-} from '../services/dashboardApi'
-
-const navItems = [
-  'Dashboard',
-  'Employees',
-  'Attendance',
-  'Payroll',
-  'Payslips',
-  'Reports',
-  'Settings',
-] as const
-
-const summaryCardsConfig = [
-  {
-    label: 'Total Employees',
-    icon: <PeopleAltOutlinedIcon fontSize="small" />,
-    bgColor: '#e8d5f2',
-    iconColor: '#7c4dff',
-  },
-  {
-    label: 'Payroll Processed',
-    icon: <AccountBalanceWalletOutlinedIcon fontSize="small" />,
-    bgColor: '#d0f0c0',
-    iconColor: '#2e7d32',
-  },
-  {
-    label: 'Total Deductions',
-    icon: <ReceiptLongOutlinedIcon fontSize="small" />,
-    bgColor: '#ffe0b2',
-    iconColor: '#e65100',
-  },
-  {
-    label: 'Net Salary Paid',
-    icon: <SavingsOutlinedIcon fontSize="small" />,
-    bgColor: '#bbdefb',
-    iconColor: '#1565c0',
-  },
-] as const
-
-const quickActions = [
-  'Add Employee',
-  'Mark Attendance',
-  'Generate Payroll',
-  'View Payslips',
-] as const
-
-type DashboardState = 'loading' | 'success' | 'error'
+import { Box, Grid, Alert, Button } from '@mui/material'
+import { useDashboardData } from '../hooks/useDashboardData'
+import { Sidebar } from '../components/layout/Sidebar'
+import { Header } from '../components/layout/Header'
+import { SummaryCards } from '../components/dashboard/summary/SummaryCards'
+import { PayrollChart } from '../components/dashboard/payroll/PayrollChart'
+import { QuickActions } from '../components/dashboard/actions/QuickActions'
+import { RecentPayrolls } from '../components/dashboard/recent/RecentPayrolls'
 
 export function HomePage() {
-  const [state, setState] = useState<DashboardState>('loading')
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadData = async () => {
-    setState('loading')
-    setError(null)
-    try {
-      const result = await fetchDashboardData()
-      setData(result)
-      setState('success')
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to fetch dashboard data',
-      )
-      setState('error')
-    }
-  }
-
-  useEffect(() => {
-    const load = async () => {
-      await loadData()
-    }
-    load()
-  }, [])
-
-  const handleRetry = () => {
-    loadData()
-  }
-
-  const renderSummaryCard = (
-    cardConfig: (typeof summaryCardsConfig)[number],
-    cardData: SummaryCard | undefined,
-  ) => {
-    const isPositiveTrend = cardData?.metadata?.startsWith('↑')
-    const renderMetadata = () => {
-      if (!cardData?.metadata) return null
-
-      if (isPositiveTrend) {
-        // Split "↑ 8 this month" into "↑ 8" (green, bold) and " this month" (normal)
-        const match = cardData.metadata.match(/^(↑\s+\d+)(.*)$/)
-        if (match) {
-          return (
-            <Box sx={{ display: 'inline' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: 800,
-                  color: '#2e7d32',
-                  fontSize: '1rem',
-                  display: 'inline',
-                }}
-              >
-                {match[1]}
-              </Typography>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: 500,
-                  color: 'text.secondary',
-                  fontSize: '1rem',
-                  display: 'inline',
-                }}
-              >
-                {match[2]}
-              </Typography>
-            </Box>
-          )
-        }
-      }
-
-      return (
-        <Typography
-          sx={{
-            fontWeight: 500,
-            color: 'text.secondary',
-            fontSize: '0.875rem',
-          }}
-        >
-          {cardData.metadata}
-        </Typography>
-      )
-    }
-
-    return (
-      <Grid key={cardConfig.label} size={{ xs: 12, md: 6, xl: 3 }}>
-        <Card
-          variant="outlined"
-          sx={{
-            borderRadius: 2,
-            borderColor: alpha('#1f2f5f', 0.18),
-            boxShadow: '0 6px 18px rgba(20, 35, 79, 0.08)',
-            minHeight: 126,
-          }}
-        >
-          <CardContent>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ alignItems: 'flex-start' }}
-            >
-              {/* Left: Icon */}
-              <Avatar
-                sx={{
-                  bgcolor: cardConfig.bgColor,
-                  color: cardConfig.iconColor,
-                  width: 56,
-                  height: 56,
-                  flexShrink: 0,
-                }}
-              >
-                {cardConfig.icon}
-              </Avatar>
-
-              {/* Right: Title, Value, Metadata */}
-              <Stack spacing={0.5} sx={{ flex: 1 }}>
-                <Typography
-                  variant="subtitle2"
-                  color="text.secondary"
-                  sx={{ fontWeight: 600 }}
-                >
-                  {cardConfig.label}
-                </Typography>
-                {state === 'loading' ? (
-                  <Skeleton variant="text" height={28} width="60%" />
-                ) : (
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {cardData?.value ?? 'N/A'}
-                  </Typography>
-                )}
-                {state === 'loading' ? (
-                  <Skeleton variant="text" height={16} width="70%" />
-                ) : (
-                  renderMetadata()
-                )}
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Grid>
-    )
-  }
+  const dashboardData = useDashboardData()
 
   return (
     <Box
@@ -231,132 +18,13 @@ export function HomePage() {
         display: 'flex',
       }}
     >
-      <Box
-        component="aside"
-        sx={{
-          width: 272,
-          flexShrink: 0,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          px: 3,
-          py: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '10px 0 28px rgba(10, 24, 60, 0.22)',
-        }}
-      >
-        <Stack
-          direction="row"
-          spacing={1.5}
-          sx={{ mb: 4, alignItems: 'center' }}
-        >
-          <Avatar
-            sx={{
-              bgcolor: alpha('#ffffff', 0.18),
-              color: 'primary.contrastText',
-            }}
-          >
-            S
-          </Avatar>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Salary Portal
-          </Typography>
-        </Stack>
-
-        <List sx={{ p: 0, gap: 0.75, display: 'grid' }}>
-          {navItems.map((item) => (
-            <ListItem key={item} disablePadding>
-              <ListItemButton
-                component="button"
-                selected={item === 'Dashboard'}
-                sx={{
-                  borderRadius: 1.5,
-                  minHeight: 42,
-                  color: 'inherit',
-                  '&.Mui-selected': {
-                    bgcolor: alpha('#ffffff', 0.18),
-                    '&:hover': { bgcolor: alpha('#ffffff', 0.22) },
-                  },
-                }}
-              >
-                <ListItemText
-                  primary={
-                    <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
-                      {item}
-                    </Typography>
-                  }
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-
-        <Box sx={{ mt: 'auto', pt: 2 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            color="inherit"
-            sx={{ borderRadius: 1.5, fontWeight: 700 }}
-          >
-            Collapse
-          </Button>
-        </Box>
-      </Box>
+      <Sidebar />
 
       <Box
         component="main"
         sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}
       >
-        <Paper
-          square
-          elevation={0}
-          sx={{
-            height: 84,
-            px: 4,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-            flexShrink: 0,
-          }}
-        >
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <IconButton aria-label="Open menu" color="primary">
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h4">Dashboard</Typography>
-          </Stack>
-
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <IconButton aria-label="Notifications" color="primary">
-              <Badge badgeContent={3} color="error">
-                <NotificationsNoneRoundedIcon />
-              </Badge>
-            </IconButton>
-            <Chip
-              avatar={<Avatar sx={{ bgcolor: 'secondary.main' }}>H</Avatar>}
-              label={
-                <Stack sx={{ minWidth: 110 }}>
-                  <Typography variant="subtitle2" noWrap>
-                    HR Admin
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap>
-                    Admin
-                  </Typography>
-                </Stack>
-              }
-              variant="outlined"
-              sx={{
-                borderRadius: 1.5,
-                py: 2.75,
-                px: 0.75,
-                bgcolor: 'background.paper',
-              }}
-            />
-          </Stack>
-        </Paper>
+        <Header />
 
         <Box
           sx={{
@@ -368,14 +36,15 @@ export function HomePage() {
             overflow: 'hidden',
           }}
         >
-          {state === 'error' && (
+          {/* Error Alert */}
+          {dashboardData.state === 'error' && (
             <Alert
               severity="error"
               action={
                 <Button
                   color="inherit"
                   size="small"
-                  onClick={handleRetry}
+                  onClick={dashboardData.retry}
                   aria-label="Retry"
                 >
                   Retry
@@ -383,350 +52,40 @@ export function HomePage() {
               }
               sx={{ mb: 0 }}
             >
-              {error || 'Failed to load dashboard data'}
+              {dashboardData.error || 'Failed to load dashboard data'}
             </Alert>
           )}
 
-          {/* Section 1: Summary Cards (auto height based on content) */}
-          <Box sx={{ flex: '0 0 auto', minHeight: 0 }}>
-            <Grid container spacing={2} sx={{ height: '100%' }}>
-              {summaryCardsConfig.map((cardConfig) => {
-                const cardData = data?.summaryCards.find(
-                  (card) => card.label === cardConfig.label,
-                )
-                return renderSummaryCard(cardConfig, cardData)
-              })}
-            </Grid>
-          </Box>
+          {/* Section 1: Summary Cards */}
+          <SummaryCards
+            data={dashboardData.data || undefined}
+            isLoading={dashboardData.state === 'loading'}
+          />
 
-          {/* Section 2: Payroll Summary & Recent Payrolls (flex: 1 to fill remaining space) */}
+          {/* Section 2: Payroll & Recent Payrolls */}
           <Box sx={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
             <Grid container spacing={2} sx={{ height: '100%' }}>
-              {/* Payroll Summary */}
               <Grid
                 size={{ xs: 12, md: 6, lg: 7 }}
                 sx={{ height: '100%', display: 'flex' }}
               >
-                <Card
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 2,
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <CardContent
-                    sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}
-                  >
-                    <Stack
-                      direction="row"
-                      sx={{
-                        mb: 2,
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Typography variant="h5">Payroll Summary</Typography>
-                      <Button variant="outlined" sx={{ borderRadius: 1.5 }}>
-                        This Month
-                      </Button>
-                    </Stack>
-                    {state === 'loading' ? (
-                      <Skeleton
-                        variant="rounded"
-                        height={248}
-                        sx={{ borderRadius: 2, flex: 1 }}
-                      />
-                    ) : (
-                      <Paper
-                        variant="outlined"
-                        sx={{
-                          flex: 1,
-                          borderRadius: 2,
-                          p: 3,
-                          borderColor: alpha('#1f2f5f', 0.28),
-                          bgcolor: alpha('#f4f6fb', 0.8),
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: 0,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            position: 'relative',
-                            width: '100%',
-                            height: '100%',
-                          }}
-                        >
-                          <svg
-                            viewBox="0 0 500 180"
-                            preserveAspectRatio="xMidYMid meet"
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                            }}
-                          >
-                            {/* Grid lines */}
-                            <line
-                              x1="40"
-                              y1="15"
-                              x2="40"
-                              y2="150"
-                              stroke="#d0d0d0"
-                              strokeWidth="1"
-                            />
-                            <line
-                              x1="40"
-                              y1="150"
-                              x2="480"
-                              y2="150"
-                              stroke="#d0d0d0"
-                              strokeWidth="1"
-                            />
-
-                            {/* Y-axis labels (0L to 30L) */}
-                            {[0, 10, 20, 30].map((label, i) => (
-                              <g key={`y-${i}`}>
-                                <line
-                                  x1="35"
-                                  y1={150 - (label / 30) * 135}
-                                  x2="40"
-                                  y2={150 - (label / 30) * 135}
-                                  stroke="#d0d0d0"
-                                  strokeWidth="1"
-                                />
-                                <text
-                                  x="30"
-                                  y={155 - (label / 30) * 135}
-                                  textAnchor="end"
-                                  fontSize="11"
-                                  fill="#666"
-                                >
-                                  {label}L
-                                </text>
-                              </g>
-                            ))}
-
-                            {/* Calculate points for line chart */}
-                            {(() => {
-                              const maxValue = 30000000 // 30L
-                              const points =
-                                data?.payrollSummary.values.map((val, idx) => ({
-                                  x: 40 + ((idx + 0.5) / 6) * 440,
-                                  y: 150 - (val / maxValue) * 135,
-                                  val,
-                                })) || []
-
-                              const pathData = points.reduce(
-                                (acc, point, idx) => {
-                                  return (
-                                    acc +
-                                    (idx === 0
-                                      ? `M ${point.x} ${point.y}`
-                                      : ` L ${point.x} ${point.y}`)
-                                  )
-                                },
-                                '',
-                              )
-
-                              const areaData =
-                                `M 40 150 ` +
-                                points.reduce((acc, point, idx) => {
-                                  return (
-                                    acc +
-                                    (idx === 0
-                                      ? `L ${point.x} ${point.y}`
-                                      : ` L ${point.x} ${point.y}`)
-                                  )
-                                }, '') +
-                                ` L 480 150 Z`
-
-                              return (
-                                <>
-                                  {/* Filled area */}
-                                  <path
-                                    d={areaData}
-                                    fill="url(#areaGradient)"
-                                    opacity="0.3"
-                                  />
-
-                                  {/* Line */}
-                                  <path
-                                    d={pathData}
-                                    stroke="#5b7bfc"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-
-                                  {/* Data points */}
-                                  {points.map((point, idx) => (
-                                    <circle
-                                      key={`point-${idx}`}
-                                      cx={point.x}
-                                      cy={point.y}
-                                      r="3.5"
-                                      fill="#5b7bfc"
-                                      stroke="#ffffff"
-                                      strokeWidth="2"
-                                    />
-                                  ))}
-                                </>
-                              )
-                            })()}
-
-                            {/* Gradient definition */}
-                            <defs>
-                              <linearGradient
-                                id="areaGradient"
-                                x1="0%"
-                                y1="0%"
-                                x2="0%"
-                                y2="100%"
-                              >
-                                <stop
-                                  offset="0%"
-                                  stopColor="#5b7bfc"
-                                  stopOpacity="0.6"
-                                />
-                                <stop
-                                  offset="100%"
-                                  stopColor="#5b7bfc"
-                                  stopOpacity="0"
-                                />
-                              </linearGradient>
-                            </defs>
-
-                            {/* X-axis labels (months) */}
-                            {data?.payrollSummary.months.map((month, idx) => (
-                              <text
-                                key={`month-${idx}`}
-                                x={40 + ((idx + 0.5) / 6) * 440}
-                                y="165"
-                                textAnchor="middle"
-                                fontSize="11"
-                                fill="#666"
-                              >
-                                {month}
-                              </text>
-                            ))}
-                          </svg>
-                        </Box>
-                      </Paper>
-                    )}
-                  </CardContent>
-                </Card>
+                <PayrollChart
+                  data={dashboardData.data?.payrollSummary}
+                  isLoading={dashboardData.state === 'loading'}
+                />
               </Grid>
 
-              {/* Recent Payrolls */}
               <Grid
                 size={{ xs: 12, md: 6, lg: 5 }}
                 sx={{ height: '100%', display: 'flex' }}
               >
-                <Card
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 2,
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <CardContent
-                    sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}
-                  >
-                    <Stack
-                      direction="row"
-                      sx={{
-                        mb: 1.5,
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Typography variant="h5">Recent Payrolls</Typography>
-                      <Button size="small">View all</Button>
-                    </Stack>
-                    <Divider sx={{ mb: 2 }} />
-                    <Paper
-                      variant="outlined"
-                      sx={{
-                        flex: 1,
-                        borderRadius: 1.5,
-                        borderStyle: 'dashed',
-                        borderColor: alpha('#1f2f5f', 0.28),
-                        display: 'grid',
-                        placeItems: 'center',
-                        bgcolor: alpha('#f4f6fb', 0.8),
-                        minHeight: 0,
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        Coming soon
-                      </Typography>
-                    </Paper>
-                  </CardContent>
-                </Card>
+                <RecentPayrolls />
               </Grid>
             </Grid>
           </Box>
 
-          {/* Section 3: Quick Actions (auto height based on content) */}
-          <Box sx={{ flex: '0 0 auto', minHeight: 0, overflow: 'hidden' }}>
-            <Card
-              variant="outlined"
-              sx={{
-                borderRadius: 2,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <CardContent
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
-                }}
-              >
-                <Typography variant="h5" sx={{ mb: 2 }}>
-                  Quick Actions
-                </Typography>
-                <Grid container spacing={2} sx={{ flex: 1 }}>
-                  {quickActions.map((action) => (
-                    <Grid key={action} size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-                      <Paper
-                        variant="outlined"
-                        sx={{
-                          borderRadius: 1.5,
-                          borderStyle: 'dashed',
-                          borderColor: alpha('#1f2f5f', 0.28),
-                          height: '100%',
-                          px: 1.25,
-                          py: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          textAlign: 'center',
-                          bgcolor: alpha('#f4f6fb', 0.8),
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {action}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Coming soon
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              </CardContent>
-            </Card>
-          </Box>
+          {/* Section 3: Quick Actions */}
+          <QuickActions />
         </Box>
       </Box>
     </Box>

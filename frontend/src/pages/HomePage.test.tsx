@@ -1,12 +1,15 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { HomePage } from './HomePage'
-import * as dashboardApi from '../services/dashboardApi'
+import { useDashboardData } from '../hooks/useDashboardData'
+import { ThemeProvider, createTheme } from '@mui/material'
+import type { DashboardData } from '../types/dashboard'
 
-// Mock the dashboard API
-vi.mock('../services/dashboardApi')
+// Mock the hooks
+vi.mock('../hooks/useDashboardData')
 
-const mockDashboardData: dashboardApi.DashboardData = {
+const mockDashboardData: DashboardData = {
   summaryCards: [
     { label: 'Total Employees', value: 120, metadata: '↑ 8 this month' },
     { label: 'Payroll Processed', value: '₹24,80,000', metadata: 'May 2024' },
@@ -19,160 +22,111 @@ const mockDashboardData: dashboardApi.DashboardData = {
   },
 }
 
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#0d1f4f' },
+    secondary: { main: '#4f6cd9' },
+    background: { default: '#eef2f8', paper: '#ffffff' },
+  },
+})
+
+const renderWithTheme = (component: React.ReactElement) =>
+  render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
+
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  it('should show loading state on initial render', () => {
-    const mockFetch = vi.fn().mockImplementation(() => new Promise(() => {})) // Never resolves
-    vi.mocked(dashboardApi.fetchDashboardData).mockImplementation(mockFetch)
-
-    render(<HomePage />)
-
-    // Verify the main dashboard page title is rendered
-    const dashboardHeading = screen.getByRole('heading', {
-      level: 4,
-      name: 'Dashboard',
-    })
-    expect(dashboardHeading).toBeInTheDocument()
-  })
-
-  it('should display summary cards with populated values when data loads successfully', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
-      mockDashboardData,
-    )
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('120')).toBeInTheDocument()
-      expect(screen.getByText('₹24,80,000')).toBeInTheDocument()
-      expect(screen.getByText('₹3,45,000')).toBeInTheDocument()
-      expect(screen.getByText('₹21,35,000')).toBeInTheDocument()
+    // Mock the useDashboardData hook with successful state
+    vi.mocked(useDashboardData).mockReturnValue({
+      state: 'success',
+      data: mockDashboardData,
+      error: null,
+      retry: vi.fn(),
     })
   })
 
-  it('should display payroll summary months when data loads', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
-      mockDashboardData,
-    )
+  it('should render the dashboard page with all sections', () => {
+    renderWithTheme(<HomePage />)
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      // Check for individual month labels in the payroll chart
-      expect(screen.getByText('Dec')).toBeInTheDocument()
-      expect(screen.getByText('May')).toBeInTheDocument()
-    })
+    expect(
+      screen.getByRole('heading', { level: 4, name: 'Dashboard' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Salary Portal')).toBeInTheDocument()
+    expect(screen.getByText('Payroll Summary')).toBeInTheDocument()
+    expect(screen.getByText('Recent Payrolls')).toBeInTheDocument()
+    expect(screen.getByText('Quick Actions')).toBeInTheDocument()
   })
 
-  it('should display error state when API fails', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValue(
-      new Error('Network error'),
-    )
+  it('should display summary cards with data', () => {
+    renderWithTheme(<HomePage />)
 
-    render(<HomePage />)
-
-    await waitFor(
-      () => {
-        expect(screen.getByRole('alert')).toBeInTheDocument()
-      },
-      { timeout: 3000 },
-    )
+    expect(screen.getByText('Total Employees')).toBeInTheDocument()
+    expect(screen.getByText('120')).toBeInTheDocument()
   })
 
-  it('should show retry button in error state', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValue(
-      new Error('Network error'),
-    )
+  it('should render sidebar navigation items', () => {
+    renderWithTheme(<HomePage />)
 
-    render(<HomePage />)
+    // Get all elements with these texts and check they exist (Dashboard appears multiple times)
+    const navItems = screen.getAllByText('Dashboard')
+    expect(navItems.length).toBeGreaterThan(0)
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument()
-    })
+    expect(screen.getByText('Employees')).toBeInTheDocument()
+    expect(screen.getByText('Payroll')).toBeInTheDocument()
   })
 
-  it('should retry fetch when retry button is clicked', async () => {
-    const mockFetch = vi.fn()
-    mockFetch
-      .mockRejectedValueOnce(new Error('Network error'))
-      .mockResolvedValueOnce(mockDashboardData)
+  it('should render user profile in header', () => {
+    renderWithTheme(<HomePage />)
 
-    vi.mocked(dashboardApi.fetchDashboardData).mockImplementation(mockFetch)
+    expect(screen.getByText('HR Admin')).toBeInTheDocument()
+    expect(screen.getByText('Admin')).toBeInTheDocument()
+  })
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument()
+  it('should render error state when dashboard data fails', () => {
+    vi.mocked(useDashboardData).mockReturnValue({
+      state: 'error',
+      data: null,
+      error: 'Network error',
+      retry: vi.fn(),
     })
+
+    renderWithTheme(<HomePage />)
+
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+    expect(screen.getByText('Network error')).toBeInTheDocument()
+  })
+
+  it('should call retry when retry button is clicked in error state', async () => {
+    const mockRetry = vi.fn()
+    vi.mocked(useDashboardData).mockReturnValue({
+      state: 'error',
+      data: null,
+      error: 'Network error',
+      retry: mockRetry,
+    })
+
+    renderWithTheme(<HomePage />)
 
     const retryButton = screen.getByRole('button', { name: /Retry/i })
     await userEvent.click(retryButton)
 
-    await waitFor(() => {
-      expect(screen.getByText('120')).toBeInTheDocument()
-    })
-
-    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(mockRetry).toHaveBeenCalled()
   })
 
-  it('should fetch data once on component mount', async () => {
-    const mockFetch = vi.fn().mockResolvedValue(mockDashboardData)
-    vi.mocked(dashboardApi.fetchDashboardData).mockImplementation(mockFetch)
+  it('should display payroll months in chart', () => {
+    renderWithTheme(<HomePage />)
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('120')).toBeInTheDocument()
-    })
-
-    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('Dec')).toBeInTheDocument()
+    expect(screen.getByText('May')).toBeInTheDocument()
   })
 
-  it('should display Recent Payrolls section as Coming soon', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
-      mockDashboardData,
-    )
+  it('should render quick action buttons', () => {
+    renderWithTheme(<HomePage />)
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      const recentPayrollsSection = screen
-        .getByText('Recent Payrolls')
-        .closest('div')?.parentElement?.parentElement
-      expect(
-        within(recentPayrollsSection!).getByText('Coming soon'),
-      ).toBeInTheDocument()
-    })
-  })
-
-  it('should display Quick Actions section as Coming soon', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
-      mockDashboardData,
-    )
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      const quickActionsCards = screen.getAllByText('Coming soon')
-      expect(quickActionsCards.length).toBeGreaterThanOrEqual(4)
-    })
-  })
-
-  it('should render all summary card labels', async () => {
-    vi.mocked(dashboardApi.fetchDashboardData).mockResolvedValue(
-      mockDashboardData,
-    )
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Total Employees')).toBeInTheDocument()
-      expect(screen.getByText('Payroll Processed')).toBeInTheDocument()
-      expect(screen.getByText('Total Deductions')).toBeInTheDocument()
-      expect(screen.getByText('Net Salary Paid')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Add Employee')).toBeInTheDocument()
+    expect(screen.getByText('Mark Attendance')).toBeInTheDocument()
+    expect(screen.getByText('Generate Payroll')).toBeInTheDocument()
+    expect(screen.getByText('View Payslips')).toBeInTheDocument()
   })
 })
