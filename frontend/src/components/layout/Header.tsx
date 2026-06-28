@@ -23,6 +23,7 @@ export interface HeaderProps {
   userName?: string
   userRole?: string
   userAvatarText?: string
+  title?: string
 }
 
 export function Header({
@@ -31,6 +32,7 @@ export function Header({
   userName = USER_NAME,
   userRole = USER_ROLE,
   userAvatarText = USER_AVATAR_TEXT,
+  title = 'Dashboard',
 }: HeaderProps) {
   return (
     <Paper
@@ -57,7 +59,7 @@ export function Header({
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h4">Dashboard</Typography>
+        <Typography variant="h4">{title}</Typography>
       </Stack>
 
       {/* Right: Notifications & User Profile */}

@@ -56,6 +56,23 @@ export const NAV_ITEMS = [
   'Settings',
 ] as const
 
+export type NavItem = (typeof NAV_ITEMS)[number]
+
+export const EMPLOYEE_DEPARTMENTS = [
+  'ENGINEERING',
+  'MARKETING',
+  'FINANCE',
+  'HR',
+  'SALES',
+] as const
+
+export const EMPLOYEE_STATUSES = [
+  'ACTIVE',
+  'INACTIVE',
+  'ON_LEAVE',
+  'TERMINATED',
+] as const
+
 // Chart constants
 export const PAYROLL_CHART = {
   MAX_VALUE: 30000000, // 30L (in Lakhs)

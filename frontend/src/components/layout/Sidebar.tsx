@@ -10,14 +10,26 @@ import {
   Typography,
   alpha,
 } from '@mui/material'
-import { NAV_ITEMS, SIDEBAR_WIDTH, APP_NAME } from '../../constants/dashboard'
+import {
+  NAV_ITEMS,
+  SIDEBAR_WIDTH,
+  APP_NAME,
+  type NavItem,
+} from '../../constants/dashboard'
 
 export interface SidebarProps {
   collapsed?: boolean
   onCollapse?: () => void
+  activeItem?: NavItem
+  onSelectItem?: (item: NavItem) => void
 }
 
-export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
+export function Sidebar({
+  collapsed = false,
+  onCollapse,
+  activeItem = 'Dashboard',
+  onSelectItem,
+}: SidebarProps) {
   return (
     <Box
       component="aside"
@@ -54,7 +66,8 @@ export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
           <ListItem key={item} disablePadding>
             <ListItemButton
               component="button"
-              selected={item === 'Dashboard'}
+              selected={item === activeItem}
+              onClick={() => onSelectItem?.(item)}
               sx={{
                 borderRadius: 1.5,
                 minHeight: 42,

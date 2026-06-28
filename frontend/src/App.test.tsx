@@ -63,7 +63,7 @@ describe('App', () => {
     expect(comingSoonCues.length).toBeGreaterThanOrEqual(4)
   })
 
-  it('shows topbar actions and inert interactions', async () => {
+  it('shows topbar actions and switches to employees tab', async () => {
     const user = userEvent.setup()
     render(<App />)
 
@@ -80,7 +80,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /^employees$/i }))
 
     expect(
-      screen.getByRole('heading', { name: /dashboard/i }),
-    ).toBeInTheDocument()
+      screen.getAllByRole('heading', { name: /^employees$/i }).length,
+    ).toBeGreaterThanOrEqual(1)
   })
 })

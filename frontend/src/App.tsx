@@ -1,5 +1,15 @@
 import { HomePage } from './pages/HomePage'
+import { EmployeesPage } from './pages/EmployeesPage'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import type { NavItem } from './constants/dashboard'
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 
 const appTheme = createTheme({
   palette: {
@@ -51,11 +61,49 @@ const appTheme = createTheme({
  *   - React Query <QueryClientProvider>
  *   - React Router <RouterProvider> / routes
  */
+function AppShell() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isEmployeesRoute = location.pathname === '/employees'
+  const activeNavItem: NavItem = isEmployeesRoute ? 'Employees' : 'Dashboard'
+
+  const handleSelectNavItem = (item: NavItem) => {
+    if (item === 'Employees') {
+      navigate('/employees')
+      return
+    }
+
+    if (item === 'Dashboard') {
+      navigate('/')
+    }
+  }
+
+  return isEmployeesRoute ? (
+    <HomePage
+      activeNavItem={activeNavItem}
+      onSelectNavItem={handleSelectNavItem}
+      mainContent={<EmployeesPage />}
+      pageTitle="Employees"
+    />
+  ) : (
+    <HomePage
+      activeNavItem={activeNavItem}
+      onSelectNavItem={handleSelectNavItem}
+    />
+  )
+}
+
 function App() {
   return (
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
-      <HomePage />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppShell />} />
+          <Route path="/employees" element={<AppShell />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   )
 }
