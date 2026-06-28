@@ -50,26 +50,39 @@ export interface EmployeesListResponse {
 }
 
 export interface CreateEmployeePayload {
-  fullName: string
-  email: string
-  phoneNumber: string
-  dateOfBirth: string
-  gender: string
-  maritalStatus: string
-  employeeId: string
-  department: string
-  designation: string
-  joiningDate: string
-  reportingManager: string
-  employmentType: string
-  basicSalary: number
-  allowances?: number
-  bonus?: number
-  deduction?: number
-  pfApplicable: boolean
-  esiApplicable: boolean
+  employee: {
+    fullName: string
+    email: string
+    phoneNumber: string
+    dateOfBirth: string
+    gender: string
+    maritalStatus: string
+    department: string
+    designation: string
+    joiningDate: string
+    reportingManagerEmployeeId?: string
+    employmentType: string
+    country?: string
+    status?: string
+    avatarUrl?: string
+  }
+  salaryStructure: {
+    basicSalary: number
+    currency?: string
+    effectiveDate?: string
+    endDate?: string | null
+    pfApplicable?: boolean
+    esiApplicable?: boolean
+  }
+  bankAccounts?: Array<{
+    bankName: string
+    accountNumber: string
+    ifscCode: string
+    accountHolderName: string
+    accountType?: string
+    isPrimary?: boolean
+    isActive?: boolean
+  }>
 }
 
-export interface CreateEmployeeResponse {
-  employeeId: string
-}
+export type CreateEmployeeResponse = EmployeeListItem

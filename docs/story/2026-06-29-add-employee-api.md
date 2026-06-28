@@ -1,7 +1,7 @@
 # Add Employee Create API
 
 - **Date**: 2026-06-29
-- **Status**: draft
+- **Status**: completed
 - **Author**: BA Planner
 - **Persona**: HR Manager
 
@@ -33,14 +33,19 @@ The Add Employee UI flow requires a backend create endpoint that accepts the sam
 - Edge cases: Missing required fields, invalid date values, invalid email/phone, negative salary values, duplicate employee ID, malformed request body, server failure during create.
 
 ## Acceptance Criteria
-- [ ] Given a valid Add Employee payload, when the client sends a create request, then the API creates a new employee record and returns a success response with the full created employee object.
-- [ ] Given required fields are missing, when a create request is submitted, then the API returns validation errors with a client-error status and field-level details.
-- [ ] Given invalid field formats (email, phone, dates, salary values), when a create request is submitted, then the API rejects the request with structured validation feedback.
-- [ ] Given an existing employee ID is submitted, when a create request is made, then the API rejects creation and returns a duplicate employee ID error contract.
-- [ ] Given optional salary fields are omitted, when a valid create request is submitted, then the API accepts the request and persists defaults/null-safe values per contract.
-- [ ] Given backend create succeeds, when response is returned, then it includes a stable identifier and the created object fields required by downstream UI flow.
-- [ ] Given an unexpected backend failure occurs, when create is attempted, then the API returns a server-error response with a non-sensitive error message contract.
-- [ ] Given implementation begins, when engineering executes this story, then tasks include endpoint wiring, request validation, duplicate check, persistence mapping, and automated tests for success/failure scenarios.
+- [x] Given a valid Add Employee payload, when the client sends a create request, then the API creates a new employee record and returns a success response with the full created employee object.
+- [x] Given required fields are missing, when a create request is submitted, then the API returns validation errors with a client-error status and field-level details.
+- [x] Given invalid field formats (email, phone, dates, salary values), when a create request is submitted, then the API rejects the request with structured validation feedback.
+- [x] Given an existing employee ID is submitted, when a create request is made, then the API rejects creation and returns a duplicate employee ID error contract.
+- [x] Given optional salary fields are omitted, when a valid create request is submitted, then the API accepts the request and persists defaults/null-safe values per contract.
+- [x] Given backend create succeeds, when response is returned, then it includes a stable identifier and the created object fields required by downstream UI flow.
+- [x] Given an unexpected backend failure occurs, when create is attempted, then the API returns a server-error response with a non-sensitive error message contract.
+- [x] Given implementation begins, when engineering executes this story, then tasks include endpoint wiring, request validation, duplicate check, persistence mapping, and automated tests for success/failure scenarios.
+
+## Implementation Notes
+- Frontend Add Employee save flow now calls `POST /api/v1/employees` using the backend nested payload contract (`employee`, `salaryStructure`, optional `bankAccounts`).
+- Frontend create payload no longer sends `employeeId`; backend generates it and response is used for navigation to `/employees/:employeeId`.
+- Save action now handles API failures with user-visible error feedback instead of work-in-progress placeholder behavior.
 
 ## Screenshots / Mockups
 - [2026-06-28-add-employee.png](../assets/2026-06-28-add-employee.png)

@@ -133,24 +133,24 @@ describe('employeesApi', () => {
     } as Response)
 
     const result = await createEmployee({
-      fullName: 'Ari Example',
-      email: 'ari@example.com',
-      phoneNumber: '+919999999999',
-      dateOfBirth: '1993-01-10',
-      gender: 'FEMALE',
-      maritalStatus: 'SINGLE',
-      employeeId: 'EMP00120',
-      department: 'ENGINEERING',
-      designation: 'Engineer',
-      joiningDate: '2023-01-11',
-      reportingManager: 'Chris',
-      employmentType: 'PERMANENT',
-      basicSalary: 100000,
-      allowances: 5000,
-      bonus: 3000,
-      deduction: 1000,
-      pfApplicable: true,
-      esiApplicable: false,
+      employee: {
+        fullName: 'Ari Example',
+        email: 'ari@example.com',
+        phoneNumber: '+919999999999',
+        dateOfBirth: '1993-01-10',
+        gender: 'FEMALE',
+        maritalStatus: 'SINGLE',
+        department: 'ENGINEERING',
+        designation: 'Engineer',
+        joiningDate: '2023-01-11',
+        reportingManagerEmployeeId: 'EMP00010',
+        employmentType: 'PERMANENT',
+      },
+      salaryStructure: {
+        basicSalary: 100000,
+        pfApplicable: true,
+        esiApplicable: false,
+      },
     })
 
     expect(result.employeeId).toBe('EMP00120')
@@ -165,21 +165,23 @@ describe('employeesApi', () => {
 
     await expect(
       createEmployee({
-        fullName: 'Ari Example',
-        email: 'ari@example.com',
-        phoneNumber: '+919999999999',
-        dateOfBirth: '1993-01-10',
-        gender: 'FEMALE',
-        maritalStatus: 'SINGLE',
-        employeeId: 'EMP00120',
-        department: 'ENGINEERING',
-        designation: 'Engineer',
-        joiningDate: '2023-01-11',
-        reportingManager: 'Chris',
-        employmentType: 'PERMANENT',
-        basicSalary: 100000,
-        pfApplicable: false,
-        esiApplicable: false,
+        employee: {
+          fullName: 'Ari Example',
+          email: 'ari@example.com',
+          phoneNumber: '+919999999999',
+          dateOfBirth: '1993-01-10',
+          gender: 'FEMALE',
+          maritalStatus: 'SINGLE',
+          department: 'ENGINEERING',
+          designation: 'Engineer',
+          joiningDate: '2023-01-11',
+          employmentType: 'PERMANENT',
+        },
+        salaryStructure: {
+          basicSalary: 100000,
+          pfApplicable: false,
+          esiApplicable: false,
+        },
       }),
     ).rejects.toThrow('Employee ID must be unique')
   })

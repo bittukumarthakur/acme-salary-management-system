@@ -4,11 +4,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ThemeProvider, createTheme } from '@mui/material'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AddEmployeePage } from './AddEmployeePage'
-import { isEmployeeIdAvailable } from '../services/employeesApi'
+import { createEmployee } from '../services/employeesApi'
 
 vi.mock('../services/employeesApi')
 
-const mockIsEmployeeIdAvailable = vi.mocked(isEmployeeIdAvailable)
+const mockCreateEmployee = vi.mocked(createEmployee)
 
 const theme = createTheme({
   palette: {
@@ -47,7 +47,19 @@ function setDatePickerValue(name: string, value: string) {
 describe('AddEmployeePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockIsEmployeeIdAvailable.mockResolvedValue(true)
+    mockCreateEmployee.mockResolvedValue({
+      employeeId: 'EMP00120',
+      fullName: 'Ari Example',
+      email: 'ari@example.com',
+      department: 'ENGINEERING',
+      designation: 'Engineer',
+      basicSalary: 100000,
+      currency: 'INR',
+      status: 'ACTIVE',
+      joiningDate: '2023-01-11',
+      employmentType: 'PERMANENT',
+      country: 'India',
+    })
   })
 
   it('renders breadcrumb and all required form sections and fields', () => {
@@ -71,7 +83,6 @@ describe('AddEmployeePage', () => {
     expect(screen.getAllByLabelText(/date of birth/i).length).toBeGreaterThan(0)
     expect(screen.getByLabelText(/gender/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/marital status/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/employee id/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/department/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/designation/i)).toBeInTheDocument()
     expect(screen.getAllByLabelText(/joining date/i).length).toBeGreaterThan(0)
@@ -101,7 +112,6 @@ describe('AddEmployeePage', () => {
     await user.type(screen.getByLabelText(/full name/i), 'Ari Example')
     await user.type(screen.getByLabelText(/email/i), 'not-an-email')
     await user.type(screen.getByLabelText(/phone number/i), 'abcd1234')
-    await user.type(screen.getByLabelText(/employee id/i), 'EMP00120')
     await user.type(screen.getByLabelText(/designation/i), 'Engineer')
     await user.type(screen.getByLabelText(/reporting manager/i), 'Chris')
     await user.type(screen.getByLabelText(/basic salary/i), '-100')
@@ -122,37 +132,7 @@ describe('AddEmployeePage', () => {
     ).toBeInTheDocument()
   })
 
-  it('blocks save when employee ID already exists', async () => {
-    const user = userEvent.setup()
-    mockIsEmployeeIdAvailable.mockResolvedValue(false)
-    renderAddEmployeePage()
-
-    await user.type(screen.getByLabelText(/full name/i), 'Ari Example')
-    await user.type(screen.getByLabelText(/email/i), 'ari@example.com')
-    await user.type(screen.getByLabelText(/phone number/i), '+919999999999')
-    setDatePickerValue('select date of birth', '01/10/1993')
-    await user.click(screen.getByLabelText(/gender/i))
-    await user.click(await screen.findByRole('option', { name: 'Female' }))
-    await user.click(screen.getByLabelText(/marital status/i))
-    await user.click(await screen.findByRole('option', { name: 'Single' }))
-    await user.type(screen.getByLabelText(/employee id/i), 'EMP00120')
-    await user.click(screen.getByLabelText(/department/i))
-    await user.click(await screen.findByRole('option', { name: 'Engineering' }))
-    await user.type(screen.getByLabelText(/designation/i), 'Engineer')
-    setDatePickerValue('select joining date', '01/11/2023')
-    await user.type(screen.getByLabelText(/reporting manager/i), 'Chris')
-    await user.click(screen.getByLabelText(/employment type/i))
-    await user.click(await screen.findByRole('option', { name: 'Permanent' }))
-    await user.type(screen.getByLabelText(/basic salary/i), '100000')
-
-    await user.click(screen.getByRole('button', { name: 'Save Employee' }))
-
-    expect(
-      await screen.findByText('Employee ID must be unique'),
-    ).toBeInTheDocument()
-  })
-
-  it('shows work-in-progress message and skips create API call on save', async () => {
+  it('creates employee via API and navigates to employee details on save', async () => {
     const user = userEvent.setup()
 
     renderAddEmployeePage()
@@ -165,7 +145,6 @@ describe('AddEmployeePage', () => {
     await user.click(await screen.findByRole('option', { name: 'Female' }))
     await user.click(screen.getByLabelText(/marital status/i))
     await user.click(await screen.findByRole('option', { name: 'Single' }))
-    await user.type(screen.getByLabelText(/employee id/i), 'EMP00120')
     await user.click(screen.getByLabelText(/department/i))
     await user.click(await screen.findByRole('option', { name: 'Engineering' }))
     await user.type(screen.getByLabelText(/designation/i), 'Engineer')
@@ -178,12 +157,58 @@ describe('AddEmployeePage', () => {
     await user.click(screen.getByRole('button', { name: 'Save Employee' }))
 
     await waitFor(() => {
-      expect(mockIsEmployeeIdAvailable).toHaveBeenCalledTimes(1)
+      expect(mockCreateEmployee).toHaveBeenCalledTimes(1)
     })
+    expect(mockCreateEmployee).toHaveBeenCalledWith({
+      employee: {
+        fullName: 'Ari Example',
+        email: 'ari@example.com',
+        phoneNumber: '+919999999999',
+        dateOfBirth: '1993-01-10',
+        gender: 'FEMALE',
+        maritalStatus: 'SINGLE',
+        department: 'ENGINEERING',
+        designation: 'Engineer',
+        joiningDate: '2023-01-11',
+        reportingManagerEmployeeId: 'Chris',
+        employmentType: 'PERMANENT',
+      },
+      salaryStructure: {
+        basicSalary: 100000,
+        pfApplicable: false,
+        esiApplicable: false,
+      },
+    })
+    expect(await screen.findByText('Employee Details')).toBeInTheDocument()
+  })
+
+  it('shows API error and stays on form when create fails', async () => {
+    const user = userEvent.setup()
+    mockCreateEmployee.mockRejectedValue(new Error('Failed to create employee'))
+
+    renderAddEmployeePage()
+
+    await user.type(screen.getByLabelText(/full name/i), 'Ari Example')
+    await user.type(screen.getByLabelText(/email/i), 'ari@example.com')
+    await user.type(screen.getByLabelText(/phone number/i), '+919999999999')
+    setDatePickerValue('select date of birth', '01/10/1993')
+    await user.click(screen.getByLabelText(/gender/i))
+    await user.click(await screen.findByRole('option', { name: 'Female' }))
+    await user.click(screen.getByLabelText(/marital status/i))
+    await user.click(await screen.findByRole('option', { name: 'Single' }))
+    await user.click(screen.getByLabelText(/department/i))
+    await user.click(await screen.findByRole('option', { name: 'Engineering' }))
+    await user.type(screen.getByLabelText(/designation/i), 'Engineer')
+    setDatePickerValue('select joining date', '01/11/2023')
+    await user.type(screen.getByLabelText(/reporting manager/i), 'Chris')
+    await user.click(screen.getByLabelText(/employment type/i))
+    await user.click(await screen.findByRole('option', { name: 'Permanent' }))
+    await user.type(screen.getByLabelText(/basic salary/i), '100000')
+
+    await user.click(screen.getByRole('button', { name: 'Save Employee' }))
+
     expect(
-      await screen.findByText(
-        "We're working on this feature. Please come back soon.",
-      ),
+      await screen.findByText('Failed to create employee'),
     ).toBeInTheDocument()
     expect(screen.queryByText('Employee Details')).not.toBeInTheDocument()
   })

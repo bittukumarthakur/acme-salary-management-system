@@ -35,19 +35,6 @@ export function WorkInfoSection({
       </Typography>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Employee ID"
-            variant="outlined"
-            placeholder="Enter employee ID"
-            value={form.employeeId}
-            onChange={(event) => setField('employeeId', event.target.value)}
-            error={Boolean(errors.employeeId)}
-            helperText={errors.employeeId}
-            fullWidth
-            required
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
           <FormControl fullWidth required error={Boolean(errors.department)}>
             <InputLabel id="department-label">Department</InputLabel>
             <Select

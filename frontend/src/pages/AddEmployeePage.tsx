@@ -11,7 +11,7 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { isEmployeeIdAvailable } from '../services/employeesApi'
+import { createEmployee } from '../services/employeesApi'
 import {
   initialFormState,
   type AddEmployeeFormState,
@@ -28,8 +28,7 @@ export function AddEmployeePage() {
   const [form, setForm] = useState<AddEmployeeFormState>(initialFormState)
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [saveInfoMessage, setSaveInfoMessage] = useState<string | null>(null)
-  const [isSaving] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), [])
 
@@ -42,25 +41,50 @@ export function AddEmployeePage() {
     setSubmitError(null)
   }
 
+  const buildCreateEmployeePayload = () => ({
+    employee: {
+      fullName: form.fullName.trim(),
+      email: form.email.trim(),
+      phoneNumber: form.phoneNumber.trim(),
+      dateOfBirth: form.dateOfBirth,
+      gender: form.gender,
+      maritalStatus: form.maritalStatus,
+      department: form.department,
+      designation: form.designation.trim(),
+      joiningDate: form.joiningDate,
+      reportingManagerEmployeeId: form.reportingManager.trim() || undefined,
+      employmentType: form.employmentType,
+    },
+    salaryStructure: {
+      basicSalary: Number(form.basicSalary),
+      pfApplicable: form.pfApplicable,
+      esiApplicable: form.esiApplicable,
+    },
+  })
+
   const onCancel = () => {
     navigate('/employees')
   }
 
   const onSave = async () => {
-    setSaveInfoMessage("We're working on this feature. Please come back soon.")
-
     const validationErrors = validateAddEmployeeForm(form, todayIso)
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
       return
     }
 
-    const employeeIdAvailable = await isEmployeeIdAvailable(form.employeeId)
-    if (!employeeIdAvailable) {
-      setErrors((previous) => ({
-        ...previous,
-        employeeId: 'Employee ID must be unique',
-      }))
+    try {
+      setIsSaving(true)
+      const createdEmployee = await createEmployee(buildCreateEmployeePayload())
+      navigate(`/employees/${createdEmployee.employeeId}`)
+    } catch (error) {
+      if (error instanceof Error) {
+        setSubmitError(error.message)
+      } else {
+        setSubmitError('Failed to create employee')
+      }
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -79,7 +103,6 @@ export function AddEmployeePage() {
       </Breadcrumbs>
 
       {submitError && <Alert severity="error">{submitError}</Alert>}
-      {saveInfoMessage && <Alert severity="info">{saveInfoMessage}</Alert>}
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Card variant="outlined">
