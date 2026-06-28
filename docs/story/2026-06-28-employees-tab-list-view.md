@@ -35,7 +35,7 @@ The Employees tab UI has been designed and should be finalized as a functional l
 - Assumptions:
   - Frontend control wiring should be implemented now against a contract-first approach.
   - Until APIs are ready, the page may use mocked/stubbed data sources that mirror the contract shape.
-  - Currency and converted salary value are provided by backend based on requested country.
+  - Currency and converted salary value are provided by backend based on requested targetCurrencyCode.
   - Employee status defaults to Active in initial sample/mock states unless otherwise provided.
 - Dependencies:
   - Backend endpoint availability for employee list retrieval.
@@ -54,11 +54,16 @@ The Employees tab UI has been designed and should be finalized as a functional l
 
 ### Query Parameters
 - `search` (string, optional): Search by name, email, or employeeId.
-- `department` (string, optional): Department filter value.
-- `status` (string, optional): Employment status filter value (`active`, `inactive`, `on_leave`, `terminated`).
-- `country` (string, optional): Country code used by backend to return converted salary values.
+- `department` (string, optional): Department filter enum value (`ENGINEERING`, `MARKETING`, `FINANCE`, `HR`, `SALES`).
+- `status` (string, optional): Employment status filter enum value (`ACTIVE`, `INACTIVE`, `ON_LEAVE`, `TERMINATED`).
+- `targetCurrencyCode` (string, optional): Target currency code used by backend to return converted salary values.
 - `page` (number, optional, default: `1`): 1-based page index.
-- `limit` (number, optional, default: `10`): Page size.
+- `pageLimit` (number, optional, default: `10`): Page size.
+
+### Enum Definitions
+- `department`: `ENGINEERING`, `MARKETING`, `FINANCE`, `HR`, `SALES`
+- `designation`: `SENIOR_DEVELOPER`, `MARKETING_MANAGER`, `ACCOUNTANT`, `HR_EXECUTIVE`, `UI_UX_DESIGNER`, `SALES_EXECUTIVE`
+- `status`: `ACTIVE`, `INACTIVE`, `ON_LEAVE`, `TERMINATED`
 
 ### Success Response (200)
 ```json
@@ -68,22 +73,23 @@ The Employees tab UI has been designed and should be finalized as a functional l
       "employeeId": "EMP001",
       "fullName": "John Doe",
       "email": "john.doe@email.com",
-      "department": "Engineering",
-      "designation": "Senior Developer",
+      "department": "ENGINEERING",
+      "designation": "SENIOR_DEVELOPER",
       "basicSalary": 60000,
       "currency": "INR",
-      "status": "active",
+      "status": "ACTIVE",
       "avatarUrl": "https://example.com/avatars/emp001.png"
     }
   ],
   "meta": {
     "page": 1,
-    "limit": 10,
+    "pageLimit": 10,
     "totalRecords": 120,
     "totalPages": 12,
     "hasNextPage": true,
     "hasPreviousPage": false,
     "currency": "INR",
+    "targetCurrency": "INR",
     "conversion": {
       "rate": 1,
       "convertedAt": "2026-06-28T06:16:21.694Z"
@@ -107,8 +113,11 @@ The Employees tab UI has been designed and should be finalized as a functional l
 
 ### Contract Notes
 - Salary is numeric in API and formatted for display in UI.
-- Salary value is already converted by backend for the requested `country`.
-- Status value is normalized (lowercase enum) and mapped to UI badge labels.
+- Salary value is already converted by backend for the requested `targetCurrencyCode`.
+- Department, designation, and status are returned as canonical enum codes.
+- UI maps enum codes to human-readable labels (and localization where needed).
+- Enum-backed fields should be defined in Prisma schema as enums (for example, `EmployeeStatus`, `Department`) and returned as enum codes in API payloads.
+- If `designation` needs frequent business-driven changes, keep it as a String/lookup-backed value in Prisma instead of a hard enum.
 - Unknown or missing optional fields (e.g., `avatarUrl`) should fall back to safe UI defaults.
 
 ## Acceptance Criteria
@@ -116,7 +125,7 @@ The Employees tab UI has been designed and should be finalized as a functional l
 - [ ] Given the user enters a search term, when search is submitted or debounced, then the list request is issued with `search` and results reflect matching employees.
 - [ ] Given the user selects a department, when filter is applied, then the list request includes `department` and results match that department.
 - [ ] Given the user selects a status, when filter is applied, then the list request includes `status` and results match that status.
-- [ ] Given the user changes page, when pagination control is used, then the list request includes `page` and `limit` and table updates accordingly.
+- [ ] Given the user changes page, when pagination control is used, then the list request includes `page` and `pageLimit` and table updates accordingly.
 - [ ] Given Add Employee CTA is shown, when clicked, then a placeholder modal/toast is displayed and no full creation flow is required in this story.
 - [ ] Given row action menu icon is shown for each employee, when clicked, then stub actions (`Edit`, `View`) are visible and navigational/backend execution is deferred.
 - [ ] Given backend APIs are not yet available, when frontend wiring is delivered, then integration can work without UI contract changes once endpoint follows the defined response contract.
@@ -137,4 +146,4 @@ The Employees tab UI has been designed and should be finalized as a functional l
 - Confirmed: Search triggers on debounced typing (300 ms).
 - Confirmed: Mobile is out of scope; desktop + tablet only.
 - Confirmed: Row action menu includes stub `Edit` and `View` actions without backend execution.
-- Confirmed: Backend supports country parameter and returns converted salary values plus `meta.conversion` details.
+- Confirmed: Backend supports targetCurrencyCode parameter and returns converted salary values plus `meta.conversion` details.
