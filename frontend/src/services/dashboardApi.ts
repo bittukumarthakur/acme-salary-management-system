@@ -15,88 +15,127 @@ interface DashboardApiSummaryCard {
   value: number
 }
 
+interface DashboardApiRecentPayrollRecord {
+  id: string
+  payrollPeriod: string
+  payoutDate: string
+  status: string
+  totalAmount: number
+  totalDeductions: number
+  netAmount: number
+}
+
 interface DashboardApiResponse {
   summaryCards: DashboardApiSummaryCard[]
-  meta?: {
-    currency?: string
+  recentPayrolls: DashboardApiRecentPayrollRecord[]
+  meta: {
+    generatedAt: string
+    currency: string
+    employeeTrend: {
+      currentMonthCount: number
+      previousMonthCount: number
+    }
   }
 }
 
 const DASHBOARD_ENDPOINT = '/api/v1/dashboard'
 
-const FALLBACK_RECENT_PAYROLLS: RecentPayrollRecord[] = [
-  {
-    id: 'pay-2024-05',
-    payrollPeriod: 'May 2024',
-    payoutDate: '2024-05-31',
-    status: 'Completed',
-    amount: '₹24,80,000',
-  },
-  {
-    id: 'pay-2024-04',
-    payrollPeriod: 'April 2024',
-    payoutDate: '2024-04-30',
-    status: 'Completed',
-    amount: '₹22,65,000',
-  },
-  {
-    id: 'pay-2024-03',
-    payrollPeriod: 'Mar 2024',
-    payoutDate: '2024-03-31',
-    status: 'Completed',
-    amount: '₹21,40,000',
-  },
-  {
-    id: 'pay-2024-02',
-    payrollPeriod: 'February 2024',
-    payoutDate: '2024-02-29',
-    status: 'Completed',
-    amount: '₹20,10,000',
-  },
-  {
-    id: 'pay-2024-01',
-    payrollPeriod: 'January 2024',
-    payoutDate: '2024-01-31',
-    status: 'Completed',
-    amount: '₹19,20,000',
-  },
-  {
-    id: 'pay-2023-12',
-    payrollPeriod: 'December 2023',
-    payoutDate: '2023-12-31',
-    status: 'Completed',
-    amount: '₹18,45,000',
-  },
-  {
-    id: 'pay-2023-11',
-    payrollPeriod: 'November 2023',
-    payoutDate: '2023-11-30',
-    status: 'Completed',
-    amount: '₹17,90,000',
-  },
-]
-
-const FALLBACK_PAYROLL_SUMMARY: PayrollSummary = {
-  months: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
-  values: [9000000, 12000000, 14000000, 17000000, 21000000, 28000000],
-}
-
 function formatCurrency(value: number, currency = 'INR') {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
   }).format(value)
+}
+
+function toTitleCase(value: string) {
+  return value
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+function getEmployeeTrendMetadata(response: DashboardApiResponse) {
+  const currentMonthCount = response.meta.employeeTrend.currentMonthCount
+  const previousMonthCount = response.meta.employeeTrend.previousMonthCount
+
+  const trendDelta = currentMonthCount - previousMonthCount
+  if (trendDelta > 0) {
+    return `↑ ${trendDelta} this month`
+  }
+
+  if (trendDelta < 0) {
+    return `↓ ${Math.abs(trendDelta)} this month`
+  }
+
+  return 'No change this month'
+}
+
+function getSummaryMonthMetadata(response: DashboardApiResponse) {
+  const generatedDate = new Date(response.meta.generatedAt)
+  if (Number.isNaN(generatedDate.getTime())) {
+    return undefined
+  }
+
+  return generatedDate.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function mapRecentPayrolls(
+  response: DashboardApiResponse,
+): RecentPayrollRecord[] {
+  const currency = response.meta.currency
+  return response.recentPayrolls.map((payroll) => ({
+    id: payroll.id,
+    payrollPeriod: payroll.payrollPeriod,
+    payoutDate: payroll.payoutDate,
+    status: toTitleCase(payroll.status),
+    amount: formatCurrency(payroll.totalAmount, currency),
+  }))
+}
+
+function mapPayrollSummary(response: DashboardApiResponse): PayrollSummary {
+  const latestSix = [...response.recentPayrolls]
+    .sort(
+      (first, second) =>
+        new Date(first.payoutDate).getTime() -
+        new Date(second.payoutDate).getTime(),
+    )
+    .slice(-6)
+
+  return {
+    months: latestSix.map((item) => {
+      const parsedDate = new Date(item.payoutDate)
+      if (Number.isNaN(parsedDate.getTime())) {
+        return item.payrollPeriod
+      }
+
+      return parsedDate.toLocaleDateString('en-US', { month: 'short' })
+    }),
+    values: latestSix.map((item) => item.totalAmount),
+  }
 }
 
 function mapSummaryCards(response: DashboardApiResponse): SummaryCard[] {
   const apiCardsByLabelKey = new Map(
     response.summaryCards.map((card) => [card.labelKey, card]),
   )
-  const currency = response.meta?.currency || 'INR'
+  const currency = response.meta.currency
+  const employeeTrendMetadata = getEmployeeTrendMetadata(response)
+  const summaryMonthMetadata = getSummaryMonthMetadata(response)
 
   return [
-    { label: 'Total Employees', value: 'N/A' },
+    {
+      label: 'Total Employees',
+      value: apiCardsByLabelKey.has('TOTAL_EMPLOYEES')
+        ? apiCardsByLabelKey.get('TOTAL_EMPLOYEES')!.value
+        : 'N/A',
+      metadata: employeeTrendMetadata,
+    },
     {
       label: 'Payroll Processed',
       value: apiCardsByLabelKey.has('PAYROLL_PROCESSED')
@@ -105,6 +144,7 @@ function mapSummaryCards(response: DashboardApiResponse): SummaryCard[] {
             currency,
           )
         : 'N/A',
+      metadata: summaryMonthMetadata,
     },
     {
       label: 'Total Deductions',
@@ -114,6 +154,7 @@ function mapSummaryCards(response: DashboardApiResponse): SummaryCard[] {
             currency,
           )
         : 'N/A',
+      metadata: summaryMonthMetadata,
     },
     {
       label: 'Net Salary Paid',
@@ -123,6 +164,7 @@ function mapSummaryCards(response: DashboardApiResponse): SummaryCard[] {
             currency,
           )
         : 'N/A',
+      metadata: summaryMonthMetadata,
     },
   ]
 }
@@ -131,10 +173,10 @@ export function createPlaceholderDashboardData(): DashboardData {
   return {
     summaryCards: [],
     payrollSummary: {
-      months: [...FALLBACK_PAYROLL_SUMMARY.months],
-      values: [...FALLBACK_PAYROLL_SUMMARY.values],
+      months: [],
+      values: [],
     },
-    recentPayrolls: FALLBACK_RECENT_PAYROLLS.map((payroll) => ({ ...payroll })),
+    recentPayrolls: [],
   }
 }
 
@@ -146,13 +188,11 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   }
 
   const result = (await response.json()) as DashboardApiResponse
+  const recentPayrolls = mapRecentPayrolls(result)
 
   return {
     summaryCards: mapSummaryCards(result),
-    payrollSummary: {
-      months: [...FALLBACK_PAYROLL_SUMMARY.months],
-      values: [...FALLBACK_PAYROLL_SUMMARY.values],
-    },
-    recentPayrolls: FALLBACK_RECENT_PAYROLLS.map((payroll) => ({ ...payroll })),
+    payrollSummary: mapPayrollSummary(result),
+    recentPayrolls,
   }
 }

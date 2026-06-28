@@ -76,7 +76,7 @@ describe('HomePage - Dashboard Data Integration', () => {
       expect(loadingElements.length).toBeGreaterThanOrEqual(0)
     })
 
-    it('keeps recent payroll placeholders visible while summary data is loading', () => {
+    it('shows empty recent payroll state while summary data is loading', () => {
       vi.mocked(dashboardApi.fetchDashboardData).mockImplementationOnce(
         () => new Promise(() => {}),
       )
@@ -84,7 +84,9 @@ describe('HomePage - Dashboard Data Integration', () => {
       renderWithTheme(<HomePage />)
 
       expect(screen.getByText('Recent Payrolls')).toBeInTheDocument()
-      expect(screen.getByText('May 2024')).toBeInTheDocument()
+      expect(
+        screen.getByText('No recent payrolls available.'),
+      ).toBeInTheDocument()
       expect(
         screen.queryByLabelText('Loading recent payrolls section'),
       ).not.toBeInTheDocument()
@@ -158,7 +160,7 @@ describe('HomePage - Dashboard Data Integration', () => {
       })
     })
 
-    it('keeps recent payroll placeholders visible when summary fetch fails', async () => {
+    it('shows empty recent payroll state when summary fetch fails', async () => {
       vi.mocked(dashboardApi.fetchDashboardData).mockRejectedValueOnce(
         new Error('Failed to fetch data'),
       )
@@ -171,7 +173,9 @@ describe('HomePage - Dashboard Data Integration', () => {
         ).toBeInTheDocument()
       })
 
-      expect(screen.getByText('May 2024')).toBeInTheDocument()
+      expect(
+        screen.getByText('No recent payrolls available.'),
+      ).toBeInTheDocument()
       expect(
         screen.queryAllByRole('button', { name: /retry|try again/i }),
       ).toHaveLength(1)

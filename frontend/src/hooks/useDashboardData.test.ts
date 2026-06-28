@@ -39,7 +39,7 @@ describe('useDashboardData', () => {
     const { result } = renderHook(() => useDashboardData())
 
     expect(result.current.state).toBe('loading')
-    expect(result.current.data.recentPayrolls.length).toBeGreaterThan(0)
+    expect(result.current.data.recentPayrolls).toEqual([])
     expect(result.current.data.summaryCards).toEqual([])
     expect(result.current.error).toBeNull()
   })
@@ -69,7 +69,7 @@ describe('useDashboardData', () => {
       expect(result.current.state).toBe('error')
     })
 
-    expect(result.current.data.recentPayrolls.length).toBeGreaterThan(0)
+    expect(result.current.data.recentPayrolls).toEqual([])
     expect(result.current.data.summaryCards).toEqual([])
     expect(result.current.error).toBe('Network error')
   })
