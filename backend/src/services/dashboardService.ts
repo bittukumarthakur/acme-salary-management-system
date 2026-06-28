@@ -38,7 +38,73 @@ export async function getDashboard(query: DashboardQuery): Promise<DashboardResp
     prisma.payroll.count(),
   ]);
 
+  const monthlyReferenceDate = latestPayroll?.payoutDate ?? new Date();
+  const currentMonthStartDate = new Date(
+    monthlyReferenceDate.getFullYear(),
+    monthlyReferenceDate.getMonth(),
+    1,
+    0,
+    0,
+    0,
+    0,
+  );
+  const monthEndDate = new Date(
+    monthlyReferenceDate.getFullYear(),
+    monthlyReferenceDate.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999,
+  );
+  const previousMonthStartDate = new Date(
+    monthlyReferenceDate.getFullYear(),
+    monthlyReferenceDate.getMonth() - 1,
+    1,
+    0,
+    0,
+    0,
+    0,
+  );
+  const previousMonthEndDate = new Date(
+    monthlyReferenceDate.getFullYear(),
+    monthlyReferenceDate.getMonth(),
+    0,
+    23,
+    59,
+    59,
+    999,
+  );
+
+  const [totalEmployeesCount, currentMonthCount, previousMonthCount] = await Promise.all([
+    prisma.employee.count({
+      where: {
+        joiningDate: { lte: monthEndDate },
+      },
+    }),
+    prisma.employee.count({
+      where: {
+        joiningDate: {
+          gte: currentMonthStartDate,
+          lte: monthEndDate,
+        },
+      },
+    }),
+    prisma.employee.count({
+      where: {
+        joiningDate: {
+          gte: previousMonthStartDate,
+          lte: previousMonthEndDate,
+        },
+      },
+    }),
+  ]);
+
   const summaryCards = [
+    {
+      labelKey: SummaryCardLabelKey.TOTAL_EMPLOYEES,
+      value: totalEmployeesCount,
+    },
     {
       labelKey: SummaryCardLabelKey.PAYROLL_PROCESSED,
       value: latestPayroll ? convert(latestPayroll.totalAmount) : 0,
@@ -73,6 +139,10 @@ export async function getDashboard(query: DashboardQuery): Promise<DashboardResp
       currency,
       conversion: { rate, convertedAt },
       totalPayrollRecords: totalRecords,
+      employeeTrend: {
+        currentMonthCount,
+        previousMonthCount,
+      },
     },
   };
 }

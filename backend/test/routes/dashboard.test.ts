@@ -17,6 +17,7 @@ const app = createApp();
 
 const defaultDashboard: DashboardResponse = {
   summaryCards: [
+    { labelKey: 'TOTAL_EMPLOYEES' as SummaryCardLabelKey, value: 42 },
     { labelKey: 'PAYROLL_PROCESSED' as SummaryCardLabelKey, value: 2480000 },
     { labelKey: 'TOTAL_DEDUCTIONS' as SummaryCardLabelKey, value: 345000 },
     { labelKey: 'NET_SALARY_PAID' as SummaryCardLabelKey, value: 2135000 },
@@ -39,6 +40,10 @@ const defaultDashboard: DashboardResponse = {
     currency: 'INR' as CurrencyCode,
     conversion: { rate: 1, convertedAt: '2026-06-27T10:00:00.000Z' },
     totalPayrollRecords: 12,
+    employeeTrend: {
+      currentMonthCount: 42,
+      previousMonthCount: 39,
+    },
   },
 };
 
@@ -59,6 +64,7 @@ describe('GET /api/v1/dashboard', () => {
     expect(res.body.meta).toHaveProperty('appliedCountry');
     expect(res.body.meta).toHaveProperty('currency');
     expect(res.body.meta).toHaveProperty('conversion');
+    expect(res.body.meta).toHaveProperty('employeeTrend');
   });
 
   it('calls service with default countryCode=IN and limit=10 when params are absent', async () => {

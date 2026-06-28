@@ -7,6 +7,8 @@
 
 Implements `GET /api/v1/dashboard` that returns summaryCards (with labelKey enum), recentPayrolls (with status enum), and meta (with appliedCountry/currency enums and conversion metadata). Supports `countryCode` and `limit` query params, performs backend currency conversion, and validates inputs.
 
+Latest API contract update: `summaryCards` now includes `TOTAL_EMPLOYEES` for the latest payroll month (active employees with joining date on or before the month end).
+
 ## Steps
 
 1. Add `Payroll` model to Prisma schema
@@ -41,3 +43,8 @@ Implements `GET /api/v1/dashboard` that returns summaryCards (with labelKey enum
   - Query validation for `countryCode` and `limit` confirmed in route layer
   - Prisma `Payroll` model and migration present in schema/migrations
   - Backend test suite re-run: 71/71 passing
+- 2026-06-28: Dashboard summaryCards updated to include total employees for month
+  - Added `SummaryCardLabelKey.TOTAL_EMPLOYEES` to dashboard model enum
+  - Updated `getDashboard` service to count active employees up to latest payroll month end
+  - Updated dashboard service and route tests for 4 summary cards
+  - Backend checks passing: lint ✅, tests 71/71 ✅

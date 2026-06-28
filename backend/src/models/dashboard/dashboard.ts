@@ -31,6 +31,7 @@ export enum CurrencyCode {
 }
 
 export enum SummaryCardLabelKey {
+  TOTAL_EMPLOYEES = 'TOTAL_EMPLOYEES',
   PAYROLL_PROCESSED = 'PAYROLL_PROCESSED',
   TOTAL_DEDUCTIONS = 'TOTAL_DEDUCTIONS',
   NET_SALARY_PAID = 'NET_SALARY_PAID',
@@ -68,6 +69,10 @@ export interface DashboardResponse {
     currency: CurrencyCode;
     conversion: { rate: number; convertedAt: string };
     totalPayrollRecords: number;
+    employeeTrend: {
+      currentMonthCount: number;
+      previousMonthCount: number;
+    };
   };
 }
 
