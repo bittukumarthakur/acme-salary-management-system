@@ -30,8 +30,8 @@ import { BANKS } from './masterData';
 // CONFIGURATION
 // ============================================================================
 
-export const TOTAL_EMPLOYEES = 10;
-export const BATCH_SIZE = 2;
+export const TOTAL_EMPLOYEES = 100;
+export const BATCH_SIZE = 50;
 
 // ============================================================================
 // SEEDING FUNCTIONS
