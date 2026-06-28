@@ -28,7 +28,6 @@ export function parseEmployee(
     'employee.maritalStatus',
     errors,
   ).toUpperCase();
-  const employeeId = readRequiredString(source, 'employeeId', 'employee.employeeId', errors);
   const department = readRequiredString(
     source,
     'department',
@@ -53,6 +52,11 @@ export function parseEmployee(
   const country = readOptionalString(source, 'country', 'employee.country', errors);
   const status = readOptionalString(source, 'status', 'employee.status', errors)?.toUpperCase();
   const avatarUrl = readOptionalString(source, 'avatarUrl', 'employee.avatarUrl', errors);
+
+  if ('employeeId' in source) {
+    errors['employee.employeeId'] =
+      'employee.employeeId must not be provided; it is generated automatically';
+  }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     errors['employee.email'] = 'employee.email must be a valid email address';
@@ -119,7 +123,6 @@ export function parseEmployee(
     dateOfBirth,
     gender,
     maritalStatus,
-    employeeId,
     department,
     designation,
     joiningDate,

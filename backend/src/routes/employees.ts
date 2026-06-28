@@ -79,7 +79,7 @@ router.post('/', async (req: Request, res: Response<unknown | ValidationErrorRes
         error: 'Employee ID already exists',
         code: 'DUPLICATE_EMPLOYEE_ID',
         details: {
-          employeeId: parseResult.value.employee.employeeId,
+          employeeId: 'generated employee ID conflict',
         },
       });
       return;

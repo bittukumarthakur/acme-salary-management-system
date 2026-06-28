@@ -5,8 +5,8 @@ jest.mock('../../lib/prisma', () => ({
   prisma: {
     $transaction: jest.fn(),
     employee: {
-      findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
     employeeSalaryStructure: {
       create: jest.fn(),
@@ -26,8 +26,8 @@ jest.mock('../../lib/prisma', () => ({
 const mockedPrisma = prisma as unknown as {
   $transaction: jest.Mock;
   employee: {
-    findUnique: jest.Mock;
     create: jest.Mock;
+    update: jest.Mock;
   };
   employeeSalaryStructure: {
     create: jest.Mock;
@@ -52,7 +52,6 @@ describe('createEmployee', () => {
       dateOfBirth: '1993-01-10',
       gender: 'FEMALE',
       maritalStatus: 'SINGLE',
-      employeeId: 'EMP00120',
       department: 'ENGINEERING',
       designation: 'Engineer',
       joiningDate: '2023-01-11',
@@ -91,7 +90,6 @@ describe('createEmployee', () => {
   });
 
   it('persists the employee with relationship mapping and returns API contract shape', async () => {
-    mockedPrisma.employee.findUnique.mockResolvedValue(null);
     mockedPrisma.department.findUnique.mockResolvedValue({
       id: 'DEPT-ENG',
       name: 'ENGINEERING',
@@ -100,9 +98,9 @@ describe('createEmployee', () => {
       id: 'DES-ENG',
       title: 'Engineer',
     });
-    mockedPrisma.employee.create.mockResolvedValue({
+    const createdEmployee = {
       id: 120,
-      employeeId: 'EMP00120',
+      employeeId: 'TMP-abc',
       name: 'Ari Example',
       email: 'ari@example.com',
       country: 'India',
@@ -116,14 +114,37 @@ describe('createEmployee', () => {
       basicSalary: 100000,
       currency: 'INR',
       avatarUrl: null,
-    });
+    };
+
+    const updatedEmployee = {
+      ...createdEmployee,
+      employeeId: 'EMP00120',
+    };
+
+    mockedPrisma.employee.create.mockResolvedValue(createdEmployee);
+    mockedPrisma.employee.update.mockResolvedValue(updatedEmployee);
 
     const result = await createEmployee(payload);
 
-    expect(mockedPrisma.employee.findUnique).toHaveBeenCalledWith({
-      where: { employeeId: 'EMP00120' },
-      select: { id: true },
-    });
+    expect(mockedPrisma.employee.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          employeeId: expect.stringMatching(/^TMP-/),
+          name: 'Ari Example',
+          departmentId: 'DEPT-ENG',
+          designationId: 'DES-ENG',
+          basicSalary: 100000,
+          country: 'India',
+          currency: 'INR',
+        }),
+      }),
+    );
+    expect(mockedPrisma.employee.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 120 },
+        data: { employeeId: 'EMP00120' },
+      }),
+    );
     expect(mockedPrisma.employeeSalaryStructure.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -140,19 +161,6 @@ describe('createEmployee', () => {
         }),
       }),
     );
-    expect(mockedPrisma.employee.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          employeeId: 'EMP00120',
-          name: 'Ari Example',
-          departmentId: 'DEPT-ENG',
-          designationId: 'DES-ENG',
-          basicSalary: 100000,
-          country: 'India',
-          currency: 'INR',
-        }),
-      }),
-    );
 
     expect(result).toMatchObject({
       employeeId: 'EMP00120',
@@ -164,13 +172,10 @@ describe('createEmployee', () => {
     });
   });
 
-  it('throws duplicate error when employee ID already exists', async () => {
-    mockedPrisma.employee.findUnique.mockResolvedValue({ id: 1 });
+  it('maps unique-constraint conflicts to duplicate employee ID error', async () => {
+    mockedPrisma.$transaction.mockRejectedValue({ code: 'P2002' });
 
     await expect(createEmployee(payload)).rejects.toThrow('EMPLOYEE_ID_ALREADY_EXISTS');
-
-    expect(mockedPrisma.employee.create).not.toHaveBeenCalled();
-    expect(mockedPrisma.employeeSalaryStructure.create).not.toHaveBeenCalled();
   });
 
   it('accepts payload when optional salary and bank fields are omitted', async () => {
@@ -181,7 +186,6 @@ describe('createEmployee', () => {
       },
     };
 
-    mockedPrisma.employee.findUnique.mockResolvedValue(null);
     mockedPrisma.department.findUnique.mockResolvedValue({
       id: 'DEPT-ENG',
       name: 'ENGINEERING',
@@ -190,9 +194,9 @@ describe('createEmployee', () => {
       id: 'DES-ENG',
       title: 'Engineer',
     });
-    mockedPrisma.employee.create.mockResolvedValue({
+    const createdEmployee = {
       id: 120,
-      employeeId: 'EMP00120',
+      employeeId: 'TMP-abc',
       name: 'Ari Example',
       email: 'ari@example.com',
       country: 'India',
@@ -206,7 +210,14 @@ describe('createEmployee', () => {
       basicSalary: 100000,
       currency: 'INR',
       avatarUrl: null,
-    });
+    };
+    const updatedEmployee = {
+      ...createdEmployee,
+      employeeId: 'EMP00120',
+    };
+
+    mockedPrisma.employee.create.mockResolvedValue(createdEmployee);
+    mockedPrisma.employee.update.mockResolvedValue(updatedEmployee);
     mockedPrisma.employeeSalaryStructure.create.mockResolvedValue({ id: 1 });
 
     const result = await createEmployee(minimalPayload);

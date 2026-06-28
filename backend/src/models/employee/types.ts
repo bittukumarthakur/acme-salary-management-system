@@ -69,7 +69,6 @@ export interface CreateEmployeeInput {
   dateOfBirth: string;
   gender: string;
   maritalStatus: string;
-  employeeId: string;
   department: string;
   designation: string;
   joiningDate: string;

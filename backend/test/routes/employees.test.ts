@@ -449,7 +449,6 @@ describe('POST /api/v1/employees', () => {
       dateOfBirth: '1993-01-10',
       gender: 'FEMALE',
       maritalStatus: 'SINGLE',
-      employeeId: 'EMP00120',
       department: 'ENGINEERING',
       designation: 'Engineer',
       joiningDate: '2023-01-11',
@@ -490,7 +489,6 @@ describe('POST /api/v1/employees', () => {
     expect(mockedCreateEmployee).toHaveBeenCalledWith(
       expect.objectContaining({
         employee: expect.objectContaining({
-          employeeId: 'EMP00120',
           designation: 'Engineer',
         }),
         salaryStructure: expect.objectContaining({
@@ -508,7 +506,6 @@ describe('POST /api/v1/employees', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('Validation failed');
     expect(res.body.details['employee.fullName']).toBeDefined();
-    expect(res.body.details['employee.employeeId']).toBeDefined();
     expect(res.body.details['salaryStructure.basicSalary']).toBeDefined();
   });
 
@@ -533,6 +530,24 @@ describe('POST /api/v1/employees', () => {
     expect(res.body.details['employee.email']).toBeDefined();
     expect(res.body.details['employee.phoneNumber']).toBeDefined();
     expect(res.body.details['salaryStructure.basicSalary']).toBeDefined();
+  });
+
+  it('returns 400 when employee.employeeId is provided in payload', async () => {
+    const res = await request(app)
+      .post('/api/v1/employees')
+      .send({
+        ...validPayload,
+        employee: {
+          ...validPayload.employee,
+          employeeId: 'EMP12345',
+        },
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details['employee.employeeId']).toBe(
+      'employee.employeeId must not be provided; it is generated automatically',
+    );
   });
 
   it('accepts payload when optional salary and bank fields are omitted', async () => {
@@ -602,7 +617,7 @@ describe('POST /api/v1/employees', () => {
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('Employee ID already exists');
     expect(res.body.code).toBe('DUPLICATE_EMPLOYEE_ID');
-    expect(res.body.details).toEqual({ employeeId: 'EMP00120' });
+    expect(res.body).toHaveProperty('details');
   });
 
   it('returns 500 with non-sensitive error contract on unexpected failures', async () => {
