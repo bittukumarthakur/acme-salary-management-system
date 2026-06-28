@@ -16,8 +16,9 @@
     "format:check": "prettier --check \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
-    "seed": "tsx src/scripts/seed.ts",
-    "seed:payroll": "tsx src/scripts/seedPayroll.ts"
+    "seed:master": "tsx scripts/seedMasterData.ts",
+    "seed:employee": "tsx scripts/seedEmployees.ts",
+    "seed:payroll": "tsx scripts/seedPayroll.ts"
   },
   "keywords": [],
   "author": "",
