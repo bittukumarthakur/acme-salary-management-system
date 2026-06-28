@@ -1,5 +1,8 @@
 import type {
+  CreateEmployeePayload,
+  CreateEmployeeResponse,
   EmployeeDepartment,
+  EmployeeListItem,
   EmployeeStatus,
   EmployeesListResponse,
 } from '../types/employees'
@@ -52,5 +55,45 @@ export async function fetchEmployeesData(
   }
 
   const result = (await response.json()) as EmployeesListResponse
+  return result
+}
+
+export async function isEmployeeIdAvailable(
+  employeeId: string,
+): Promise<boolean> {
+  const result = await fetchEmployeesData({
+    search: employeeId,
+    page: 1,
+    pageLimit: 25,
+  })
+
+  const hasMatch = result.data.some(
+    (employee: EmployeeListItem) =>
+      employee.employeeId.toLowerCase() === employeeId.toLowerCase(),
+  )
+
+  return !hasMatch
+}
+
+export async function createEmployee(
+  payload: CreateEmployeePayload,
+): Promise<CreateEmployeeResponse> {
+  const response = await fetch(EMPLOYEES_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    if (response.status === 409) {
+      throw new Error('Employee ID must be unique')
+    }
+
+    throw new Error('Failed to create employee')
+  }
+
+  const result = (await response.json()) as CreateEmployeeResponse
   return result
 }

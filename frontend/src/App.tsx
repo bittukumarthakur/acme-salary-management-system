@@ -1,5 +1,7 @@
 import { HomePage } from './pages/HomePage'
 import { EmployeesPage } from './pages/EmployeesPage'
+import { AddEmployeePage } from './pages/AddEmployeePage'
+import { EmployeeDetailsPage } from './pages/EmployeeDetailsPage'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import type { NavItem } from './constants/dashboard'
 import {
@@ -7,7 +9,6 @@ import {
   Navigate,
   Route,
   Routes,
-  useLocation,
   useNavigate,
 } from 'react-router-dom'
 
@@ -52,22 +53,10 @@ const appTheme = createTheme({
     },
   },
 })
-/**
- * Application shell.
- *
- * For now this simply renders the placeholder HomePage. Deferred providers will
- * be added here in later feature plans, for example:
- *   - MUI <ThemeProvider> + <CssBaseline>
- *   - React Query <QueryClientProvider>
- *   - React Router <RouterProvider> / routes
- */
-function AppShell() {
-  const location = useLocation()
+function useNavSelectionHandler() {
   const navigate = useNavigate()
-  const isEmployeesRoute = location.pathname === '/employees'
-  const activeNavItem: NavItem = isEmployeesRoute ? 'Employees' : 'Dashboard'
 
-  const handleSelectNavItem = (item: NavItem) => {
+  return (item: NavItem) => {
     if (item === 'Employees') {
       navigate('/employees')
       return
@@ -77,18 +66,54 @@ function AppShell() {
       navigate('/')
     }
   }
+}
 
-  return isEmployeesRoute ? (
+function DashboardRoutePage() {
+  const handleSelectNavItem = useNavSelectionHandler()
+
+  return (
+    <HomePage activeNavItem="Dashboard" onSelectNavItem={handleSelectNavItem} />
+  )
+}
+
+function EmployeesRoutePage() {
+  const navigate = useNavigate()
+  const handleSelectNavItem = useNavSelectionHandler()
+
+  return (
     <HomePage
-      activeNavItem={activeNavItem}
+      activeNavItem="Employees"
       onSelectNavItem={handleSelectNavItem}
-      mainContent={<EmployeesPage />}
       pageTitle="Employees"
+      mainContent={
+        <EmployeesPage onAddEmployeeClick={() => navigate('/employees/add')} />
+      }
     />
-  ) : (
+  )
+}
+
+function AddEmployeeRoutePage() {
+  const handleSelectNavItem = useNavSelectionHandler()
+
+  return (
     <HomePage
-      activeNavItem={activeNavItem}
+      activeNavItem="Employees"
       onSelectNavItem={handleSelectNavItem}
+      pageTitle="Add Employee"
+      mainContent={<AddEmployeePage />}
+    />
+  )
+}
+
+function EmployeeDetailsRoutePage() {
+  const handleSelectNavItem = useNavSelectionHandler()
+
+  return (
+    <HomePage
+      activeNavItem="Employees"
+      onSelectNavItem={handleSelectNavItem}
+      pageTitle="Employee Details"
+      mainContent={<EmployeeDetailsPage />}
     />
   )
 }
@@ -99,8 +124,13 @@ function App() {
       <CssBaseline />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AppShell />} />
-          <Route path="/employees" element={<AppShell />} />
+          <Route path="/" element={<DashboardRoutePage />} />
+          <Route path="/employees" element={<EmployeesRoutePage />} />
+          <Route path="/employees/add" element={<AddEmployeeRoutePage />} />
+          <Route
+            path="/employees/:employeeId"
+            element={<EmployeeDetailsRoutePage />}
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

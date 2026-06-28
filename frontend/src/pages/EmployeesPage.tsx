@@ -1,9 +1,12 @@
-import { useState } from 'react'
-import { Alert, Box, Button, Snackbar } from '@mui/material'
+import { Alert, Box, Button } from '@mui/material'
 import { useEmployeesData } from '../hooks/useEmployeesData'
 import { EmployeesFilters, EmployeesTableCard } from '../components/employees'
 
-export function EmployeesPage() {
+export interface EmployeesPageProps {
+  onAddEmployeeClick?: () => void
+}
+
+export function EmployeesPage({ onAddEmployeeClick }: EmployeesPageProps) {
   const {
     state,
     error,
@@ -18,7 +21,6 @@ export function EmployeesPage() {
     setPage,
     retry,
   } = useEmployeesData()
-  const [showAddToast, setShowAddToast] = useState(false)
 
   return (
     <Box
@@ -38,7 +40,7 @@ export function EmployeesPage() {
         onSearchTermChange={setSearchTerm}
         onDepartmentChange={setDepartment}
         onStatusChange={setStatus}
-        onAddEmployeeClick={() => setShowAddToast(true)}
+        onAddEmployeeClick={onAddEmployeeClick ?? (() => undefined)}
       />
 
       {state === 'error' && (
@@ -60,16 +62,6 @@ export function EmployeesPage() {
         isLoading={state === 'loading'}
         onPageChange={setPage}
       />
-
-      <Snackbar
-        open={showAddToast}
-        autoHideDuration={2800}
-        onClose={() => setShowAddToast(false)}
-      >
-        <Alert severity="info" onClose={() => setShowAddToast(false)}>
-          Add Employee flow will be available in a follow-up story.
-        </Alert>
-      </Snackbar>
     </Box>
   )
 }

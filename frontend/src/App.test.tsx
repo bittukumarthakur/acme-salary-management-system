@@ -83,4 +83,19 @@ describe('App', () => {
       screen.getAllByRole('heading', { name: /^employees$/i }).length,
     ).toBeGreaterThanOrEqual(1)
   })
+
+  it('navigates from Employees tab to Add Employee page', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: /^employees$/i }))
+    await user.click(screen.getByRole('button', { name: /add employee/i }))
+
+    expect(
+      screen.getAllByRole('heading', { name: /add employee/i }).length,
+    ).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getByRole('heading', { name: /personal information/i }),
+    ).toBeInTheDocument()
+  })
 })

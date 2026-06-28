@@ -48,3 +48,28 @@ export interface EmployeesListResponse {
     }
   }
 }
+
+export interface CreateEmployeePayload {
+  fullName: string
+  email: string
+  phoneNumber: string
+  dateOfBirth: string
+  gender: string
+  maritalStatus: string
+  employeeId: string
+  department: string
+  designation: string
+  joiningDate: string
+  reportingManager: string
+  employmentType: string
+  basicSalary: number
+  allowances?: number
+  bonus?: number
+  deduction?: number
+  pfApplicable: boolean
+  esiApplicable: boolean
+}
+
+export interface CreateEmployeeResponse {
+  employeeId: string
+}

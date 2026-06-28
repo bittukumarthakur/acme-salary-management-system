@@ -98,15 +98,12 @@ describe('EmployeesPage', () => {
 
   it('shows placeholder feedback when Add Employee is clicked', async () => {
     const user = userEvent.setup()
-    renderWithTheme(<EmployeesPage />)
+    const onAddEmployeeClick = vi.fn()
+    renderWithTheme(<EmployeesPage onAddEmployeeClick={onAddEmployeeClick} />)
 
     await user.click(screen.getByRole('button', { name: /add employee/i }))
 
-    expect(
-      screen.getByText(
-        'Add Employee flow will be available in a follow-up story.',
-      ),
-    ).toBeInTheDocument()
+    expect(onAddEmployeeClick).toHaveBeenCalledTimes(1)
   })
 
   it('opens row action menu with Edit and View actions', async () => {

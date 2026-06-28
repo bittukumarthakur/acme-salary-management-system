@@ -1,5 +1,7 @@
 import {
+  createEmployee,
   fetchEmployeesData,
+  isEmployeeIdAvailable,
   type EmployeesQueryParams,
 } from '../../services/employeesApi'
 
@@ -111,5 +113,74 @@ describe('employeesApi', () => {
     await expect(
       fetchEmployeesData({ page: 1, pageLimit: 10 }),
     ).rejects.toThrow('Failed to fetch employees data')
+  })
+
+  it('returns false when employee ID already exists in lookup results', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => employeesApiResponse,
+    } as Response)
+
+    const result = await isEmployeeIdAvailable('EMP00001')
+
+    expect(result).toBe(false)
+  })
+
+  it('creates employee and returns created employee ID', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ employeeId: 'EMP00120' }),
+    } as Response)
+
+    const result = await createEmployee({
+      fullName: 'Ari Example',
+      email: 'ari@example.com',
+      phoneNumber: '+919999999999',
+      dateOfBirth: '1993-01-10',
+      gender: 'FEMALE',
+      maritalStatus: 'SINGLE',
+      employeeId: 'EMP00120',
+      department: 'ENGINEERING',
+      designation: 'Engineer',
+      joiningDate: '2023-01-11',
+      reportingManager: 'Chris',
+      employmentType: 'PERMANENT',
+      basicSalary: 100000,
+      allowances: 5000,
+      bonus: 3000,
+      deduction: 1000,
+      pfApplicable: true,
+      esiApplicable: false,
+    })
+
+    expect(result.employeeId).toBe('EMP00120')
+    expect(fetchSpy.mock.calls[0][1]).toMatchObject({ method: 'POST' })
+  })
+
+  it('throws duplicate employee ID error when create API returns conflict', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+    } as Response)
+
+    await expect(
+      createEmployee({
+        fullName: 'Ari Example',
+        email: 'ari@example.com',
+        phoneNumber: '+919999999999',
+        dateOfBirth: '1993-01-10',
+        gender: 'FEMALE',
+        maritalStatus: 'SINGLE',
+        employeeId: 'EMP00120',
+        department: 'ENGINEERING',
+        designation: 'Engineer',
+        joiningDate: '2023-01-11',
+        reportingManager: 'Chris',
+        employmentType: 'PERMANENT',
+        basicSalary: 100000,
+        pfApplicable: false,
+        esiApplicable: false,
+      }),
+    ).rejects.toThrow('Employee ID must be unique')
   })
 })

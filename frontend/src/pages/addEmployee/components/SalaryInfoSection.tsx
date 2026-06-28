@@ -1,0 +1,110 @@
+import {
+  Box,
+  FormControlLabel,
+  Grid,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material'
+import type {
+  AddEmployeeFormState,
+  AddEmployeeSetField,
+  FormErrors,
+} from '../formModel'
+
+interface SalaryInfoSectionProps {
+  form: AddEmployeeFormState
+  errors: FormErrors
+  setField: AddEmployeeSetField
+}
+
+export function SalaryInfoSection({
+  form,
+  errors,
+  setField,
+}: SalaryInfoSectionProps) {
+  return (
+    <Box>
+      <Typography variant="h6" component="h2" gutterBottom>
+        Salary Information
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            label="Basic Salary"
+            variant="outlined"
+            type="number"
+            placeholder="Enter basic salary"
+            value={form.basicSalary}
+            onChange={(event) => setField('basicSalary', event.target.value)}
+            error={Boolean(errors.basicSalary)}
+            helperText={errors.basicSalary}
+            fullWidth
+            required
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            label="Allowances"
+            variant="outlined"
+            type="number"
+            placeholder="Enter allowances"
+            value={form.allowances}
+            onChange={(event) => setField('allowances', event.target.value)}
+            error={Boolean(errors.allowances)}
+            helperText={errors.allowances}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            label="Bonus"
+            variant="outlined"
+            type="number"
+            placeholder="Enter bonus"
+            value={form.bonus}
+            onChange={(event) => setField('bonus', event.target.value)}
+            error={Boolean(errors.bonus)}
+            helperText={errors.bonus}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            label="Deduction"
+            variant="outlined"
+            type="number"
+            placeholder="Enter deduction"
+            value={form.deduction}
+            onChange={(event) => setField('deduction', event.target.value)}
+            error={Boolean(errors.deduction)}
+            helperText={errors.deduction}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.pfApplicable}
+                onChange={(_, checked) => setField('pfApplicable', checked)}
+              />
+            }
+            label="PF Applicable"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.esiApplicable}
+                onChange={(_, checked) => setField('esiApplicable', checked)}
+              />
+            }
+            label="ESI Applicable"
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  )
+}
