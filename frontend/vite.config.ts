@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
     'http://localhost:8080'
 
   return {
+    envPrefix: ['VITE_', 'ACME_'],
     plugins: [react()],
     server: {
       port: Number(env.PORT) || 3000,

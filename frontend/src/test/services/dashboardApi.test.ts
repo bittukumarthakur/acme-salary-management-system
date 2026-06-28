@@ -1,5 +1,12 @@
 import { fetchDashboardData } from '../../services/dashboardApi'
 
+const expectedBaseUrl =
+  (import.meta.env.ACME_BACKEND_API_BASE_URL as string | undefined)?.trim() ??
+  ''
+const expectedEndpoint = expectedBaseUrl
+  ? `${expectedBaseUrl.replace(/\/$/, '')}/api/v1/dashboard`
+  : '/api/v1/dashboard'
+
 const dashboardApiResponse = {
   summaryCards: [
     {
@@ -61,7 +68,7 @@ describe('dashboardApi', () => {
 
       const data = await fetchDashboardData()
 
-      expect(fetchSpy).toHaveBeenCalledWith('/api/v1/dashboard')
+      expect(fetchSpy).toHaveBeenCalledWith(expectedEndpoint)
       expect(data.summaryCards).toEqual([
         {
           label: 'Total Employees',

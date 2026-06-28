@@ -38,7 +38,9 @@ interface DashboardApiResponse {
   }
 }
 
-const DASHBOARD_ENDPOINT = '/api/v1/dashboard'
+const clientEnv = import.meta.env as Record<string, string | undefined>
+const configuredApiBaseUrl = clientEnv.ACME_BACKEND_API_BASE_URL?.trim() ?? ''
+const DASHBOARD_ENDPOINT = `${configuredApiBaseUrl}/api/v1/dashboard`
 
 function formatCurrency(value: number, currency = 'INR') {
   return new Intl.NumberFormat('en-IN', {
