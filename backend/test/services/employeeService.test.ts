@@ -77,10 +77,11 @@ describe('getEmployees', () => {
     const result = await getEmployees(buildQuery());
 
     expect(result.data[0]).toMatchObject({
-      id: 1,
       employeeId: 'EMP00001',
       joiningDate: '2021-03-15',
-      status: 'Active',
+      status: 'ACTIVE',
+      fullName: 'Alice Johnson',
+      email: 'alice.johnson@acme.com',
     });
   });
 
@@ -117,8 +118,8 @@ describe('getEmployees', () => {
     const args = mockedPrisma.employee.findMany.mock.calls[0][0];
     expect(args.where).toMatchObject({
       country: 'USA',
-      department: 'Engineering',
-      designation: 'Software Engineer',
+      department: { name: 'Engineering' },
+      designation: { title: 'Software Engineer' },
       employmentType: 'Full-Time',
       status: 'Active',
     });
@@ -166,9 +167,19 @@ describe('getEmployeeById', () => {
 
     const employee = await getEmployeeById('1');
 
-    expect(mockedPrisma.employee.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(mockedPrisma.employee.findUnique).toHaveBeenCalledWith({
+      where: { id: 1 },
+      include: {
+        department: {
+          select: { id: true, name: true },
+        },
+        designation: {
+          select: { id: true, title: true },
+        },
+      },
+    });
     expect(employee).not.toBeNull();
-    expect(employee!.name).toBe('Alice Johnson');
+    expect(employee!.fullName).toBe('Alice Johnson');
   });
 
   it('finds employee by employeeId string', async () => {
@@ -178,9 +189,17 @@ describe('getEmployeeById', () => {
 
     expect(mockedPrisma.employee.findUnique).toHaveBeenCalledWith({
       where: { employeeId: 'EMP00003' },
+      include: {
+        department: {
+          select: { id: true, name: true },
+        },
+        designation: {
+          select: { id: true, title: true },
+        },
+      },
     });
     expect(employee).not.toBeNull();
-    expect(employee!.name).toBe('Priya Patel');
+    expect(employee!.fullName).toBe('Priya Patel');
   });
 
   it('returns null for non-existent numeric id', async () => {
