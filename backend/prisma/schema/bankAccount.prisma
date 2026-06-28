@@ -1,0 +1,21 @@
+/// BankAccount Model
+/// Employee bank account details for salary payments
+/// Supports multiple accounts per employee with isPrimary flag for default
+model BankAccount {
+  id                String      @id @default(cuid())
+  employeeId        Int
+  employee          Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  bankName          String
+  accountNumber     String
+  ifscCode          String
+  accountHolderName String
+  accountType       AccountType @default(SAVINGS)
+  isPrimary         Boolean     @default(true)
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([employeeId])
+  @@index([isActive])
+  @@map("bank_account")
+}

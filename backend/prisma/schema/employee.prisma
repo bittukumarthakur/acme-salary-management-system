@@ -1,0 +1,37 @@
+/// Employee Model
+/// Core employee information with Phase 1 relationships
+model Employee {
+  id                 Int                      @id @default(autoincrement())
+  employeeId         String                   @unique
+  name               String
+  email              String                   @unique
+  phoneNumber        String?
+  dateOfBirth        DateTime?
+  gender             Gender?
+  country            String
+  departmentId       String
+  department         Department               @relation("EmployeeDepartment", fields: [departmentId], references: [id])
+  designationId      String
+  designation        Designation              @relation(fields: [designationId], references: [id])
+  employmentType     EmploymentType           @default(PERMANENT)
+  joiningDate        DateTime
+  status             EmployeeStatus           @default(ACTIVE)
+  avatarUrl          String?
+  basicSalary        Float
+  currency           String                   @default("INR")
+  salaryStructures   EmployeeSalaryStructure[]
+  salaryComponents   EmployeeSalaryComponent[]
+  bankAccounts       BankAccount[]
+  managedDepartments Department[]             @relation("DepartmentManager")
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@index([departmentId])
+  @@index([designationId])
+  @@index([status])
+  @@index([name])
+  @@index([email])
+  @@index([employeeId])
+  @@index([country])
+  @@map("employee")
+}

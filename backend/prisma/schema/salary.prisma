@@ -1,0 +1,59 @@
+/// SalaryComponent Model
+/// Catalog of salary components (DA, HRA, IncomeTax, etc.)
+model SalaryComponent {
+  id               String                    @id @default(cuid())
+  name             String                    @unique
+  type             ComponentType
+  calculationType  CalculationType
+  displayOrder     Int                       @default(0)
+  isActive         Boolean                   @default(true)
+  employeeMappings EmployeeSalaryComponent[]
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
+  @@index([name])
+  @@index([type])
+  @@index([isActive])
+  @@map("salary_component")
+}
+
+/// EmployeeSalaryStructure Model
+/// Tracks base salary and effective dates per employee
+model EmployeeSalaryStructure {
+  id            Int      @id @default(autoincrement())
+  employeeId    Int
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  basicSalary   Float
+  effectiveDate DateTime
+  endDate       DateTime?
+  currency      String   @default("INR")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([effectiveDate])
+  @@index([endDate])
+  @@map("employee_salary_structure")
+}
+
+/// EmployeeSalaryComponent Model
+/// Maps individual salary component values to employees
+model EmployeeSalaryComponent {
+  id                Int             @id @default(autoincrement())
+  employeeId        Int
+  employee          Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  salaryComponentId String
+  component         SalaryComponent @relation(fields: [salaryComponentId], references: [id], onDelete: Cascade)
+  amount            Float
+  effectiveDate     DateTime
+  endDate           DateTime?
+  remarks           String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([employeeId])
+  @@index([salaryComponentId])
+  @@index([effectiveDate])
+  @@unique([employeeId, salaryComponentId, effectiveDate])
+  @@map("employee_salary_component")
+}

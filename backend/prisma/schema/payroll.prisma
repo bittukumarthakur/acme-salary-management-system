@@ -1,0 +1,20 @@
+/// Payroll Model
+/// Aggregate monthly payroll data for all employees
+model Payroll {
+  id              Int      @id @default(autoincrement())
+  payrollId       String   @unique
+  payrollPeriod   String
+  payoutDate      DateTime
+  status          String   @default("Completed")
+  totalAmount     Float
+  totalDeductions Float
+  netAmount       Float
+  currency        String   @default("INR")
+  country         String   @default("IN")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([payrollId])
+  @@index([payrollPeriod])
+  @@map("payroll")
+}

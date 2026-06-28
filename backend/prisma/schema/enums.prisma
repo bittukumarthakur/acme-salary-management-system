@@ -1,0 +1,44 @@
+/// Employee Status Enum
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+/// Employment Type Enum
+enum EmploymentType {
+  PERMANENT
+  CONTRACT
+  TEMPORARY
+  INTERN
+}
+
+/// Gender Enum
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+/// Salary Component Type
+enum ComponentType {
+  EARNING
+  ALLOWANCE
+  DEDUCTION
+  TAX
+}
+
+/// Component Calculation Method
+enum CalculationType {
+  FIXED
+  PERCENTAGE
+  FORMULA
+}
+
+/// Bank Account Type
+enum AccountType {
+  SAVINGS
+  CURRENT
+  NRI
+}
