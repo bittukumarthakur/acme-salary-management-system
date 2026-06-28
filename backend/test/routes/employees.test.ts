@@ -370,8 +370,17 @@ describe('GET /api/v1/employees', () => {
   });
 
   describe('AC6: Observability', () => {
+    let consoleErrorSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    });
+
+    afterEach(() => {
+      consoleErrorSpy.mockRestore();
+    });
+
     it('logs errors when service throws', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       mockedGetEmployees.mockRejectedValue(new Error('Database error'));
 
       const res = await request(app).get('/api/v1/employees');
@@ -381,7 +390,6 @@ describe('GET /api/v1/employees', () => {
         expect.stringContaining('Failed to fetch employees'),
         expect.any(Error)
       );
-      consoleErrorSpy.mockRestore();
     });
 
     it('returns 500 error response for service failures', async () => {
