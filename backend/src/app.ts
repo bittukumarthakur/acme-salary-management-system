@@ -12,7 +12,7 @@ export const createApp = () => {
     res.json({ status: 'ok' });
   });
 
-  app.use('/api/employees', employeesRouter);
+  app.use('/api/v1/employees', employeesRouter);
   app.use('/api/v1/dashboard', dashboardRouter);
 
   return app;

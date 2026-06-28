@@ -1,9 +1,9 @@
 import type { EmployeeRow } from '../../src/models/employee';
 
 /**
- * Raw DB-row fixtures. Validated against `EmployeeRow` via `satisfies`, so the
- * shape (including `joiningDate` as a real `Date`) is type-checked. No JSON
- * hydration needed.
+ * Raw DB-row fixtures (Phase 1 updated).
+ * Validated against `EmployeeRow` via `satisfies`, so the shape is type-checked.
+ * Includes related objects from Department and Designation tables.
  */
 export const aliceRow = {
   id: 1,
@@ -11,11 +11,22 @@ export const aliceRow = {
   name: 'Alice Johnson',
   email: 'alice.johnson@acme.com',
   country: 'USA',
-  department: 'Engineering',
-  designation: 'Software Engineer',
+  departmentId: 'DEPT-ENG',
+  department: {
+    id: 'DEPT-ENG',
+    name: 'ENGINEERING',
+  },
+  designationId: 'DES-SD',
+  designation: {
+    id: 'DES-SD',
+    title: 'SENIOR_DEVELOPER',
+  },
   employmentType: 'Full-Time',
   joiningDate: new Date('2021-03-15T00:00:00.000Z'),
-  status: 'Active',
+  status: 'ACTIVE',
+  basicSalary: 60000,
+  currency: 'INR',
+  avatarUrl: 'https://example.com/avatars/emp001.png',
 } satisfies EmployeeRow;
 
 export const priyaRow = {
@@ -24,10 +35,21 @@ export const priyaRow = {
   name: 'Priya Patel',
   email: 'priya.patel@acme.com',
   country: 'India',
-  department: 'Engineering',
-  designation: 'Senior Software Engineer',
+  departmentId: 'DEPT-ENG',
+  department: {
+    id: 'DEPT-ENG',
+    name: 'ENGINEERING',
+  },
+  designationId: 'DES-SD',
+  designation: {
+    id: 'DES-SD',
+    title: 'SENIOR_DEVELOPER',
+  },
   employmentType: 'Full-Time',
   joiningDate: new Date('2019-11-20T00:00:00.000Z'),
-  status: 'Active',
+  status: 'ACTIVE',
+  basicSalary: 70000,
+  currency: 'INR',
+  avatarUrl: 'https://example.com/avatars/emp003.png',
 } satisfies EmployeeRow;
 

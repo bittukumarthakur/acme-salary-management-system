@@ -6,42 +6,42 @@
  */
 
 export enum CountryCode {
-  IN = 'IN',
-  US = 'US',
-  GB = 'GB',
-  DE = 'DE',
-  FR = 'FR',
-  CA = 'CA',
-  AU = 'AU',
-  SG = 'SG',
-  JP = 'JP',
-  BR = 'BR',
+  In = 'IN',
+  Us = 'US',
+  Gb = 'GB',
+  De = 'DE',
+  Fr = 'FR',
+  Ca = 'CA',
+  Au = 'AU',
+  Sg = 'SG',
+  Jp = 'JP',
+  Br = 'BR',
 }
 
 export enum CurrencyCode {
-  INR = 'INR',
-  USD = 'USD',
-  GBP = 'GBP',
-  EUR = 'EUR',
-  CAD = 'CAD',
-  AUD = 'AUD',
-  SGD = 'SGD',
-  JPY = 'JPY',
-  BRL = 'BRL',
+  Inr = 'INR',
+  Usd = 'USD',
+  Gbp = 'GBP',
+  Eur = 'EUR',
+  Cad = 'CAD',
+  Aud = 'AUD',
+  Sgd = 'SGD',
+  Jpy = 'JPY',
+  Brl = 'BRL',
 }
 
 export enum SummaryCardLabelKey {
-  TOTAL_EMPLOYEES = 'TOTAL_EMPLOYEES',
-  PAYROLL_PROCESSED = 'PAYROLL_PROCESSED',
-  TOTAL_DEDUCTIONS = 'TOTAL_DEDUCTIONS',
-  NET_SALARY_PAID = 'NET_SALARY_PAID',
+  TotalEmployees = 'TOTAL_EMPLOYEES',
+  PayrollProcessed = 'PAYROLL_PROCESSED',
+  TotalDeductions = 'TOTAL_DEDUCTIONS',
+  NetSalaryPaid = 'NET_SALARY_PAID',
 }
 
 export enum PayrollStatus {
-  COMPLETED = 'COMPLETED',
-  PENDING = 'PENDING',
-  FAILED = 'FAILED',
-  DRAFT = 'DRAFT',
+  Completed = 'COMPLETED',
+  Pending = 'PENDING',
+  Failed = 'FAILED',
+  Draft = 'DRAFT',
 }
 
 export interface SummaryCard {

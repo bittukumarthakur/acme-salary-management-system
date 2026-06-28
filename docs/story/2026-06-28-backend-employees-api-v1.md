@@ -133,6 +133,131 @@ A frontend story for Employees tab list view already defines the contract shape 
 ## Screenshots / Mockups
 - No backend-specific screenshot provided for this story.
 
+## Phase 1 Database Schema - Tables Required for This API
+
+### Tables Needed (7 Total)
+
+This API requires the following Phase 1 tables to support the response contract:
+
+#### 1. **Employee** (UPDATE existing)
+**Fields needed for API**:
+- employeeId, fullName, email, department, designation, basicSalary, currency, status, joiningDate, avatarUrl, country, employmentType, bankAccountId
+
+**Why**: Core employee information required in `data[]` response array
+
+---
+
+#### 2. **Department** (NEW)
+**Purpose**: Lookup table for department names (ENGINEERING, MARKETING, FINANCE, HR, SALES)
+
+**Fields**:
+- id (PK) - DEPT-ENG, DEPT-MKT, etc.
+- name - Human-readable department name
+- description - Department description
+- managerEmployeeId - FK to Employee (department manager)
+- createdAt, updatedAt - Timestamps
+
+**Why**: `Employee.department` FK enables filtering by department and standardized enum values
+
+---
+
+#### 3. **Designation** (NEW)
+**Purpose**: Lookup table for job titles (SENIOR_DEVELOPER, MARKETING_MANAGER, ACCOUNTANT, HR_EXECUTIVE, UI_UX_DESIGNER, SALES_EXECUTIVE)
+
+**Fields**:
+- id (PK) - DES-SD, DES-MM, etc.
+- title - Human-readable designation name
+- description - Role responsibilities
+- level - Seniority level
+- createdAt, updatedAt - Timestamps
+
+**Why**: `Employee.designation` FK enables standardized job titles in response
+
+---
+
+#### 4. **SalaryComponent** (NEW)
+**Purpose**: Catalog of salary components (DA, HRA, IncomeTax, Conveyance, etc.)
+
+**Fields**:
+- id (PK) - ALLOW-DA, DEDUCTION-TAX, etc.
+- name - Component name
+- type - EARNING, ALLOWANCE, DEDUCTION, TAX
+- calculationType - FIXED, PERCENTAGE, FORMULA
+- displayOrder - UI rendering order
+- isActive - Active/inactive flag
+- createdAt - Timestamp
+
+**Why**: Foundation for salary component mapping and flexible salary structures
+
+---
+
+#### 5. **EmployeeSalaryStructure** (NEW)
+**Purpose**: Tracks base salary and effective dates per employee
+
+**Fields**:
+- id (PK)
+- employeeId (FK) - Which employee
+- baseSalary - Monthly base salary
+- effectiveDate - When this salary starts
+- endDate - When it ends (NULL = current)
+- currency - Salary currency (default: INR)
+- createdAt, updatedAt - Timestamps
+
+**Why**: Enables salary history tracking and conversion-ready salary values for API response
+
+---
+
+#### 6. **EmployeeSalaryComponent** (NEW)
+**Purpose**: Maps individual salary component values to each employee
+
+**Fields**:
+- id (PK)
+- employeeId (FK) - Which employee
+- salaryComponentId (FK) - DA, HRA, IncomeTax, etc.
+- amount - Component amount or percentage
+- effectiveDate - When component applies
+- endDate - When it stops (NULL = ongoing)
+- remarks - Special notes
+- createdAt - Timestamp
+
+**Why**: Supports flexible salary structures where different employees get different allowances/deductions
+
+---
+
+#### 7. **BankAccount** (NEW)
+**Purpose**: Employee bank account details for payment processing
+
+**Fields**:
+- id (PK)
+- employeeId (FK) - Which employee
+- bankName - Bank name (HDFC, ICICI, AXIS)
+- accountNumber - Bank account number
+- ifscCode - IFSC routing code
+- accountHolderName - Name on account
+- accountType - SAVINGS, CURRENT, NRI
+- isPrimary - Primary payment account flag
+- isActive - Active/inactive flag
+- createdAt, updatedAt - Timestamps
+
+**Why**: Supports payment processing and employee account information
+
+---
+
+### Schema Organization
+
+Each table definition is maintained in a separate file under `backend/prisma/schemas/`:
+- `employee.prisma` - Core employee model
+- `department.prisma` - Department lookup
+- `designation.prisma` - Designation lookup
+- `salaryComponent.prisma` - Salary components catalog
+- `employeeSalaryStructure.prisma` - Employee salary history
+- `employeeSalaryComponent.prisma` - Employee component mapping
+- `bankAccount.prisma` - Bank account details
+
+All models are combined in `backend/prisma/schema.prisma` with proper relationships configured.
+
+---
+
 ## Open Questions
 - Should `targetCurrencyCode` be optional with a deterministic default, or required for every request?
 - What is the canonical standardized error schema for `400` and `500` responses in this service?

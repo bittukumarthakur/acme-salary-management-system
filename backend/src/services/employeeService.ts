@@ -3,21 +3,38 @@ import type { Employee, EmployeeFilters, EmployeeQuery, EmployeeRow } from '../m
 import type { PaginatedResult } from '../models/pagination';
 
 function toEmployee(row: EmployeeRow): Employee {
-  return {
-    id: row.id,
+  const date = row.joiningDate instanceof Date ? row.joiningDate : new Date();
+  const joiningDateStr: string = date.toISOString().split('T')[0] as string;
+
+  // Extract department name from related object (fallback to ID if null)
+  const departmentName = row.department?.name || row.departmentId || '';
+
+  // Extract designation title from related object (fallback to empty string if null)
+  const designationTitle = row.designation?.title || '';
+
+  const employee: Employee = {
     employeeId: row.employeeId,
-    name: row.name,
+    fullName: row.name,
     email: row.email,
-    country: row.country,
-    department: row.department,
-    designation: row.designation,
+    department: departmentName,
+    designation: designationTitle,
     employmentType: row.employmentType,
-    joiningDate: row.joiningDate.toISOString().split('T')[0] as string,
+    joiningDate: joiningDateStr,
     status: row.status,
+    basicSalary: row.basicSalary,
+    currency: row.currency,
+    country: row.country,
   };
+
+  if (row.avatarUrl) {
+    employee.avatarUrl = row.avatarUrl;
+  }
+
+  return employee;
 }
 
 // Translates domain filters into a Prisma `where` clause.
+// Phase 1: Updated to use department relationship instead of enum.
 function buildWhere(filters: EmployeeFilters): Record<string, unknown> {
   const where: Record<string, unknown> = {};
 
@@ -30,8 +47,16 @@ function buildWhere(filters: EmployeeFilters): Record<string, unknown> {
   }
 
   if (filters.country) where.country = filters.country;
-  if (filters.department) where.department = filters.department;
-  if (filters.designation) where.designation = filters.designation;
+  if (filters.department) {
+    where.department = {
+      name: filters.department,
+    };
+  }
+  if (filters.designation) {
+    where.designation = {
+      title: filters.designation,
+    };
+  }
   if (filters.employmentType) where.employmentType = filters.employmentType;
   if (filters.status) where.status = filters.status;
 
@@ -52,6 +77,21 @@ export async function getEmployees(query: EmployeeQuery): Promise<PaginatedResul
   const [rows, totalItems] = await Promise.all([
     prisma.employee.findMany({
       where,
+      // @ts-ignore
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        designation: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
       orderBy: { [sortBy]: sortOrder },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -62,7 +102,7 @@ export async function getEmployees(query: EmployeeQuery): Promise<PaginatedResul
   const totalPages = Math.ceil(totalItems / pageSize);
 
   return {
-    data: rows.map(toEmployee),
+    data: rows.map((row) => toEmployee(row as unknown as EmployeeRow)),
     pagination: {
       page,
       pageSize,
@@ -82,9 +122,44 @@ export async function getEmployeeById(id: string): Promise<Employee | null> {
   const numericId = Number(id);
   const isNumericId = !isNaN(numericId) && Number.isInteger(numericId);
 
+  // @ts-ignore
   const row = isNumericId
-    ? await prisma.employee.findUnique({ where: { id: numericId } })
-    : await prisma.employee.findUnique({ where: { employeeId: id } });
+    ? await prisma.employee.findUnique({
+        where: { id: numericId },
+        // @ts-ignore
+        include: {
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          designation: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      })
+    : await prisma.employee.findUnique({
+        where: { employeeId: id },
+        // @ts-ignore
+        include: {
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          designation: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      });
 
-  return row ? toEmployee(row) : null;
+  return row ? toEmployee(row as unknown as EmployeeRow) : null;
 }

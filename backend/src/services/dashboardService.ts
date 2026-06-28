@@ -7,16 +7,16 @@ export const DEFAULT_LIMIT = 10;
 export const MAX_LIMIT = 100;
 
 const CURRENCY_MAP: Record<string, { currency: CurrencyCode; rate: number }> = {
-  IN: { currency: CurrencyCode.INR, rate: 1 },
-  US: { currency: CurrencyCode.USD, rate: 0.012 },
-  GB: { currency: CurrencyCode.GBP, rate: 0.0097 },
-  DE: { currency: CurrencyCode.EUR, rate: 0.011 },
-  FR: { currency: CurrencyCode.EUR, rate: 0.011 },
-  CA: { currency: CurrencyCode.CAD, rate: 0.016 },
-  AU: { currency: CurrencyCode.AUD, rate: 0.018 },
-  SG: { currency: CurrencyCode.SGD, rate: 0.016 },
-  JP: { currency: CurrencyCode.JPY, rate: 1.78 },
-  BR: { currency: CurrencyCode.BRL, rate: 0.066 },
+  IN: { currency: CurrencyCode.Inr, rate: 1 },
+  US: { currency: CurrencyCode.Usd, rate: 0.012 },
+  GB: { currency: CurrencyCode.Gbp, rate: 0.0097 },
+  DE: { currency: CurrencyCode.Eur, rate: 0.011 },
+  FR: { currency: CurrencyCode.Eur, rate: 0.011 },
+  CA: { currency: CurrencyCode.Cad, rate: 0.016 },
+  AU: { currency: CurrencyCode.Aud, rate: 0.018 },
+  SG: { currency: CurrencyCode.Sgd, rate: 0.016 },
+  JP: { currency: CurrencyCode.Jpy, rate: 1.78 },
+  BR: { currency: CurrencyCode.Brl, rate: 0.066 },
 };
 
 export const SUPPORTED_COUNTRIES = new Set(Object.keys(CURRENCY_MAP));
@@ -102,19 +102,19 @@ export async function getDashboard(query: DashboardQuery): Promise<DashboardResp
 
   const summaryCards = [
     {
-      labelKey: SummaryCardLabelKey.TOTAL_EMPLOYEES,
+      labelKey: SummaryCardLabelKey.TotalEmployees,
       value: totalEmployeesCount,
     },
     {
-      labelKey: SummaryCardLabelKey.PAYROLL_PROCESSED,
+      labelKey: SummaryCardLabelKey.PayrollProcessed,
       value: latestPayroll ? convert(latestPayroll.totalAmount) : 0,
     },
     {
-      labelKey: SummaryCardLabelKey.TOTAL_DEDUCTIONS,
+      labelKey: SummaryCardLabelKey.TotalDeductions,
       value: latestPayroll ? convert(latestPayroll.totalDeductions) : 0,
     },
     {
-      labelKey: SummaryCardLabelKey.NET_SALARY_PAID,
+      labelKey: SummaryCardLabelKey.NetSalaryPaid,
       value: latestPayroll ? convert(latestPayroll.netAmount) : 0,
     },
   ];
@@ -123,7 +123,7 @@ export async function getDashboard(query: DashboardQuery): Promise<DashboardResp
     id: p.payrollId,
     payrollPeriod: p.payrollPeriod,
     payoutDate: p.payoutDate.toISOString().split('T')[0] as string,
-    status: PayrollStatus.COMPLETED,
+    status: PayrollStatus.Completed,
     totalAmount: convert(p.totalAmount),
     totalDeductions: convert(p.totalDeductions),
     netAmount: convert(p.netAmount),

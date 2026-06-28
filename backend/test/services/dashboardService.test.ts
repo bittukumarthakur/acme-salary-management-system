@@ -34,10 +34,10 @@ describe('getDashboard', () => {
       const result = await getDashboard({ countryCode: 'IN', limit: 10 });
 
       expect(result.summaryCards).toHaveLength(4);
-      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.TOTAL_EMPLOYEES);
-      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.PAYROLL_PROCESSED);
-      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.TOTAL_DEDUCTIONS);
-      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.NET_SALARY_PAID);
+      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.TotalEmployees);
+      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.PayrollProcessed);
+      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.TotalDeductions);
+      expect(result.summaryCards.map((c) => c.labelKey)).toContain(SummaryCardLabelKey.NetSalaryPaid);
     });
 
     it('returns summaryCards with total employee count and payroll amounts from latest payroll month', async () => {
@@ -52,19 +52,19 @@ describe('getDashboard', () => {
       const result = await getDashboard({ countryCode: 'IN', limit: 10 });
 
       expect(result.summaryCards[0]).toMatchObject({
-        labelKey: SummaryCardLabelKey.TOTAL_EMPLOYEES,
+        labelKey: SummaryCardLabelKey.TotalEmployees,
         value: 120,
       });
       expect(result.summaryCards[1]).toMatchObject({
-        labelKey: SummaryCardLabelKey.PAYROLL_PROCESSED,
+        labelKey: SummaryCardLabelKey.PayrollProcessed,
         value: payrollRows[0]!.totalAmount,
       });
       expect(result.summaryCards[2]).toMatchObject({
-        labelKey: SummaryCardLabelKey.TOTAL_DEDUCTIONS,
+        labelKey: SummaryCardLabelKey.TotalDeductions,
         value: payrollRows[0]!.totalDeductions,
       });
       expect(result.summaryCards[3]).toMatchObject({
-        labelKey: SummaryCardLabelKey.NET_SALARY_PAID,
+        labelKey: SummaryCardLabelKey.NetSalaryPaid,
         value: payrollRows[0]!.netAmount,
       });
       expect(result.meta.employeeTrend).toEqual({
@@ -126,7 +126,7 @@ describe('getDashboard', () => {
       expect(typeof result.recentPayrolls[0]!.totalAmount).toBe('number');
       expect(typeof result.recentPayrolls[0]!.totalDeductions).toBe('number');
       expect(typeof result.recentPayrolls[0]!.netAmount).toBe('number');
-      expect(result.recentPayrolls[0]!.status).toBe(PayrollStatus.COMPLETED);
+      expect(result.recentPayrolls[0]!.status).toBe(PayrollStatus.Completed);
     });
 
     it('returns ISO date string for payoutDate in recentPayrolls', async () => {

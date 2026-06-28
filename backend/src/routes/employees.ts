@@ -1,38 +1,49 @@
+/**
+ * API routes for employees endpoint.
+ * GET /api/v1/employees - List employees with filtering, pagination, and currency conversion.
+ */
+
 import { Router, Request, Response } from 'express';
-import { getEmployeeById, getEmployees } from '../services/employeeService';
-import { parseEmployeeQuery } from '../services/employeeQuery';
+import { getEmployees } from '../services/employeesService';
+import { parseEmployeeQuery } from '../utils/employeesQuery';
+import type { ErrorResponse } from '../models/employee/types';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
-  const parsed = parseEmployeeQuery(req.query as Record<string, unknown>);
-  if (!parsed.ok) {
-    res.status(400).json({ error: parsed.error });
-    return;
-  }
-
+/**
+ * GET /api/v1/employees
+ * Lists employees with optional filtering, pagination, and salary currency conversion.
+ *
+ * Query params:
+ * - search: string (optional) - Search by name, email, or employeeId
+ * - department: string (optional) - Department enum filter
+ * - status: string (optional) - Employment status enum filter
+ * - targetCurrencyCode: string (optional, default: 'INR') - Currency for salary conversion
+ * - page: number (optional, default: 1) - Page number (1-based)
+ * - pageLimit: number (optional, default: 10) - Results per page (1-100)
+ *
+ * Success response: 200 with { data, meta, filters }
+ * Error response: 400 for invalid params, 500 for server errors
+ */
+router.get('/', async (req: Request, res: Response<any | ErrorResponse>) => {
   try {
-    const result = await getEmployees(parsed.value);
-    res.json(result);
-  } catch (error) {
-    console.error('Failed to fetch employees:', error);
-    res.status(500).json({ error: 'Failed to fetch employees' });
-  }
-});
-
-router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
-  try {
-    const employee = await getEmployeeById(req.params.id);
-
-    if (!employee) {
-      res.status(404).json({ error: 'Employee not found' });
+    // Parse and validate query parameters
+    const parseResult = parseEmployeeQuery(req.query as Record<string, unknown>);
+    if (!parseResult.ok) {
+      res.status(400).json({ error: parseResult.error });
       return;
     }
 
-    res.json({ data: employee });
+    // Fetch data from service
+    const result = await getEmployees(parseResult.value);
+    res.json(result);
   } catch (error) {
-    console.error('Failed to fetch employee:', error);
-    res.status(500).json({ error: 'Failed to fetch employee' });
+    // Log error and return 500
+    console.error('Failed to fetch employees:', error);
+    const errorResponse: ErrorResponse = {
+      error: 'Failed to fetch employees',
+    };
+    res.status(500).json(errorResponse);
   }
 });
 
