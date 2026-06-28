@@ -85,9 +85,9 @@ export function parseBankAccounts(
       accountNumber,
       ifscCode,
       accountHolderName,
-      accountType,
-      isPrimary,
-      isActive,
+      ...(accountType !== undefined ? { accountType } : {}),
+      ...(isPrimary !== undefined ? { isPrimary } : {}),
+      ...(isActive !== undefined ? { isActive } : {}),
     });
   });
 

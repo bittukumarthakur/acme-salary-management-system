@@ -75,10 +75,10 @@ export function parseSalaryStructure(
 
   return {
     basicSalary,
-    currency: currency?.toUpperCase(),
-    effectiveDate,
-    endDate,
-    pfApplicable,
-    esiApplicable,
+    ...(currency ? { currency: currency.toUpperCase() } : {}),
+    ...(effectiveDate !== undefined ? { effectiveDate } : {}),
+    ...(endDate !== undefined ? { endDate } : {}),
+    ...(pfApplicable !== undefined ? { pfApplicable } : {}),
+    ...(esiApplicable !== undefined ? { esiApplicable } : {}),
   };
 }

@@ -126,10 +126,10 @@ export function parseEmployee(
     department,
     designation,
     joiningDate,
-    reportingManagerEmployeeId,
     employmentType,
-    country,
-    status,
-    avatarUrl,
+    ...(reportingManagerEmployeeId !== undefined ? { reportingManagerEmployeeId } : {}),
+    ...(country !== undefined ? { country } : {}),
+    ...(status !== undefined ? { status } : {}),
+    ...(avatarUrl !== undefined ? { avatarUrl } : {}),
   };
 }
