@@ -5,8 +5,14 @@
 
 import { prisma } from '../../lib/prisma';
 import type { Employee, EmployeeRow } from '../models/employee';
-import type { EmployeeQuery, EmployeeListResponse } from '../models/employee/types';
+import type {
+  CreateEmployeePayload,
+  EmployeeListResponse,
+  EmployeeQuery,
+} from '../models/employee/types';
 import { convertSalary, getConversionRate } from '../utils/currencyConversion';
+
+export const DUPLICATE_EMPLOYEE_ID_ERROR = 'EMPLOYEE_ID_ALREADY_EXISTS';
 
 /**
  * Maps a database employee row to the API contract shape.
@@ -59,7 +65,7 @@ function toEmployee(
  * Uses new Phase 1 schema relationships (departmentId FK, status enum).
  */
 function buildWhere(query: EmployeeQuery) {
-  const where: Record<string, any> = {};
+  const where: Record<string, unknown> = {};
 
   // Search filter - matches name, email, or employeeId
   if (query.search) {
@@ -104,7 +110,7 @@ export async function getEmployees(query: EmployeeQuery): Promise<EmployeeListRe
   const [rows, totalRecords] = await Promise.all([
     prisma.employee.findMany({
       where,
-      // @ts-ignore
+      // @ts-expect-error Prisma generated include typing differs from local row type usage.
       include: {
         department: {
           select: {
@@ -160,4 +166,125 @@ export async function getEmployees(query: EmployeeQuery): Promise<EmployeeListRe
       },
     },
   };
+}
+
+/**
+ * Creates a new employee record from a validated create payload.
+ * Throws `DUPLICATE_EMPLOYEE_ID_ERROR` when employeeId already exists.
+ */
+export async function createEmployee(payload: CreateEmployeePayload): Promise<Employee> {
+  const { employee, salaryStructure, bankAccounts } = payload;
+
+  const existingEmployee = await prisma.employee.findUnique({
+    where: { employeeId: employee.employeeId },
+    select: { id: true },
+  });
+
+  if (existingEmployee) {
+    throw new Error(DUPLICATE_EMPLOYEE_ID_ERROR);
+  }
+
+  let row: unknown;
+
+  try {
+    row = await prisma.$transaction(async (tx) => {
+      const department = await tx.department.findUnique({
+        where: { name: employee.department },
+        select: { id: true, name: true },
+      });
+
+      if (!department) {
+        throw new Error('INVALID_DEPARTMENT');
+      }
+
+      const designation = await tx.designation.upsert({
+        where: { title: employee.designation },
+        update: {},
+        create: {
+          title: employee.designation,
+        },
+        select: { id: true, title: true },
+      });
+
+      // @ts-expect-error Prisma generated enums are compatible with validated string values.
+      const createdEmployee = await tx.employee.create({
+        data: {
+          employeeId: employee.employeeId,
+          name: employee.fullName,
+          email: employee.email,
+          phoneNumber: employee.phoneNumber,
+          dateOfBirth: new Date(employee.dateOfBirth),
+          gender: employee.gender,
+          country: employee.country ?? 'India',
+          departmentId: department.id,
+          designationId: designation.id,
+          employmentType: employee.employmentType,
+          joiningDate: new Date(employee.joiningDate),
+          basicSalary: salaryStructure.basicSalary,
+          currency: salaryStructure.currency ?? 'INR',
+          status: employee.status ?? 'ACTIVE',
+          avatarUrl: employee.avatarUrl,
+        },
+        // @ts-expect-error Prisma generated include typing differs from local row type usage.
+        include: {
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          designation: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      });
+
+      await tx.employeeSalaryStructure.create({
+        data: {
+          employeeId: createdEmployee.id,
+          basicSalary: salaryStructure.basicSalary,
+          effectiveDate: new Date(salaryStructure.effectiveDate ?? employee.joiningDate),
+          endDate: salaryStructure.endDate ? new Date(salaryStructure.endDate) : null,
+          currency: salaryStructure.currency ?? 'INR',
+        },
+      });
+
+      if (bankAccounts && bankAccounts.length > 0) {
+        for (const bankAccount of bankAccounts) {
+          // @ts-expect-error Prisma enum typing for accountType differs from validated payload string.
+          await tx.bankAccount.create({
+            data: {
+              employeeId: createdEmployee.id,
+              bankName: bankAccount.bankName,
+              accountNumber: bankAccount.accountNumber,
+              ifscCode: bankAccount.ifscCode,
+              accountHolderName: bankAccount.accountHolderName,
+              accountType: bankAccount.accountType ?? 'SAVINGS',
+              isPrimary: bankAccount.isPrimary ?? true,
+              isActive: bankAccount.isActive ?? true,
+            },
+          });
+        }
+      }
+
+      return createdEmployee;
+    });
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: string }).code === 'P2002'
+    ) {
+      throw new Error(DUPLICATE_EMPLOYEE_ID_ERROR, { cause: error });
+    }
+
+    throw error;
+  }
+
+  const { employee: apiEmployee } = toEmployee(row as unknown as EmployeeRow, 'INR');
+  return apiEmployee;
 }

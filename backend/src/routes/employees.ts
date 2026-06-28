@@ -4,9 +4,14 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { getEmployees } from '../services/employeesService';
+import {
+  createEmployee,
+  DUPLICATE_EMPLOYEE_ID_ERROR,
+  getEmployees,
+} from '../services/employeesService';
 import { parseEmployeeQuery } from '../utils/employeesQuery';
-import type { ErrorResponse } from '../models/employee/types';
+import { parseCreateEmployeePayload } from '../utils/createEmployeePayload';
+import type { ErrorResponse, ValidationErrorResponse } from '../models/employee/types';
 
 const router = Router();
 
@@ -25,7 +30,7 @@ const router = Router();
  * Success response: 200 with { data, meta, filters }
  * Error response: 400 for invalid params, 500 for server errors
  */
-router.get('/', async (req: Request, res: Response<any | ErrorResponse>) => {
+router.get('/', async (req: Request, res: Response<unknown | ErrorResponse>) => {
   try {
     // Parse and validate query parameters
     const parseResult = parseEmployeeQuery(req.query as Record<string, unknown>);
@@ -44,6 +49,44 @@ router.get('/', async (req: Request, res: Response<any | ErrorResponse>) => {
       error: 'Failed to fetch employees',
     };
     res.status(500).json(errorResponse);
+  }
+});
+
+/**
+ * POST /api/v1/employees
+ * Creates a new employee from Add Employee form payload.
+ */
+router.post('/', async (req: Request, res: Response<unknown | ValidationErrorResponse>) => {
+  const parseResult = parseCreateEmployeePayload(req.body);
+  if (!parseResult.ok) {
+    res.status(400).json({
+      error: parseResult.error,
+      details: parseResult.details,
+    });
+    return;
+  }
+
+  try {
+    const createdEmployee = await createEmployee(parseResult.value);
+    res.status(201).json(createdEmployee);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message === DUPLICATE_EMPLOYEE_ID_ERROR ||
+        error.message === 'EMPLOYEE_ID_ALREADY_EXISTS')
+    ) {
+      res.status(409).json({
+        error: 'Employee ID already exists',
+        code: 'DUPLICATE_EMPLOYEE_ID',
+        details: {
+          employeeId: parseResult.value.employee.employeeId,
+        },
+      });
+      return;
+    }
+
+    console.error('Failed to create employee:', error);
+    res.status(500).json({ error: 'Failed to create employee' });
   }
 });
 

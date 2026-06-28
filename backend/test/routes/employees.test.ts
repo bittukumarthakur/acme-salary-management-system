@@ -5,14 +5,16 @@
 
 import request from 'supertest';
 import { createApp } from '../../src/app';
-import { getEmployees } from '../../src/services/employeesService';
+import { createEmployee, getEmployees } from '../../src/services/employeesService';
 import { alice, bob, charlie, inactive } from '../data/employees';
 
 jest.mock('../../src/services/employeesService', () => ({
   getEmployees: jest.fn(),
+  createEmployee: jest.fn(),
 }));
 
 const mockedGetEmployees = getEmployees as jest.MockedFunction<typeof getEmployees>;
+const mockedCreateEmployee = createEmployee as jest.MockedFunction<typeof createEmployee>;
 
 const app = createApp();
 
@@ -152,7 +154,7 @@ describe('GET /api/v1/employees', () => {
       };
       mockedGetEmployees.mockResolvedValue(mockResponse);
 
-      const res = await request(app).get('/api/v1/employees').query({ search: 'Alice' });
+      await request(app).get('/api/v1/employees').query({ search: 'Alice' });
 
       expect(mockedGetEmployees).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -179,7 +181,7 @@ describe('GET /api/v1/employees', () => {
       };
       mockedGetEmployees.mockResolvedValue(mockResponse);
 
-      const res = await request(app)
+      await request(app)
         .get('/api/v1/employees')
         .query({ department: 'ENGINEERING' });
 
@@ -208,7 +210,7 @@ describe('GET /api/v1/employees', () => {
       };
       mockedGetEmployees.mockResolvedValue(mockResponse);
 
-      const res = await request(app).get('/api/v1/employees').query({ status: 'INACTIVE' });
+      await request(app).get('/api/v1/employees').query({ status: 'INACTIVE' });
 
       expect(mockedGetEmployees).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -435,5 +437,180 @@ describe('GET /api/v1/employees', () => {
       expect(res.body.meta.pageLimit).toBe(1);
       expect(res.body.meta.hasPreviousPage).toBe(true);
     });
+  });
+});
+
+describe('POST /api/v1/employees', () => {
+  const validPayload = {
+    employee: {
+      fullName: 'Ari Example',
+      email: 'ari@example.com',
+      phoneNumber: '+919999999999',
+      dateOfBirth: '1993-01-10',
+      gender: 'FEMALE',
+      maritalStatus: 'SINGLE',
+      employeeId: 'EMP00120',
+      department: 'ENGINEERING',
+      designation: 'Engineer',
+      joiningDate: '2023-01-11',
+      reportingManagerEmployeeId: 'EMP00010',
+      employmentType: 'PERMANENT',
+    },
+    salaryStructure: {
+      basicSalary: 100000,
+      currency: 'INR',
+      effectiveDate: '2023-01-11',
+      pfApplicable: false,
+      esiApplicable: false,
+    },
+  };
+
+  it('returns 201 and the full created employee object for a valid payload', async () => {
+    mockedCreateEmployee.mockResolvedValue({
+      employeeId: 'EMP00120',
+      fullName: 'Ari Example',
+      email: 'ari@example.com',
+      department: 'ENGINEERING',
+      designation: 'Engineer',
+      basicSalary: 100000,
+      currency: 'INR',
+      status: 'ACTIVE',
+      joiningDate: '2023-01-11',
+      country: 'India',
+      employmentType: 'PERMANENT',
+    });
+
+    const res = await request(app).post('/api/v1/employees').send(validPayload);
+
+    expect(res.status).toBe(201);
+    expect(res.body.employeeId).toBe('EMP00120');
+    expect(res.body.fullName).toBe('Ari Example');
+    expect(res.body.department).toBe('ENGINEERING');
+    expect(res.body).toHaveProperty('joiningDate');
+    expect(mockedCreateEmployee).toHaveBeenCalledWith(
+      expect.objectContaining({
+        employee: expect.objectContaining({
+          employeeId: 'EMP00120',
+          designation: 'Engineer',
+        }),
+        salaryStructure: expect.objectContaining({
+          basicSalary: 100000,
+        }),
+      }),
+    );
+  });
+
+  it('returns 400 with field-level details when required fields are missing', async () => {
+    const res = await request(app)
+      .post('/api/v1/employees')
+      .send({ employee: {}, salaryStructure: {} });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details['employee.fullName']).toBeDefined();
+    expect(res.body.details['employee.employeeId']).toBeDefined();
+    expect(res.body.details['salaryStructure.basicSalary']).toBeDefined();
+  });
+
+  it('returns 400 with field-level details for invalid formats', async () => {
+    const res = await request(app)
+      .post('/api/v1/employees')
+      .send({
+        ...validPayload,
+        employee: {
+          ...validPayload.employee,
+          email: 'invalid-email',
+          phoneNumber: 'abcd1234',
+        },
+        salaryStructure: {
+          ...validPayload.salaryStructure,
+          basicSalary: -100,
+        },
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Validation failed');
+    expect(res.body.details['employee.email']).toBeDefined();
+    expect(res.body.details['employee.phoneNumber']).toBeDefined();
+    expect(res.body.details['salaryStructure.basicSalary']).toBeDefined();
+  });
+
+  it('accepts payload when optional salary and bank fields are omitted', async () => {
+    mockedCreateEmployee.mockResolvedValue({
+      employeeId: 'EMP00120',
+      fullName: 'Ari Example',
+      email: 'ari@example.com',
+      department: 'ENGINEERING',
+      designation: 'Engineer',
+      basicSalary: 100000,
+      currency: 'INR',
+      status: 'ACTIVE',
+      joiningDate: '2023-01-11',
+      country: 'India',
+      employmentType: 'PERMANENT',
+    });
+
+    const payloadWithoutOptionalFields = {
+      employee: validPayload.employee,
+      salaryStructure: {
+        basicSalary: 100000,
+      },
+    };
+
+    const res = await request(app).post('/api/v1/employees').send(payloadWithoutOptionalFields);
+
+    expect(res.status).toBe(201);
+    expect(mockedCreateEmployee).toHaveBeenCalledWith(
+      expect.objectContaining({
+        salaryStructure: expect.objectContaining({
+          basicSalary: 100000,
+        }),
+      }),
+    );
+  });
+
+  it('accepts payload without bankAccounts', async () => {
+    mockedCreateEmployee.mockResolvedValue({
+      employeeId: 'EMP00120',
+      fullName: 'Ari Example',
+      email: 'ari@example.com',
+      department: 'ENGINEERING',
+      designation: 'Engineer',
+      basicSalary: 100000,
+      currency: 'INR',
+      status: 'ACTIVE',
+      joiningDate: '2023-01-11',
+      country: 'India',
+      employmentType: 'PERMANENT',
+    });
+
+    const res = await request(app).post('/api/v1/employees').send(validPayload);
+
+    expect(res.status).toBe(201);
+    expect(mockedCreateEmployee).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        bankAccounts: expect.anything(),
+      }),
+    );
+  });
+
+  it('returns 409 when duplicate employee ID is submitted', async () => {
+    mockedCreateEmployee.mockRejectedValue(new Error('EMPLOYEE_ID_ALREADY_EXISTS'));
+
+    const res = await request(app).post('/api/v1/employees').send(validPayload);
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Employee ID already exists');
+    expect(res.body.code).toBe('DUPLICATE_EMPLOYEE_ID');
+    expect(res.body.details).toEqual({ employeeId: 'EMP00120' });
+  });
+
+  it('returns 500 with non-sensitive error contract on unexpected failures', async () => {
+    mockedCreateEmployee.mockRejectedValue(new Error('Database unavailable'));
+
+    const res = await request(app).post('/api/v1/employees').send(validPayload);
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({ error: 'Failed to create employee' });
   });
 });

@@ -60,3 +60,55 @@ export interface EmployeeQuery {
 export interface ErrorResponse {
   error: string;
 }
+
+/** Employee details for transactional create payload. */
+export interface CreateEmployeeInput {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  gender: string;
+  maritalStatus: string;
+  employeeId: string;
+  department: string;
+  designation: string;
+  joiningDate: string;
+  reportingManagerEmployeeId?: string;
+  employmentType: string;
+  country?: string;
+  status?: string;
+  avatarUrl?: string;
+}
+
+/** Salary structure for transactional create payload. */
+export interface CreateSalaryStructureInput {
+  basicSalary: number;
+  currency?: string;
+  effectiveDate?: string;
+  endDate?: string | null;
+  pfApplicable?: boolean;
+  esiApplicable?: boolean;
+}
+
+/** Optional bank account details for transactional create payload. */
+export interface CreateBankAccountInput {
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountHolderName: string;
+  accountType?: string;
+  isPrimary?: boolean;
+  isActive?: boolean;
+}
+
+/** Payload for POST /api/v1/employees aligned with transactional create contract. */
+export interface CreateEmployeePayload {
+  employee: CreateEmployeeInput;
+  salaryStructure: CreateSalaryStructureInput;
+  bankAccounts?: CreateBankAccountInput[];
+}
+
+/** Structured 400 payload for create validation errors. */
+export interface ValidationErrorResponse extends ErrorResponse {
+  details: Record<string, string>;
+}
