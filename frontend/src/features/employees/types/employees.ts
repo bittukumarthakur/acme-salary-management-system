@@ -121,9 +121,19 @@ export interface EmployeeDetailsResponse {
   salaryHistory?: SalaryHistoryEntry[]
 }
 
-export type EditableEmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT'
+export type ApiEmploymentType =
+  | 'PERMANENT'
+  | 'CONTRACT'
+  | 'TEMPORARY'
+  | 'INTERN'
 
-export type EditableEmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE'
+export type EditableEmploymentType = ApiEmploymentType
+
+export type EditableEmployeeStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'ON_LEAVE'
+  | 'TERMINATED'
 
 export interface UpdateEmployeePayload {
   fullName: string
@@ -131,7 +141,7 @@ export interface UpdateEmployeePayload {
   phone: string
   department: string
   designation: string
-  employmentType: EditableEmploymentType
+  employmentType: ApiEmploymentType
   status: EditableEmployeeStatus
   joiningDate: string
   country: string
@@ -140,6 +150,7 @@ export interface UpdateEmployeePayload {
   salary: {
     baseMonthlySalary: number
     effectiveFrom: string
+    earnings?: SalaryLineItem[]
   }
 }
 

@@ -147,6 +147,10 @@ export interface EmployeeWithSalary extends Employee {
 export interface UpdateSalaryInput {
   baseMonthlySalary: number;
   effectiveFrom: string; // ISO date YYYY-MM-DD
+  earnings?: Array<{
+    component: string;
+    amount: number;
+  }>;
 }
 
 /** Employee details for PUT /api/v1/employees/:id payload */

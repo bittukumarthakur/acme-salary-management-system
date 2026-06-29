@@ -135,7 +135,7 @@ describe('employeesApi', () => {
     expect(
       (fetchSpy.mock.calls[0][0] as string).startsWith(expectedEndpoint),
     ).toBe(true)
-    expect(result.summary.employeeId).toBe('EMP0001')
+    expect(result.summary.employeeId).toBe('EMP00001')
     expect(result.salaryHistory?.[0]?.changeSummary).toBe(
       'Annual compensation revision',
     )
@@ -238,7 +238,7 @@ describe('employeesApi', () => {
       phone: '+91 98765 43210',
       department: 'Engineering',
       designation: 'Senior Developer',
-      employmentType: 'FULL_TIME',
+      employmentType: 'PERMANENT',
       status: 'ACTIVE',
       joiningDate: '2022-01-15',
       country: 'India',
@@ -284,7 +284,7 @@ describe('employeesApi', () => {
         phone: '+91 98765 43210',
         department: 'Engineering',
         designation: 'Senior Developer',
-        employmentType: 'FULL_TIME',
+        employmentType: 'PERMANENT',
         status: 'ACTIVE',
         joiningDate: '2022-01-15',
         country: 'India',

@@ -4,7 +4,7 @@ export const employeeDetailsFixture = {
   summary: {
     fullName: 'John Doe',
     status: 'ACTIVE',
-    employeeId: 'EMP0001',
+    employeeId: 'EMP00001',
     email: 'john.doe@acme.com',
     phone: '+91 98765 43210',
     joinedOn: '15 Jan 2022',
@@ -18,7 +18,7 @@ export const employeeDetailsFixture = {
   overview: {
     personalInformation: {
       fullName: 'John Doe',
-      employeeId: 'EMP0001',
+      employeeId: 'EMP00001',
       email: 'john.doe@acme.com',
       phone: '+91 98765 43210',
       joiningDate: '15 Jan 2022',

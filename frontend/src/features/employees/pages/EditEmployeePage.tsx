@@ -15,6 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { AddEmployeeActions } from '../../add-employee/form/components/AddEmployeeActions'
 import { EditEmployeeBasicInfoSection } from '../components/edit/EditEmployeeBasicInfoSection'
+import { EditEmployeeSalarySection } from '../components/edit/EditEmployeeSalarySection'
 import { getInitials } from '../components/details/utils'
 import {
   buildInitialEditEmployeeForm,
@@ -78,7 +79,6 @@ function getFieldErrors(error: unknown) {
   ) {
     return (error as EmployeeErrorLike).fieldErrors
   }
-
   return undefined
 }
 
@@ -244,6 +244,7 @@ export function EditEmployeePage() {
         bankAccount: true,
         baseMonthlySalary: true,
         effectiveFrom: true,
+        earnings: true,
       })
       return
     }
@@ -263,6 +264,12 @@ export function EditEmployeePage() {
       salary: {
         baseMonthlySalary: Number(loadState.form.baseMonthlySalary),
         effectiveFrom: loadState.form.effectiveFrom,
+        earnings: Object.entries(loadState.form.earnings).map(
+          ([component, amount]) => ({
+            component,
+            amount: Number(amount),
+          }),
+        ),
       },
     }
 
@@ -298,62 +305,70 @@ export function EditEmployeePage() {
     details.overview.personalInformation.avatarUrl ?? undefined
 
   return (
-    <Stack sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-      <Stack
-        spacing={2}
-        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pb: 2, pr: 0.5 }}
-      >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link
-            component={RouterLink}
-            underline="hover"
-            color="inherit"
-            to="/employees"
-          >
-            Employees
-          </Link>
-          <Link
-            component={RouterLink}
-            underline="hover"
-            color="inherit"
-            to={`/employees/${form.employeeId}`}
-          >
-            View Employee
-          </Link>
-          <Typography color="text.primary">Edit Employee</Typography>
-        </Breadcrumbs>
-
-        {submitError ? <Alert severity="error">{submitError}</Alert> : null}
-
-        <Card variant="outlined">
-          <CardContent>
-            <Stack spacing={3}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <EditEmployeeBasicInfoSection
-                  form={form}
-                  errors={errors}
-                  profileAvatarUrl={profileAvatarUrl}
-                  profileInitials={profileInitials}
-                  onFieldBlur={handleFieldBlur}
-                  onFieldChange={handleFieldChange}
-                />
-              </LocalizationProvider>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Stack>
-
-      <Box
-        sx={{
+    <Stack
+      spacing={2}
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        pb: 1,
+        pr: 0.5,
+        '& > *': {
           flexShrink: 0,
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 1,
-          pt: 1.5,
-          pb: 0.5,
-          bgcolor: 'background.default',
-        }}
-      >
+        },
+      }}
+    >
+      <Breadcrumbs aria-label="breadcrumb">
+        <Link
+          component={RouterLink}
+          underline="hover"
+          color="inherit"
+          to="/employees"
+        >
+          Employees
+        </Link>
+        <Link
+          component={RouterLink}
+          underline="hover"
+          color="inherit"
+          to={`/employees/${form.employeeId}`}
+        >
+          View Employee
+        </Link>
+        <Typography color="text.primary">Edit Employee</Typography>
+      </Breadcrumbs>
+
+      {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={3}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <EditEmployeeBasicInfoSection
+                form={form}
+                errors={errors}
+                profileAvatarUrl={profileAvatarUrl}
+                profileInitials={profileInitials}
+                onFieldBlur={handleFieldBlur}
+                onFieldChange={handleFieldChange}
+              />
+            </LocalizationProvider>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <EditEmployeeSalarySection
+          form={form}
+          errors={errors}
+          salaryStructure={details.salaryStructure}
+          onFieldBlur={handleFieldBlur}
+          onFieldChange={handleFieldChange}
+        />
+      </LocalizationProvider>
+
+      <Box sx={{ pt: 1.5 }}>
         <AddEmployeeActions
           isSaving={isSaving}
           onCancel={handleCancel}

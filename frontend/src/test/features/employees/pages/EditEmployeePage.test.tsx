@@ -24,7 +24,7 @@ const theme = createTheme({
 const mockFetchEmployeeDetails = vi.mocked(fetchEmployeeDetails)
 const mockUpdateEmployee = vi.mocked(updateEmployee)
 
-function renderEditEmployeePage(initialEntry = '/employees/EMP0001/edit') {
+function renderEditEmployeePage(initialEntry = '/employees/EMP00001/edit') {
   return render(
     <ThemeProvider theme={theme}>
       <MemoryRouter initialEntries={[initialEntry]}>
@@ -49,7 +49,7 @@ describe('EditEmployeePage', () => {
     vi.clearAllMocks()
     mockFetchEmployeeDetails.mockResolvedValue(employeeDetailsFixture)
     mockUpdateEmployee.mockResolvedValue({
-      id: 'EMP0001',
+      id: 'EMP00001',
       updatedAt: '2026-06-29T10:00:00.000Z',
     })
   })
@@ -64,14 +64,30 @@ describe('EditEmployeePage', () => {
       screen.getByRole('heading', { name: /basic information/i }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: /salary information/i }),
-    ).not.toBeInTheDocument()
+      screen.getByRole('heading', { name: /salary information/i }),
+    ).toBeInTheDocument()
     expect(screen.getByLabelText(/employee id/i)).toBeDisabled()
-    expect(screen.getByDisplayValue('EMP0001')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('EMP00001')).toBeInTheDocument()
     expect(screen.getByDisplayValue('john.doe@acme.com')).toBeInTheDocument()
     expect(
-      screen.queryByLabelText(/base monthly salary/i),
-    ).not.toBeInTheDocument()
+      screen.getByLabelText(/base salary \(monthly\)/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: /effective from/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /base salary/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /salary components/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /deductions/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /net pay/i }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument()
   })
 
   it('submits the edited employee and navigates back to employee details on success', async () => {
@@ -89,17 +105,73 @@ describe('EditEmployeePage', () => {
       expect(mockUpdateEmployee).toHaveBeenCalledTimes(1)
     })
     expect(mockUpdateEmployee).toHaveBeenCalledWith(
-      'EMP0001',
+      'EMP00001',
       expect.objectContaining({
         fullName: 'John Doe Updated',
         email: 'john.doe@acme.com',
+        employmentType: 'PERMANENT',
         salary: {
           baseMonthlySalary: 60000,
           effectiveFrom: '2024-04-01',
+          earnings: [
+            { component: 'DA (Dearness Allowance)', amount: 12000 },
+            { component: 'HRA (House Rent Allowance)', amount: 15000 },
+            { component: 'Conveyance Allowance', amount: 1600 },
+          ],
         },
       }),
     )
     expect(await screen.findByText('Employee Details Page')).toBeInTheDocument()
+  })
+
+  it('saves edited earnings amounts from the salary components section', async () => {
+    const user = userEvent.setup()
+    renderEditEmployeePage()
+
+    expect(await screen.findByDisplayValue('John Doe')).toBeInTheDocument()
+
+    const daInput = screen.getByLabelText(/da \(dearness allowance\)/i)
+    await user.clear(daInput)
+    await user.type(daInput, '14000')
+
+    await user.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() => {
+      expect(mockUpdateEmployee).toHaveBeenCalledTimes(1)
+    })
+
+    expect(mockUpdateEmployee).toHaveBeenCalledWith(
+      'EMP00001',
+      expect.objectContaining({
+        salary: expect.objectContaining({
+          earnings: expect.arrayContaining([
+            expect.objectContaining({
+              component: 'DA (Dearness Allowance)',
+              amount: 14000,
+            }),
+          ]),
+        }),
+      }),
+    )
+  })
+
+  it('updates net pay preview when base salary is edited', async () => {
+    const user = userEvent.setup()
+    renderEditEmployeePage()
+
+    expect(await screen.findByDisplayValue('John Doe')).toBeInTheDocument()
+
+    expect(
+      screen.getByRole('heading', { name: /rs 71,650/i }),
+    ).toBeInTheDocument()
+
+    const baseSalaryInput = screen.getByLabelText(/base salary \(monthly\)/i)
+    await user.clear(baseSalaryInput)
+    await user.type(baseSalaryInput, '65000')
+
+    expect(
+      screen.getByRole('heading', { name: /rs 76,050/i }),
+    ).toBeInTheDocument()
   })
 
   it('maps server field errors to the form when save returns a conflict', async () => {

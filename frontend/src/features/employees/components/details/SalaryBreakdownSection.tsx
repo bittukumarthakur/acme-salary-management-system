@@ -9,22 +9,28 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import type { ReactNode } from 'react'
 import type {
   EmployeeDetailsResponse,
   SalaryLineItem,
 } from '../../types/employees'
 import { formatCurrencyWithCode } from '../../../../shared/utils/formatters'
+import { DetailField } from './DetailPrimitives'
 import { getDisplayValue } from './utils'
 
+const cardHeaderSx = { fontWeight: 700 }
+
 function SalaryItemsTable({
-  title,
+  heading,
+  label,
   items,
   totalLabel,
   totalAmount,
   currency,
   tone,
 }: {
-  title: string
+  heading: string
+  label: string
   items: SalaryLineItem[]
   totalLabel: string
   totalAmount: number
@@ -43,6 +49,10 @@ function SalaryItemsTable({
 
   return (
     <Stack spacing={1.25}>
+      <Typography variant="subtitle1" sx={cardHeaderSx}>
+        {heading}
+      </Typography>
+
       <Box
         sx={{
           px: 1.5,
@@ -53,7 +63,7 @@ function SalaryItemsTable({
         }}
       >
         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-          {title}
+          {label}
         </Typography>
       </Box>
 
@@ -95,7 +105,7 @@ function SalaryItemsTable({
 
         {items.map((item) => (
           <Stack
-            key={`${title}-${item.component}`}
+            key={`${heading}-${item.component}`}
             direction="row"
             spacing={2}
             sx={{ justifyContent: 'space-between', px: 1.5, py: 1.25 }}
@@ -142,7 +152,7 @@ function SalarySummaryCard({
           bgcolor: 'rgba(46, 125, 50, 0.08)',
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Typography variant="subtitle1" sx={cardHeaderSx}>
           Net Pay{' '}
           <Typography component="span" color="text.secondary">
             (Monthly)
@@ -190,6 +200,43 @@ function SalarySummaryCard({
   )
 }
 
+function SalaryBaseCard({
+  salaryStructure,
+}: {
+  salaryStructure: EmployeeDetailsResponse['salaryStructure']
+}) {
+  return (
+    <Stack spacing={2}>
+      <Typography variant="subtitle1" sx={cardHeaderSx}>
+        Base Salary
+      </Typography>
+      <DetailField
+        label="Base Salary (Monthly)"
+        value={formatCurrencyWithCode(
+          salaryStructure.baseSalaryMonthly,
+          salaryStructure.currency,
+        )}
+      />
+      <DetailField
+        label="Effective From"
+        value={getDisplayValue(salaryStructure.effectiveFrom)}
+      />
+      <Alert
+        severity="info"
+        icon={<InfoOutlinedIcon fontSize="small" />}
+        sx={{
+          mt: 0.5,
+          '& .MuiAlert-message': {
+            fontWeight: 500,
+          },
+        }}
+      >
+        All amounts are in {salaryStructure.currency}
+      </Alert>
+    </Stack>
+  )
+}
+
 interface SectionHeadingProps {
   title: string
 }
@@ -202,7 +249,7 @@ function SectionHeading({ title }: SectionHeadingProps) {
     const baseTitle = title.replace(monthlySuffix, '').trim()
 
     return (
-      <Typography variant="h6">
+      <Typography variant="subtitle1" sx={cardHeaderSx}>
         {baseTitle}{' '}
         <Typography component="span" color="text.secondary">
           {monthlySuffix}
@@ -211,69 +258,102 @@ function SectionHeading({ title }: SectionHeadingProps) {
     )
   }
 
-  return <Typography variant="h6">{title}</Typography>
+  return (
+    <Typography variant="subtitle1" sx={cardHeaderSx}>
+      {title}
+    </Typography>
+  )
 }
 
 interface SalaryBreakdownSectionProps {
   salaryStructure: EmployeeDetailsResponse['salaryStructure']
   title: string
   changeSummary?: string | null
+  leadingColumn?: ReactNode
+  earningsColumn?: ReactNode
+  showTitle?: boolean
+  disableContainerPadding?: boolean
 }
 
 export function SalaryBreakdownSection({
   salaryStructure,
   title,
   changeSummary,
+  leadingColumn,
+  earningsColumn,
+  showTitle = true,
+  disableContainerPadding = false,
 }: SalaryBreakdownSectionProps) {
   return (
-    <Card>
-      <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
-        <Stack spacing={2}>
-          <SectionHeading title={title} />
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, lg: 4 }}>
-              <SalaryItemsTable
-                title="Earnings"
-                items={salaryStructure.earnings}
-                totalLabel="Total Earnings"
-                totalAmount={salaryStructure.totalEarnings}
-                currency={salaryStructure.currency}
-                tone="success"
-              />
-            </Grid>
-            <Grid
-              size={{ xs: 12, lg: 4 }}
-              sx={{
-                borderLeft: { lg: '1px solid' },
-                borderColor: 'divider',
-                pl: { lg: 2 },
-              }}
+    <Box sx={disableContainerPadding ? undefined : { p: { xs: 2, md: 2.5 } }}>
+      <Stack spacing={2}>
+        {showTitle ? <SectionHeading title={title} /> : null}
+        <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
+          <Grid size={{ xs: 12, md: 6, xl: 3 }} sx={{ display: 'flex' }}>
+            <Card
+              variant="outlined"
+              sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}
             >
-              <SalaryItemsTable
-                title="Deductions"
-                items={salaryStructure.deductions}
-                totalLabel="Total Deductions"
-                totalAmount={salaryStructure.totalDeductions}
-                currency={salaryStructure.currency}
-                tone="error"
-              />
-            </Grid>
-            <Grid
-              size={{ xs: 12, lg: 4 }}
-              sx={{
-                borderLeft: { lg: '1px solid' },
-                borderColor: 'divider',
-                pl: { lg: 2 },
-              }}
-            >
-              <SalarySummaryCard data={salaryStructure} />
-            </Grid>
+              <CardContent sx={{ p: { xs: 2, md: 2.5 }, flex: 1 }}>
+                {leadingColumn ?? (
+                  <SalaryBaseCard salaryStructure={salaryStructure} />
+                )}
+              </CardContent>
+            </Card>
           </Grid>
-          {changeSummary ? (
-            <Alert severity="success">{changeSummary}</Alert>
-          ) : null}
-        </Stack>
-      </CardContent>
-    </Card>
+          <Grid size={{ xs: 12, md: 6, xl: 3 }} sx={{ display: 'flex' }}>
+            <Card
+              variant="outlined"
+              sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}
+            >
+              <CardContent sx={{ p: { xs: 2, md: 2.5 }, flex: 1 }}>
+                {earningsColumn ?? (
+                  <SalaryItemsTable
+                    heading="Salary Components (Monthly)"
+                    label="Earnings & Allowances"
+                    items={salaryStructure.earnings}
+                    totalLabel="Total Earnings"
+                    totalAmount={salaryStructure.totalEarnings}
+                    currency={salaryStructure.currency}
+                    tone="success"
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, xl: 3 }} sx={{ display: 'flex' }}>
+            <Card
+              variant="outlined"
+              sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}
+            >
+              <CardContent sx={{ p: { xs: 2, md: 2.5 }, flex: 1 }}>
+                <SalaryItemsTable
+                  heading="Deductions"
+                  label="Deductions"
+                  items={salaryStructure.deductions}
+                  totalLabel="Total Deductions"
+                  totalAmount={salaryStructure.totalDeductions}
+                  currency={salaryStructure.currency}
+                  tone="error"
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, xl: 3 }} sx={{ display: 'flex' }}>
+            <Card
+              variant="outlined"
+              sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}
+            >
+              <CardContent sx={{ p: { xs: 2, md: 2.5 }, flex: 1 }}>
+                <SalarySummaryCard data={salaryStructure} />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+        {changeSummary ? (
+          <Alert severity="success">{changeSummary}</Alert>
+        ) : null}
+      </Stack>
+    </Box>
   )
 }

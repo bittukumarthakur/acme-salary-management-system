@@ -23,6 +23,7 @@ export interface EditEmployeeFormState {
   bankAccount: string
   baseMonthlySalary: string
   effectiveFrom: string
+  earnings: Record<string, string>
 }
 
 export type EditEmployeeFormErrors = Partial<
@@ -38,9 +39,10 @@ export const employmentTypeOptions: Array<{
   value: EditableEmploymentType
   label: string
 }> = [
-  { value: 'FULL_TIME', label: 'Full Time' },
-  { value: 'PART_TIME', label: 'Part Time' },
+  { value: 'PERMANENT', label: 'Full Time' },
   { value: 'CONTRACT', label: 'Contract' },
+  { value: 'TEMPORARY', label: 'Part Time' },
+  { value: 'INTERN', label: 'Intern' },
 ]
 
 export const statusOptions: Array<{
@@ -50,6 +52,7 @@ export const statusOptions: Array<{
   { value: 'ACTIVE', label: 'Active' },
   { value: 'INACTIVE', label: 'Inactive' },
   { value: 'ON_LEAVE', label: 'On Leave' },
+  { value: 'TERMINATED', label: 'Terminated' },
 ]
 
 export const departmentOptions = [
@@ -84,11 +87,14 @@ function normalizeEmploymentType(value: string | null | undefined) {
   switch ((value || '').toUpperCase().replace(/\s+/g, '_')) {
     case 'FULL_TIME':
     case 'PERMANENT':
-      return 'FULL_TIME' as const
+      return 'PERMANENT' as const
     case 'PART_TIME':
-      return 'PART_TIME' as const
+    case 'TEMPORARY':
+      return 'TEMPORARY' as const
     case 'CONTRACT':
       return 'CONTRACT' as const
+    case 'INTERN':
+      return 'INTERN' as const
     default:
       return ''
   }
@@ -99,15 +105,27 @@ function normalizeStatus(value: string | null | undefined) {
     case 'ACTIVE':
     case 'INACTIVE':
     case 'ON_LEAVE':
+    case 'TERMINATED':
       return value?.toUpperCase() as EditableEmployeeStatus
     default:
       return ''
   }
 }
 
+function isBaseSalaryComponent(component: string): boolean {
+  return component.toLowerCase().includes('basic salary')
+}
+
 export function buildInitialEditEmployeeForm(
   details: EmployeeDetailsResponse,
 ): EditEmployeeFormState {
+  const earnings = details.salaryStructure.earnings
+    .filter((item) => !isBaseSalaryComponent(item.component))
+    .reduce<Record<string, string>>((acc, item) => {
+      acc[item.component] = String(item.amount)
+      return acc
+    }, {})
+
   return {
     fullName: details.summary.fullName,
     employeeId: details.summary.employeeId,
@@ -125,6 +143,7 @@ export function buildInitialEditEmployeeForm(
     bankAccount: details.summary.bankAccount ?? '',
     baseMonthlySalary: String(details.salaryStructure.baseSalaryMonthly),
     effectiveFrom: parseDisplayDate(details.salaryStructure.effectiveFrom),
+    earnings,
   }
 }
 
@@ -151,6 +170,7 @@ const fieldLabels: Partial<Record<keyof EditEmployeeFormState, string>> = {
   bankAccount: 'Bank Account',
   baseMonthlySalary: 'Base Monthly Salary',
   effectiveFrom: 'Effective From',
+  earnings: 'Earnings',
 }
 
 export function validateEditEmployeeForm(
@@ -198,6 +218,14 @@ export function validateEditEmployeeForm(
   ) {
     nextErrors.effectiveFrom =
       'Effective From cannot be earlier than Joining Date'
+  }
+
+  for (const [component, amount] of Object.entries(form.earnings)) {
+    const numericAmount = Number(amount)
+    if (!amount.trim() || Number.isNaN(numericAmount) || numericAmount < 0) {
+      nextErrors.earnings = `${component} must be a valid non-negative amount`
+      break
+    }
   }
 
   return nextErrors

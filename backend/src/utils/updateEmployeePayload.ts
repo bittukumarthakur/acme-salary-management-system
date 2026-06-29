@@ -15,6 +15,19 @@ export type ParseUpdateResult =
   | { ok: true; value: UpdateEmployeePayload }
   | { ok: false; error: 'Validation failed'; details: Record<string, string> };
 
+function normalizeEmploymentType(value: string): string {
+  const normalized = value.trim().toUpperCase();
+
+  switch (normalized) {
+    case 'FULL_TIME':
+      return 'PERMANENT';
+    case 'PART_TIME':
+      return 'TEMPORARY';
+    default:
+      return normalized;
+  }
+}
+
 /**
  * Parses and validates PUT /api/v1/employees/:id request body.
  * Enforces required fields and enum constraints.
@@ -42,12 +55,9 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
   const phone = readRequiredString(source, 'phone', 'phone', errors);
   const department = readRequiredString(source, 'department', 'department', errors).toUpperCase();
   const designation = readRequiredString(source, 'designation', 'designation', errors);
-  const employmentType = readRequiredString(
-    source,
-    'employmentType',
-    'employmentType',
-    errors,
-  ).toUpperCase();
+  const employmentType = normalizeEmploymentType(
+    readRequiredString(source, 'employmentType', 'employmentType', errors),
+  );
   const status = readRequiredString(source, 'status', 'status', errors).toUpperCase();
   const joiningDate = readRequiredString(source, 'joiningDate', 'joiningDate', errors);
   const country = readRequiredString(source, 'country', 'country', errors);
@@ -58,6 +68,7 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
   const salarySource = asRecord(source.salary);
   let baseMonthlySalary = 0;
   let effectiveFrom = '';
+  let earnings: Array<{ component: string; amount: number }> | undefined;
 
   if (!salarySource) {
     errors.salary = 'salary is required and must be an object';
@@ -75,6 +86,44 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
       errors['salary.effectiveFrom'] = 'salary.effectiveFrom is required and must be a string';
     } else {
       effectiveFrom = effectiveFromRaw;
+    }
+
+    if ('earnings' in salarySource) {
+      const earningsRaw = salarySource.earnings;
+      if (!Array.isArray(earningsRaw)) {
+        errors['salary.earnings'] = 'salary.earnings must be an array';
+      } else {
+        const parsedEarnings: Array<{ component: string; amount: number }> = [];
+
+        earningsRaw.forEach((item, index) => {
+          const itemSource = asRecord(item);
+          if (!itemSource) {
+            errors[`salary.earnings.${index}`] =
+              'Each earnings item must be an object with component and amount';
+            return;
+          }
+
+          const component = readRequiredString(
+            itemSource,
+            'component',
+            `salary.earnings.${index}.component`,
+            errors,
+          );
+
+          const amountRaw = itemSource.amount;
+          if (typeof amountRaw !== 'number' || Number.isNaN(amountRaw) || amountRaw < 0) {
+            errors[`salary.earnings.${index}.amount`] =
+              'salary.earnings amount must be a non-negative number';
+            return;
+          }
+
+          parsedEarnings.push({ component, amount: amountRaw });
+        });
+
+        if (parsedEarnings.length > 0) {
+          earnings = parsedEarnings;
+        }
+      }
     }
   }
 
@@ -143,6 +192,7 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
     salary: {
       baseMonthlySalary,
       effectiveFrom,
+      ...(earnings ? { earnings } : {}),
     },
   };
 

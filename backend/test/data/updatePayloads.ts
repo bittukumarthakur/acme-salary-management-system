@@ -103,7 +103,7 @@ export const invalidPayloadWithInvalidEnum = {
   fullName: 'Henry Davis',
   email: 'henry@example.com',
   joiningDate: '2021-01-01',
-  employmentType: 'FULL_TIME', // Invalid enum value
+  employmentType: 'NOT_A_VALID_TYPE',
 };
 
 /**
