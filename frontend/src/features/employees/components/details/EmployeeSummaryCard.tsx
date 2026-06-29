@@ -34,7 +34,7 @@ export function EmployeeSummaryCard({
       <CardContent sx={{ p: { xs: 2, md: 2.25 } }}>
         <Grid container spacing={{ xs: 2, md: 2.25 }}>
           <Grid
-            size={{ xs: 12, lg: 6 }}
+            size={{ xs: 12, lg: 5 }}
             sx={{ display: 'flex', alignItems: 'center' }}
           >
             <Stack
@@ -86,7 +86,7 @@ export function EmployeeSummaryCard({
             </Stack>
           </Grid>
           <Grid
-            size={{ xs: 12, lg: 6 }}
+            size={{ xs: 12, lg: 7 }}
             sx={{
               display: 'flex',
               alignItems: 'center',

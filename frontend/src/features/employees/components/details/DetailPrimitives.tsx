@@ -52,6 +52,8 @@ export function SummaryInfoTile({
       direction="row"
       spacing={1.25}
       sx={{
+        width: '100%',
+        minWidth: 0,
         alignItems: 'center',
         borderRight: showRightBorder ? { md: '1px solid' } : 'none',
         borderColor: 'divider',
@@ -73,11 +75,22 @@ export function SummaryInfoTile({
       >
         <Icon fontSize="small" />
       </Box>
-      <Stack spacing={0.25}>
+      <Stack spacing={0.25} sx={{ minWidth: 0, flex: 1 }}>
         <Typography variant="body2" color="text.secondary">
           {label}
         </Typography>
-        <Typography sx={{ fontWeight: 600 }}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+            minWidth: 0,
+            whiteSpace: { xs: 'normal', md: 'nowrap' },
+            overflow: { md: 'hidden' },
+            textOverflow: { md: 'ellipsis' },
+            overflowWrap: 'anywhere',
+            wordBreak: 'break-word',
+            lineHeight: 1.2,
+          }}
+        >
           {getDisplayValue(value)}
         </Typography>
       </Stack>
