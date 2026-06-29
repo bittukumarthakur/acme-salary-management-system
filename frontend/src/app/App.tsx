@@ -2,6 +2,7 @@ import { HomePage } from '../features/dashboard/pages/HomePage'
 import { EmployeesPage } from '../features/employees/pages/EmployeesPage'
 import { AddEmployeePage } from '../features/add-employee/pages/AddEmployeePage'
 import { EmployeeDetailsPage } from '../features/employees/pages/EmployeeDetailsPage'
+import { EditEmployeePage } from '../features/employees/pages/EditEmployeePage'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import type { NavItem } from '../shared/constants/dashboard'
 import {
@@ -88,6 +89,9 @@ function EmployeesRoutePage() {
       mainContent={
         <EmployeesPage
           onAddEmployeeClick={() => navigate('/employees/add')}
+          onEditEmployeeClick={(employeeId) =>
+            navigate(`/employees/${employeeId}/edit`)
+          }
           onViewEmployeeClick={(employeeId) =>
             navigate(`/employees/${employeeId}`)
           }
@@ -123,6 +127,19 @@ function EmployeeDetailsRoutePage() {
   )
 }
 
+function EditEmployeeRoutePage() {
+  const handleSelectNavItem = useNavSelectionHandler()
+
+  return (
+    <HomePage
+      activeNavItem="Employees"
+      onSelectNavItem={handleSelectNavItem}
+      pageTitle="Edit Employee"
+      mainContent={<EditEmployeePage />}
+    />
+  )
+}
+
 function App() {
   return (
     <ThemeProvider theme={appTheme}>
@@ -135,6 +152,10 @@ function App() {
           <Route
             path="/employees/:employeeId"
             element={<EmployeeDetailsRoutePage />}
+          />
+          <Route
+            path="/employees/:employeeId/edit"
+            element={<EditEmployeeRoutePage />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

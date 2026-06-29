@@ -121,6 +121,33 @@ export interface EmployeeDetailsResponse {
   salaryHistory?: SalaryHistoryEntry[]
 }
 
+export type EditableEmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT'
+
+export type EditableEmployeeStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE'
+
+export interface UpdateEmployeePayload {
+  fullName: string
+  email: string
+  phone: string
+  department: string
+  designation: string
+  employmentType: EditableEmploymentType
+  status: EditableEmployeeStatus
+  joiningDate: string
+  country: string
+  currency: string
+  bankAccount: string
+  salary: {
+    baseMonthlySalary: number
+    effectiveFrom: string
+  }
+}
+
+export interface UpdateEmployeeResponse {
+  id: string
+  updatedAt: string
+}
+
 export interface CreateEmployeePayload {
   employee: {
     fullName: string

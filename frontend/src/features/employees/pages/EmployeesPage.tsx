@@ -4,11 +4,13 @@ import { EmployeesFilters, EmployeesTableCard } from '../components'
 
 export interface EmployeesPageProps {
   onAddEmployeeClick?: () => void
+  onEditEmployeeClick?: (employeeId: string) => void
   onViewEmployeeClick?: (employeeId: string) => void
 }
 
 export function EmployeesPage({
   onAddEmployeeClick,
+  onEditEmployeeClick,
   onViewEmployeeClick,
 }: EmployeesPageProps) {
   const {
@@ -65,6 +67,7 @@ export function EmployeesPage({
         meta={meta}
         isLoading={state === 'loading'}
         onPageChange={setPage}
+        onEditEmployeeClick={onEditEmployeeClick}
         onViewEmployeeClick={onViewEmployeeClick}
       />
     </Box>

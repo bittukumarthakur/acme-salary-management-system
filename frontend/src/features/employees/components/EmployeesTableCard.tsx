@@ -31,11 +31,13 @@ const COLUMN_LAYOUT = {
 
 interface EmployeeRowActionsProps {
   employee: EmployeeListItem
+  onEditEmployeeClick?: (employeeId: string) => void
   onViewEmployeeClick?: (employeeId: string) => void
 }
 
 function EmployeeRowActions({
   employee,
+  onEditEmployeeClick,
   onViewEmployeeClick,
 }: EmployeeRowActionsProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
@@ -54,6 +56,11 @@ function EmployeeRowActions({
     handleClose()
   }
 
+  const handleEdit = () => {
+    onEditEmployeeClick?.(employee.employeeId)
+    handleClose()
+  }
+
   return (
     <>
       <IconButton
@@ -64,7 +71,7 @@ function EmployeeRowActions({
         <MoreVertRoundedIcon fontSize="small" />
       </IconButton>
       <Menu anchorEl={anchorEl} open={menuOpen} onClose={handleClose}>
-        <MenuItem onClick={handleClose}>Edit</MenuItem>
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
         <MenuItem onClick={handleView}>View</MenuItem>
       </Menu>
     </>
@@ -78,6 +85,7 @@ export interface EmployeesTableCardProps {
   meta: EmployeesMeta
   isLoading: boolean
   onPageChange: (page: number) => void
+  onEditEmployeeClick?: (employeeId: string) => void
   onViewEmployeeClick?: (employeeId: string) => void
 }
 
@@ -86,6 +94,7 @@ export function EmployeesTableCard({
   meta,
   isLoading,
   onPageChange,
+  onEditEmployeeClick,
   onViewEmployeeClick,
 }: EmployeesTableCardProps) {
   const rows = useMemo<EmployeeGridRow[]>(() => employees, [employees])
@@ -210,12 +219,13 @@ export function EmployeesTableCard({
         renderCell: ({ row }) => (
           <EmployeeRowActions
             employee={row}
+            onEditEmployeeClick={onEditEmployeeClick}
             onViewEmployeeClick={onViewEmployeeClick}
           />
         ),
       },
     ],
-    [meta.currency, onViewEmployeeClick],
+    [meta.currency, onEditEmployeeClick, onViewEmployeeClick],
   )
 
   return (

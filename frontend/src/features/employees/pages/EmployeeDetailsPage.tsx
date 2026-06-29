@@ -1,6 +1,6 @@
-import { Alert, Box, Stack, Tab, Tabs } from '@mui/material'
+import { Box, Stack, Tab, Tabs } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   EmployeeDetailsError,
   EmployeeDetailsHeader,
@@ -29,13 +29,22 @@ const DETAIL_TABS: Array<{ value: DetailsTab; label: string }> = [
 
 export function EmployeeDetailsPage() {
   const { employeeId } = useParams<{ employeeId: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [detailsState, setDetailsState] = useState<DetailsState>(() =>
     employeeId
       ? { status: 'loading' }
       : { status: 'error', message: 'Invalid employee ID' },
   )
   const [activeTab, setActiveTab] = useState<DetailsTab>('overview')
-  const [showEditNotice, setShowEditNotice] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    typeof location.state === 'object' &&
+      location.state &&
+      'successMessage' in location.state &&
+      typeof location.state.successMessage === 'string'
+      ? location.state.successMessage
+      : null,
+  )
   const requestIdRef = useRef(0)
 
   const loadEmployeeDetails = async (
@@ -105,17 +114,39 @@ export function EmployeeDetailsPage() {
   return (
     <Stack
       spacing={{ xs: 1.75, md: 2 }}
-      sx={{ minHeight: 0, overflow: 'visible' }}
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        pb: 1,
+      }}
     >
       <EmployeeDetailsHeader
         showEditButton
-        onEditClick={() => setShowEditNotice(true)}
+        onEditClick={() => {
+          if (employeeId) {
+            navigate(`/employees/${employeeId}/edit`)
+          }
+        }}
       />
 
-      {showEditNotice ? (
-        <Alert severity="info" onClose={() => setShowEditNotice(false)}>
-          Edit employee is not available yet.
-        </Alert>
+      {successMessage ? (
+        <Box component="section">
+          <Box
+            role="status"
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderRadius: 1,
+              bgcolor: 'success.light',
+              color: 'success.contrastText',
+            }}
+            onClick={() => setSuccessMessage(null)}
+          >
+            {successMessage}
+          </Box>
+        </Box>
       ) : null}
 
       <Box component="section">

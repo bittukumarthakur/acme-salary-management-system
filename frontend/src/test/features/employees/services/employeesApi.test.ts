@@ -3,6 +3,7 @@ import {
   fetchEmployeeDetails,
   fetchEmployeesData,
   isEmployeeIdAvailable,
+  updateEmployee,
   type EmployeesQueryParams,
 } from '../../../../features/employees/services/employeesApi'
 import { employeeDetailsFixture } from '../../../data/employeeDetails'
@@ -220,5 +221,86 @@ describe('employeesApi', () => {
         },
       }),
     ).rejects.toThrow('Employee ID must be unique')
+  })
+
+  it('updates employee with put request and returns the response payload', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 'EMP0001',
+        updatedAt: '2026-06-29T10:00:00.000Z',
+      }),
+    } as Response)
+
+    const payload = {
+      fullName: 'John Doe',
+      email: 'john.doe@acme.com',
+      phone: '+91 98765 43210',
+      department: 'Engineering',
+      designation: 'Senior Developer',
+      employmentType: 'FULL_TIME',
+      status: 'ACTIVE',
+      joiningDate: '2022-01-15',
+      country: 'India',
+      currency: 'INR',
+      bankAccount: 'ACC-000123',
+      salary: {
+        baseMonthlySalary: 60000,
+        effectiveFrom: '2024-04-01',
+      },
+    }
+
+    const result = await updateEmployee('EMP0001', payload)
+
+    expect(result).toEqual({
+      id: 'EMP0001',
+      updatedAt: '2026-06-29T10:00:00.000Z',
+    })
+    expect(fetchSpy.mock.calls[0][1]).toMatchObject({
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+  })
+
+  it('surfaces field errors when update employee returns a conflict', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({
+        message: 'Email already in use by another employee',
+        errors: {
+          email: 'Email already in use by another employee',
+        },
+      }),
+    } as Response)
+
+    await expect(
+      updateEmployee('EMP0001', {
+        fullName: 'John Doe',
+        email: 'john.doe@acme.com',
+        phone: '+91 98765 43210',
+        department: 'Engineering',
+        designation: 'Senior Developer',
+        employmentType: 'FULL_TIME',
+        status: 'ACTIVE',
+        joiningDate: '2022-01-15',
+        country: 'India',
+        currency: 'INR',
+        bankAccount: 'ACC-000123',
+        salary: {
+          baseMonthlySalary: 60000,
+          effectiveFrom: '2024-04-01',
+        },
+      }),
+    ).rejects.toMatchObject({
+      message: 'Email already in use by another employee',
+      status: 409,
+      fieldErrors: {
+        email: 'Email already in use by another employee',
+      },
+    })
   })
 })

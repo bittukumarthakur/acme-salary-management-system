@@ -109,6 +109,19 @@ describe('EmployeesPage', () => {
     expect(onViewEmployeeClick).toHaveBeenCalledWith('EMP00001')
   })
 
+  it('triggers edit callback with employee ID when Edit action is clicked', async () => {
+    const user = userEvent.setup()
+    const onEditEmployeeClick = vi.fn()
+    renderWithTheme(<EmployeesPage onEditEmployeeClick={onEditEmployeeClick} />)
+
+    const row = screen.getByRole('row', { name: /jalyn koch/i })
+    await user.click(within(row).getByRole('button', { name: /open actions/i }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
+
+    expect(onEditEmployeeClick).toHaveBeenCalledTimes(1)
+    expect(onEditEmployeeClick).toHaveBeenCalledWith('EMP00001')
+  })
+
   it('shows empty state when no employees are returned', () => {
     mockUseEmployeesData.mockReturnValue({
       ...baseHookResult,

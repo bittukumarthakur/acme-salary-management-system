@@ -4,12 +4,16 @@ interface AddEmployeeActionsProps {
   isSaving: boolean
   onCancel: () => void
   onSave: () => void
+  saveLabel?: string
+  sticky?: boolean
 }
 
 export function AddEmployeeActions({
   isSaving,
   onCancel,
   onSave,
+  saveLabel = 'Save Employee',
+  sticky = true,
 }: AddEmployeeActionsProps) {
   return (
     <Stack
@@ -17,8 +21,8 @@ export function AddEmployeeActions({
       spacing={1.5}
       sx={{
         justifyContent: 'flex-end',
-        position: 'sticky',
-        bottom: 0,
+        position: sticky ? 'sticky' : 'static',
+        bottom: sticky ? 0 : 'auto',
         py: 1,
         bgcolor: 'background.default',
       }}
@@ -27,7 +31,7 @@ export function AddEmployeeActions({
         Cancel
       </Button>
       <Button variant="contained" onClick={onSave} disabled={isSaving}>
-        Save Employee
+        {saveLabel}
       </Button>
     </Stack>
   )

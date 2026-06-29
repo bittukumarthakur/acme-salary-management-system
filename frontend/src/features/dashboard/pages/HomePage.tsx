@@ -23,7 +23,6 @@ export function HomePage({
   pageTitle = 'Dashboard',
 }: HomePageProps) {
   const dashboardData = useDashboardData()
-  const hasCustomMainContent = mainContent !== undefined
 
   const resolvedMainContent = mainContent ?? (
     <>
@@ -104,7 +103,7 @@ export function HomePage({
             flex: 1,
             gap: 2,
             minHeight: 0,
-            overflowY: hasCustomMainContent ? 'auto' : 'hidden',
+            overflowY: 'hidden',
             overflowX: 'hidden',
           }}
         >

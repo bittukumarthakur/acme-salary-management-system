@@ -29,6 +29,10 @@ function renderEmployeeDetailsPage(initialEntry = '/employees/EMP0001') {
             path="/employees/:employeeId"
             element={<EmployeeDetailsPage />}
           />
+          <Route
+            path="/employees/:employeeId/edit"
+            element={<div>Edit Employee Page</div>}
+          />
           <Route path="/employees" element={<div>Employees List</div>} />
         </Routes>
       </MemoryRouter>
@@ -138,7 +142,7 @@ describe('EmployeeDetailsPage', () => {
     })
   })
 
-  it('shows a placeholder message when edit employee is clicked', async () => {
+  it('navigates to the edit employee page when edit employee is clicked', async () => {
     const user = userEvent.setup()
     renderEmployeeDetailsPage()
 
@@ -147,8 +151,6 @@ describe('EmployeeDetailsPage', () => {
     ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /edit employee/i }))
 
-    expect(
-      screen.getByText(/edit employee is not available yet/i),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Edit Employee Page')).toBeInTheDocument()
   })
 })
