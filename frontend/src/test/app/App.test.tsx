@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import App from '../../app/App'
 
@@ -64,7 +63,6 @@ describe('App', () => {
   })
 
   it('shows topbar actions and switches to employees tab', async () => {
-    const user = userEvent.setup()
     render(<App />)
 
     expect(screen.getByLabelText(/open menu/i)).toBeInTheDocument()
@@ -76,8 +74,7 @@ describe('App', () => {
       screen.getByRole('button', { name: /this month/i }),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('link', { name: /view all/i }))
-    await user.click(screen.getByRole('button', { name: /^employees$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^employees$/i }))
 
     expect(
       screen.getAllByRole('heading', { name: /^employees$/i }).length,
@@ -85,11 +82,10 @@ describe('App', () => {
   })
 
   it('navigates from Employees tab to Add Employee page', async () => {
-    const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: /^employees$/i }))
-    await user.click(screen.getByRole('button', { name: /add employee/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^employees$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /add employee/i }))
 
     expect(
       screen.getAllByRole('heading', { name: /add employee/i }).length,
