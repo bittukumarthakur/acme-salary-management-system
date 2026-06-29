@@ -1,18 +1,19 @@
 ---
 name: commit
-description: 'Stage and commit changes safely with a Conventional Commit message after running tests, formatting, and lint checks. Use when the user asks to commit, "/commit", "create a commit", "commit my changes", or wants pre-commit verification (run tests / eslint / format) before committing in this Yarn monorepo (frontend + backend).'
+description: 'Stage and commit changes safely with a Conventional Commit message after running build, tests, formatting, and lint checks. Use when the user asks to commit, "/commit", "create a commit", "commit my changes", or wants pre-commit verification (build / run tests / eslint / format) before committing in this Yarn monorepo (frontend + backend).'
 argument-hint: 'Optional: scope hint or message override'
 ---
 
 # Commit
 
-Create a clean, verified commit. Never commit code that fails tests, lint, or
-formatting. Always confirm the message with the user before committing.
+Create a clean, verified commit. Never commit code that fails build, tests,
+lint, or formatting. Always confirm the message with the user before
+committing.
 
 ## When to Use
 
 - The user asks to commit changes or invokes `/commit`.
-- The user wants pre-commit checks (tests, lint, format) run first.
+- The user wants pre-commit checks (build, tests, lint, format) run first.
 - Finalizing a unit of work in the `frontend/` or `backend/` packages.
 
 ## When NOT to Use
@@ -52,6 +53,7 @@ package's `package.json`.
 ```bash
 cd backend
 yarn install --frozen-lockfile   # only if dependencies changed
+yarn build                       # tsc
 yarn format:check                # prettier --check (no lint script here)
 yarn test                        # Jest
 ```
@@ -61,6 +63,7 @@ yarn test                        # Jest
 ```bash
 cd frontend
 yarn install --immutable         # only if dependencies changed (Yarn Berry)
+yarn build                       # tsc -b && vite build
 yarn lint                        # eslint .
 yarn format:check                # prettier --check
 yarn test                        # Vitest
@@ -117,6 +120,7 @@ the user explicitly asks.
 ## Quality Checklist
 
 - [ ] `git status` reviewed and grouped
+- [ ] Build passes for all affected areas
 - [ ] Tests pass for all affected areas
 - [ ] Lint passes for all affected areas
 - [ ] Formatting applied/verified; reformatted files staged
