@@ -77,74 +77,64 @@ The View Employee page is a detailed employee record interface that displays com
 
 ```json
 {
-  "employeeId": "EMP0001",
-  "fullName": "John Doe",
-  "email": "john.doe@acme.com",
-  "phone": "+91 98765 43210",
-  "joiningDate": "2022-01-15",
-  "avatarUrl": "https://example.com/avatars/emp0001.png",
-  "status": "ACTIVE",
-  "department": "ENGINEERING",
-  "designation": "SENIOR_DEVELOPER",
-  "employmentType": "FULL_TIME",
-  "country": "India",
-  "currency": "INR",
-  "bankAccount": "ACC-000123",
-  "reportingManager": "Jane Smith",
-  "workLocation": "Bangalore, India",
+  "summary": {
+    "fullName": "Aniya Roob",
+    "status": "ACTIVE",
+    "employeeId": "EMP00001",
+    "email": "aniya.roob.1@acme.com",
+    "phone": "+91-1749252918",
+    "joinedOn": "08 Apr 2017",
+    "department": "MARKETING",
+    "designation": "ACCOUNTANT",
+    "employmentType": "PERMANENT",
+    "country": "India",
+    "currency": "INR",
+    "bankAccount": "0785574171063787"
+  },
+  "overview": {
+    "personalInformation": {
+      "fullName": "Aniya Roob",
+      "employeeId": "EMP00001",
+      "email": "aniya.roob.1@acme.com",
+      "phone": "+91-1749252918",
+      "joiningDate": "08 Apr 2017",
+      "country": "India",
+      "employmentType": "PERMANENT",
+      "status": "ACTIVE",
+      "avatarUrl": "https://i.pravatar.cc/150?img=1"
+    },
+    "jobInformation": {
+      "department": "MARKETING",
+      "designation": "ACCOUNTANT",
+      "reportingManager": null,
+      "workLocation": "India"
+    }
+  },
   "salaryStructure": {
-    "month": "2024-04",
+    "currency": "INR",
     "earnings": [
       {
-        "component": "Basic Salary",
-        "amount": 60000
+        "component": "DA",
+        "amount": 143891
       },
       {
-        "component": "DA (Dearness Allowance)",
-        "amount": 12000
-      },
-      {
-        "component": "HRA (House Rent Allowance)",
-        "amount": 15000
-      },
-      {
-        "component": "Conveyance Allowance",
-        "amount": 1600
+        "component": "HRA",
+        "amount": 269795
       }
     ],
     "deductions": [
       {
-        "component": "Provident Fund (Employee)",
-        "amount": 7200
-      },
-      {
-        "component": "Professional Tax",
-        "amount": 200
-      },
-      {
-        "component": "Income Tax (TDS)",
-        "amount": 9550
+        "component": "PF",
+        "amount": 215836
       }
     ],
-    "totalEarnings": 88600,
-    "totalDeductions": 16950,
-    "netPay": 71650,
-    "ctcAnnual": 1063200,
-    "baseSalaryMonthly": 60000,
-    "effectiveFrom": "2024-04-01"
-  },
-  "salaryHistory": [
-    {
-      "month": "2024-03",
-      "netPay": 71500,
-      "baseSalary": 60000
-    },
-    {
-      "month": "2024-02",
-      "netPay": 71500,
-      "baseSalary": 60000
-    }
-  ]
+    "totalEarnings": 413686,
+    "totalDeductions": 215836,
+    "netPayMonthly": 197850,
+    "ctcAnnual": 4964232,
+    "baseSalaryMonthly": 1798635,
+    "effectiveFrom": "01 Jan 2024"
+  }
 }
 ```
 
