@@ -3,4 +3,5 @@
  * resolves to this file, keeping a single stable entry point.
  */
 export * from './employee';
+export * from './details';
 export * from './query';

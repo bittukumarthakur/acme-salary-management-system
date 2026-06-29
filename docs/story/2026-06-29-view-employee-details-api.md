@@ -1,7 +1,7 @@
 # View Employee Details API
 
 - **Date**: 2026-06-29
-- **Status**: draft
+- **Status**: completed
 - **Author**: BA Planner
 - **Persona**: HR Manager
 
@@ -38,15 +38,34 @@ The product needs a dedicated backend contract for the employee details page (si
 - Edge cases:
   - Employee ID does not exist returns a clear 404 response.
   - Optional profile fields may be missing and should return explicit null/empty-safe values per contract.
-  - Invalid or malformed ID behavior may need standardization if route permits non-numeric or non-UUID patterns.
+  - Invalid or malformed ID behavior is standardized to HTTP 400 when ID does not match `EMP` + digits.
   - Backend should avoid leaking internal-only fields in the response.
 
+## API Contract (Implemented)
+### Endpoint
+- `GET /api/v1/employees/:id`
+
+### Path Parameter
+- `id`: string employee code only, pattern `^EMP\d{4,}$` (case-insensitive input accepted and normalized).
+
+### Success Response (200)
+- Returns a single object with these top-level sections:
+  - `summary`
+  - `overview.personalInformation`
+  - `overview.jobInformation`
+  - `salaryStructure`
+
+### Error Responses
+- `400`: invalid employee id format (`EMP` followed by digits required)
+- `404`: employee not found
+- `500`: unexpected server failure
+
 ## Acceptance Criteria
-- [ ] Given a valid employee ID for an existing employee, when the client calls GET `/employees/:id`, then the API returns HTTP 200 with employee detail fields required by the view employee page.
-- [ ] Given a successful response, when the payload is inspected, then field names and structure are consistent with the employee details screenshot contract.
-- [ ] Given an employee ID that does not exist, when the client calls GET `/employees/:id`, then the API returns HTTP 404 with a clear not-found message.
-- [ ] Given a request for one employee, when the API responds, then only one employee object is returned (not an array/list payload).
-- [ ] Given missing optional attributes, when the API responds, then the response shape remains valid and parsable by the details page without contract-breaking omissions.
+- [x] Given a valid employee ID for an existing employee, when the client calls GET `/employees/:id`, then the API returns HTTP 200 with employee detail fields required by the view employee page.
+- [x] Given a successful response, when the payload is inspected, then field names and structure are consistent with the employee details screenshot contract.
+- [x] Given an employee ID that does not exist, when the client calls GET `/employees/:id`, then the API returns HTTP 404 with a clear not-found message.
+- [x] Given a request for one employee, when the API responds, then only one employee object is returned (not an array/list payload).
+- [x] Given missing optional attributes, when the API responds, then the response shape remains valid and parsable by the details page without contract-breaking omissions.
 
 ## Screenshots / Mockups
 - [2026-06-29-view-employee-page.png](../assets/2026-06-29-view-employee-page.png)
@@ -59,6 +78,6 @@ The product needs a dedicated backend contract for the employee details page (si
 </details>
 
 ## Open Questions / Assumptions
-- Should the story lock an explicit field-by-field response schema/table in this document, or is “match screenshot fields exactly” sufficient for this iteration?
-- Should invalid ID format behavior (for example, wrong type/pattern) be explicitly standardized as HTTP 400 in this same story?
-- Is role-based visibility of sensitive fields (if any exist in the details view) intentionally deferred to a separate auth/permissions story?
+- Response shape has been locked through implemented model sections (`summary`, `overview`, `salaryStructure`) and automated tests.
+- Invalid ID format is standardized in implementation as HTTP 400 with employee code validation.
+- Role-based visibility is deferred to a separate auth/permissions story.

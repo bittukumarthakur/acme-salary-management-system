@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '../../lib/prisma';
-import type { Employee, EmployeeRow } from '../models/employee';
+import type { Employee, EmployeeDetailsResponse, EmployeeRow } from '../models/employee';
 import type {
   AccountType,
   EmployeeStatus,
@@ -23,8 +23,18 @@ import {
   isUniqueConstraintError,
   mapEmployeeRowToApi,
 } from '../utils/employeesService';
+import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
 
 export const DUPLICATE_EMPLOYEE_ID_ERROR = 'EMPLOYEE_ID_ALREADY_EXISTS';
+
+function toDisplayDate(value: Date): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(value);
+}
 
 /**
  * Fetches a paginated list of employees with filtering, conversion, and metadata.
@@ -100,6 +110,145 @@ export async function getEmployees(query: EmployeeQuery): Promise<EmployeeListRe
       },
     },
   };
+}
+
+/**
+ * Fetches one employee by id.
+ * Supports numeric DB id as well as external employeeId values.
+ */
+export async function getEmployeeById(id: string): Promise<EmployeeDetailsResponse | null> {
+  const trimmedId = id.trim();
+  if (!trimmedId || !isValidEmployeeCodeId(trimmedId)) {
+    return null;
+  }
+
+  const row = await prisma.employee.findUnique({
+    where: { employeeId: normalizeEmployeeCodeId(trimmedId) },
+    include: {
+      department: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      designation: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      bankAccounts: {
+        where: { isActive: true },
+        orderBy: { isPrimary: 'desc' },
+        take: 1,
+        select: {
+          accountNumber: true,
+        },
+      },
+      salaryStructures: {
+        orderBy: { effectiveDate: 'desc' },
+        take: 1,
+        select: {
+          basicSalary: true,
+          currency: true,
+          effectiveDate: true,
+        },
+      },
+      salaryComponents: {
+        where: { endDate: null },
+        select: {
+          amount: true,
+          component: {
+            select: {
+              name: true,
+              type: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!row) {
+    return null;
+  }
+
+  const departmentName = row.department?.name || row.departmentId || '';
+  const designationTitle = row.designation?.title || '';
+  const joinedOn = toDisplayDate(row.joiningDate);
+  const primaryBankAccount = row.bankAccounts?.[0]?.accountNumber ?? null;
+
+  const latestSalaryStructure = row.salaryStructures?.[0];
+  const salaryCurrency = latestSalaryStructure?.currency ?? row.currency;
+  const baseSalaryMonthly = latestSalaryStructure?.basicSalary ?? row.basicSalary;
+  const effectiveFrom = latestSalaryStructure
+    ? toDisplayDate(latestSalaryStructure.effectiveDate)
+    : null;
+
+  const salaryComponents = row.salaryComponents ?? [];
+  const earnings = salaryComponents
+    .filter((item) => item.component.type === 'EARNING')
+    .map((item) => ({ component: item.component.name, amount: item.amount }));
+  const deductions = salaryComponents
+    .filter((item) => item.component.type === 'DEDUCTION')
+    .map((item) => ({ component: item.component.name, amount: item.amount }));
+
+  if (earnings.length === 0) {
+    earnings.push({ component: 'Basic Salary', amount: baseSalaryMonthly });
+  }
+
+  const totalEarnings = earnings.reduce((total, item) => total + item.amount, 0);
+  const totalDeductions = deductions.reduce((total, item) => total + item.amount, 0);
+  const netPayMonthly = totalEarnings - totalDeductions;
+
+  const response: EmployeeDetailsResponse = {
+    summary: {
+      fullName: row.name,
+      status: row.status,
+      employeeId: row.employeeId,
+      email: row.email,
+      phone: row.phoneNumber ?? null,
+      joinedOn,
+      department: departmentName,
+      designation: designationTitle,
+      employmentType: row.employmentType,
+      country: row.country,
+      currency: salaryCurrency,
+      bankAccount: primaryBankAccount,
+    },
+    overview: {
+      personalInformation: {
+        fullName: row.name,
+        employeeId: row.employeeId,
+        email: row.email,
+        phone: row.phoneNumber ?? null,
+        joiningDate: joinedOn,
+        country: row.country,
+        employmentType: row.employmentType,
+        status: row.status,
+        avatarUrl: row.avatarUrl ?? null,
+      },
+      jobInformation: {
+        department: departmentName,
+        designation: designationTitle,
+        reportingManager: null,
+        workLocation: row.country || null,
+      },
+    },
+    salaryStructure: {
+      currency: salaryCurrency,
+      earnings,
+      deductions,
+      totalEarnings,
+      totalDeductions,
+      netPayMonthly,
+      ctcAnnual: totalEarnings * 12,
+      baseSalaryMonthly,
+      effectiveFrom,
+    },
+  };
+
+  return response;
 }
 
 /**

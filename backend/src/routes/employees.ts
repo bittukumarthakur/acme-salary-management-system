@@ -7,10 +7,12 @@ import { Router, Request, Response } from 'express';
 import {
   createEmployee,
   DUPLICATE_EMPLOYEE_ID_ERROR,
+  getEmployeeById,
   getEmployees,
 } from '../services/employeesService';
 import { parseEmployeeQuery } from '../utils/employeesQuery';
 import { parseCreateEmployeePayload } from '../utils/createEmployeePayload';
+import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
 import type { ErrorResponse, ValidationErrorResponse } from '../models/employee/types';
 
 const router = Router();
@@ -87,6 +89,32 @@ router.post('/', async (req: Request, res: Response<unknown | ValidationErrorRes
 
     console.error('Failed to create employee:', error);
     res.status(500).json({ error: 'Failed to create employee' });
+  }
+});
+
+/**
+ * GET /api/v1/employees/:id
+ * Fetches one employee by employee code id (EMP followed by digits).
+ */
+router.get('/:id', async (req: Request, res: Response<unknown | ErrorResponse>) => {
+  try {
+    const rawEmployeeId = req.params.id?.trim() ?? '';
+    if (!isValidEmployeeCodeId(rawEmployeeId)) {
+      res.status(400).json({ error: 'Invalid employee id format. Use EMP followed by digits.' });
+      return;
+    }
+
+    const employee = await getEmployeeById(normalizeEmployeeCodeId(rawEmployeeId));
+
+    if (!employee) {
+      res.status(404).json({ error: 'Employee not found' });
+      return;
+    }
+
+    res.json(employee);
+  } catch (error) {
+    console.error('Failed to fetch employee by id:', error);
+    res.status(500).json({ error: 'Failed to fetch employee' });
   }
 });
 

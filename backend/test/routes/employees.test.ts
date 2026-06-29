@@ -10,11 +10,15 @@ import { alice, bob, charlie, inactive } from '../data/employees';
 
 jest.mock('../../src/services/employeesService', () => ({
   getEmployees: jest.fn(),
+  getEmployeeById: jest.fn(),
   createEmployee: jest.fn(),
 }));
 
 const mockedGetEmployees = getEmployees as jest.MockedFunction<typeof getEmployees>;
 const mockedCreateEmployee = createEmployee as jest.MockedFunction<typeof createEmployee>;
+const mockedEmployeesService = jest.requireMock('../../src/services/employeesService') as {
+  getEmployeeById: jest.Mock;
+};
 
 const app = createApp();
 
@@ -627,5 +631,131 @@ describe('POST /api/v1/employees', () => {
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: 'Failed to create employee' });
+  });
+});
+
+describe('GET /api/v1/employees/:id', () => {
+  const employeeDetailsResponse = {
+    summary: {
+      fullName: 'John Doe',
+      status: 'ACTIVE',
+      employeeId: 'EMP0001',
+      email: 'john.doe@acme.com',
+      phone: '+91 98765 43210',
+      joinedOn: '15 Jan 2022',
+      department: 'Engineering',
+      designation: 'Senior Developer',
+      employmentType: 'Full Time',
+      country: 'India',
+      currency: 'INR',
+      bankAccount: 'ACC-000123',
+    },
+    overview: {
+      personalInformation: {
+        fullName: 'John Doe',
+        employeeId: 'EMP0001',
+        email: 'john.doe@acme.com',
+        phone: '+91 98765 43210',
+        joiningDate: '15 Jan 2022',
+        country: 'India',
+        employmentType: 'Full Time',
+        status: 'ACTIVE',
+        avatarUrl: null,
+      },
+      jobInformation: {
+        department: 'Engineering',
+        designation: 'Senior Developer',
+        reportingManager: 'Jane Smith',
+        workLocation: 'Bangalore, India',
+      },
+    },
+    salaryStructure: {
+      currency: 'INR',
+      earnings: [
+        { component: 'Basic Salary', amount: 60000 },
+        { component: 'DA (Dearness Allowance)', amount: 12000 },
+      ],
+      deductions: [{ component: 'Professional Tax', amount: 200 }],
+      totalEarnings: 72000,
+      totalDeductions: 200,
+      netPayMonthly: 71800,
+      ctcAnnual: 864000,
+      baseSalaryMonthly: 60000,
+      effectiveFrom: '01 Apr 2024',
+    },
+  };
+
+  it('returns 200 with one employee object for a valid employee id', async () => {
+    mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeDetailsResponse);
+
+    const res = await request(app).get('/api/v1/employees/EMP0001');
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(false);
+    expect(res.body).toMatchObject({
+      summary: expect.objectContaining({
+        employeeId: 'EMP0001',
+        fullName: 'John Doe',
+        email: 'john.doe@acme.com',
+      }),
+      overview: {
+        personalInformation: expect.objectContaining({
+          employeeId: 'EMP0001',
+          joiningDate: '15 Jan 2022',
+        }),
+        jobInformation: expect.objectContaining({
+          designation: 'Senior Developer',
+        }),
+      },
+      salaryStructure: expect.objectContaining({
+        currency: 'INR',
+        baseSalaryMonthly: 60000,
+      }),
+    });
+  });
+
+  it('returns 404 with clear message when employee is not found', async () => {
+    mockedEmployeesService.getEmployeeById.mockResolvedValue(null);
+
+    const res = await request(app).get('/api/v1/employees/EMP99999');
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'Employee not found' });
+  });
+
+  it('returns a contract-safe shape when optional details are missing', async () => {
+    const employeeWithoutOptionals = {
+      ...employeeDetailsResponse,
+      summary: {
+        ...employeeDetailsResponse.summary,
+        phone: null,
+        bankAccount: null,
+      },
+      overview: {
+        ...employeeDetailsResponse.overview,
+        personalInformation: {
+          ...employeeDetailsResponse.overview.personalInformation,
+          avatarUrl: null,
+        },
+      },
+    };
+
+    mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeWithoutOptionals);
+
+    const res = await request(app).get('/api/v1/employees/EMP0001');
+
+    expect(res.status).toBe(200);
+    expect(res.body.summary.employeeId).toBe('EMP0001');
+    expect(res.body.summary.phone).toBeNull();
+    expect(res.body.summary.bankAccount).toBeNull();
+    expect(res.body.overview.personalInformation.avatarUrl).toBeNull();
+  });
+
+  it('returns 400 when id format is not EMP followed by digits', async () => {
+    const res = await request(app).get('/api/v1/employees/123');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Invalid employee id format');
+    expect(mockedEmployeesService.getEmployeeById).not.toHaveBeenCalled();
   });
 });

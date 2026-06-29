@@ -1,5 +1,6 @@
-import { createEmployee } from '../../src/services/employeesService';
+import { createEmployee, getEmployeeById } from '../../src/services/employeesService';
 import { prisma } from '../../lib/prisma';
+import { aliceRow } from '../data/employeeRows';
 
 jest.mock('../../lib/prisma', () => ({
   prisma: {
@@ -7,6 +8,7 @@ jest.mock('../../lib/prisma', () => ({
     employee: {
       create: jest.fn(),
       update: jest.fn(),
+      findUnique: jest.fn(),
     },
     employeeSalaryStructure: {
       create: jest.fn(),
@@ -28,6 +30,7 @@ const mockedPrisma = prisma as unknown as {
   employee: {
     create: jest.Mock;
     update: jest.Mock;
+    findUnique: jest.Mock;
   };
   employeeSalaryStructure: {
     create: jest.Mock;
@@ -224,5 +227,136 @@ describe('createEmployee', () => {
 
     expect(result.employeeId).toBe('EMP00120');
     expect(mockedPrisma.bankAccount.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('getEmployeeById', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns null for empty employee id without querying prisma', async () => {
+    const result = await getEmployeeById('');
+
+    expect(result).toBeNull();
+    expect(mockedPrisma.employee.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('finds an employee by employeeId and maps to details API shape', async () => {
+    mockedPrisma.employee.findUnique.mockResolvedValue({
+      ...aliceRow,
+      phoneNumber: '+919876543210',
+      bankAccounts: [{ accountNumber: 'ACC-000123' }],
+      salaryStructures: [
+        {
+          basicSalary: 60000,
+          currency: 'INR',
+          effectiveDate: new Date('2024-04-01T00:00:00.000Z'),
+        },
+      ],
+      salaryComponents: [
+        {
+          amount: 60000,
+          component: {
+            name: 'Basic Salary',
+            type: 'EARNING',
+          },
+        },
+        {
+          amount: 200,
+          component: {
+            name: 'Professional Tax',
+            type: 'DEDUCTION',
+          },
+        },
+      ],
+    });
+
+    const result = await getEmployeeById('EMP00001');
+
+    expect(mockedPrisma.employee.findUnique).toHaveBeenCalledWith({
+      where: { employeeId: 'EMP00001' },
+      include: {
+        department: {
+          select: { id: true, name: true },
+        },
+        designation: {
+          select: { id: true, title: true },
+        },
+        bankAccounts: {
+          where: { isActive: true },
+          orderBy: { isPrimary: 'desc' },
+          take: 1,
+          select: {
+            accountNumber: true,
+          },
+        },
+        salaryStructures: {
+          orderBy: { effectiveDate: 'desc' },
+          take: 1,
+          select: {
+            basicSalary: true,
+            currency: true,
+            effectiveDate: true,
+          },
+        },
+        salaryComponents: {
+          where: { endDate: null },
+          select: {
+            amount: true,
+            component: {
+              select: {
+                name: true,
+                type: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    expect(result).toMatchObject({
+      summary: {
+        employeeId: 'EMP00001',
+        fullName: 'Alice Johnson',
+        department: 'ENGINEERING',
+        designation: 'SENIOR_DEVELOPER',
+      },
+      overview: {
+        personalInformation: {
+          employeeId: 'EMP00001',
+        },
+      },
+      salaryStructure: {
+        currency: 'INR',
+        baseSalaryMonthly: 60000,
+      },
+    });
+  });
+
+  it('returns null for non-EMP style ids', async () => {
+    const result = await getEmployeeById('1234');
+
+    expect(result).toBeNull();
+    expect(mockedPrisma.employee.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('normalizes lowercase employee id before querying', async () => {
+    mockedPrisma.employee.findUnique.mockResolvedValue(aliceRow);
+
+    await getEmployeeById('emp00001');
+
+    expect(mockedPrisma.employee.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { employeeId: 'EMP00001' },
+      }),
+    );
+  });
+
+  it('returns null when employee is not found', async () => {
+    mockedPrisma.employee.findUnique.mockResolvedValue(null);
+
+    const result = await getEmployeeById('EMP404');
+
+    expect(result).toBeNull();
   });
 });
