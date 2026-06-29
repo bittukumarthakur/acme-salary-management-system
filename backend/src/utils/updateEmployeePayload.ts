@@ -116,17 +116,11 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
   }
 
   // Validate effectiveFrom >= joiningDate
-  if (
-    joiningDate &&
-    effectiveFrom &&
-    !errors.joiningDate &&
-    !errors['salary.effectiveFrom']
-  ) {
+  if (joiningDate && effectiveFrom && !errors.joiningDate && !errors['salary.effectiveFrom']) {
     const joiningDateValue = new Date(joiningDate);
     const effectiveFromValue = new Date(effectiveFrom);
     if (effectiveFromValue < joiningDateValue) {
-      errors['salary.effectiveFrom'] =
-        'salary.effectiveFrom cannot be earlier than joiningDate';
+      errors['salary.effectiveFrom'] = 'salary.effectiveFrom cannot be earlier than joiningDate';
     }
   }
 

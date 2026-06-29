@@ -4,6 +4,8 @@
 
 import type { Employee } from './employee';
 
+export type { Employee };
+
 /** API pagination metadata */
 export interface PaginationMeta {
   page: number;
@@ -164,4 +166,4 @@ export interface UpdateEmployeeInput {
 }
 
 /** Payload for PUT /api/v1/employees/:id */
-export interface UpdateEmployeePayload extends UpdateEmployeeInput {}
+export type UpdateEmployeePayload = UpdateEmployeeInput;

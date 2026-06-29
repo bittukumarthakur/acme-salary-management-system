@@ -43,8 +43,6 @@ export function calculateSalaryComponents(baseSalary: number): SalaryComponentsB
     tds = totalEarnings * 0.05; // 5% TDS for others
   }
 
-  const totalDeductions = pf + professionalTax + tds;
-
   return {
     earnings: [
       { name: 'Basic Salary', amount: baseSalary },

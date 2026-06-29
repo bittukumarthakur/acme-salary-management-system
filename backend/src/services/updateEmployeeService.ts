@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '../../lib/prisma';
+import type { EmploymentType, EmployeeStatus } from '../../generated/prisma/client';
 import type { EmployeeWithSalary, UpdateEmployeePayload } from '../models/employee/types';
 import { calculateSalaryComponents } from './salaryCalculation';
 import { toEmployeeWithSalary } from './employeeMapper';
@@ -23,7 +24,7 @@ export class EmployeeNotFoundError extends Error {
  */
 export class EmailAlreadyInUseError extends Error {
   constructor(email: string) {
-    super(`Email already in use by another employee`);
+    super(`Email ${email} is already in use by another employee`);
     this.name = 'EmailAlreadyInUseError';
   }
 }
@@ -99,8 +100,8 @@ export async function updateEmployee(
       phoneNumber: payload.phone,
       departmentId: department.id,
       designationId: designation.id,
-      employmentType: payload.employmentType,
-      status: payload.status,
+      employmentType: payload.employmentType as EmploymentType,
+      status: payload.status as EmployeeStatus,
       joiningDate: new Date(payload.joiningDate),
       country: payload.country,
       currency: payload.currency,
@@ -141,8 +142,7 @@ export async function updateEmployee(
   });
 
   const salaryChanged =
-    !previousSalaryEntry ||
-    previousSalaryEntry.basicSalary !== payload.salary.baseMonthlySalary;
+    !previousSalaryEntry || previousSalaryEntry.basicSalary !== payload.salary.baseMonthlySalary;
 
   if (salaryChanged && !existingSalaryEntry) {
     // Create new salary history entry

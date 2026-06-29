@@ -77,7 +77,7 @@ export async function getEmployees(query: EmployeeQuery): Promise<PaginatedResul
   const [rows, totalItems] = await Promise.all([
     prisma.employee.findMany({
       where,
-      // @ts-ignore
+      // @ts-expect-error Prisma generated include typing is narrower than selected relation shape here.
       include: {
         department: {
           select: {
@@ -122,11 +122,11 @@ export async function getEmployeeById(id: string): Promise<Employee | null> {
   const numericId = Number(id);
   const isNumericId = !isNaN(numericId) && Number.isInteger(numericId);
 
-  // @ts-ignore
+  // @ts-expect-error Prisma generated include typing is narrower than selected relation shape here.
   const row = isNumericId
     ? await prisma.employee.findUnique({
         where: { id: numericId },
-        // @ts-ignore
+        // @ts-expect-error Prisma generated include typing is narrower than selected relation shape here.
         include: {
           department: {
             select: {
@@ -144,7 +144,7 @@ export async function getEmployeeById(id: string): Promise<Employee | null> {
       })
     : await prisma.employee.findUnique({
         where: { employeeId: id },
-        // @ts-ignore
+        // @ts-expect-error Prisma generated include typing is narrower than selected relation shape here.
         include: {
           department: {
             select: {

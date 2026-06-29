@@ -33,9 +33,8 @@ export function toEmployee(row: {
   currency: string;
   avatarUrl?: string | null;
 }): Employee {
-  const joiningDateStr = row.joiningDate instanceof Date
-    ? row.joiningDate.toISOString().split('T')[0]
-    : row.joiningDate;
+  const joiningDateStr =
+    row.joiningDate instanceof Date ? row.joiningDate.toISOString().split('T')[0] : row.joiningDate;
 
   const departmentName = row.department?.name || row.departmentId || '';
   const designationTitle = row.designation?.title || '';
@@ -104,19 +103,17 @@ export function toEmployeeWithSalary(
   const employee = toEmployee(employeeRow);
 
   // Calculate net pay and CTC
-  const { netPayMonthly, ctcAnnual } = calculateNetPayAndCTC(
-    salaryEntry.basicSalary,
-    components,
-  );
+  const { netPayMonthly, ctcAnnual } = calculateNetPayAndCTC(salaryEntry.basicSalary, components);
 
   // Calculate totals
   const totalEarnings = components.earnings.reduce((sum, comp) => sum + comp.amount, 0);
   const totalDeductions = components.deductions.reduce((sum, comp) => sum + comp.amount, 0);
 
   // Format effective date as YYYY-MM-DD
-  const effectiveFromStr = salaryEntry.effectiveDate instanceof Date
-    ? salaryEntry.effectiveDate.toISOString().split('T')[0]
-    : String(salaryEntry.effectiveDate);
+  const effectiveFromStr =
+    salaryEntry.effectiveDate instanceof Date
+      ? salaryEntry.effectiveDate.toISOString().split('T')[0]
+      : String(salaryEntry.effectiveDate);
 
   // Build salary info
   const salary: SalaryInfo = {
@@ -129,9 +126,10 @@ export function toEmployeeWithSalary(
     components,
   };
 
-  const updatedAtStr = employeeRow.updatedAt instanceof Date
-    ? employeeRow.updatedAt.toISOString()
-    : String(employeeRow.updatedAt);
+  const updatedAtStr =
+    employeeRow.updatedAt instanceof Date
+      ? employeeRow.updatedAt.toISOString()
+      : String(employeeRow.updatedAt);
 
   return {
     ...employee,
