@@ -17,7 +17,7 @@ The frontend "Edit Employee" page (see screenshot below) allows HR Admins to mod
 
 ### In Scope
 
-- `PUT /api/employees/:id` REST endpoint
+- `PUT /api/v1/employees/:id` REST endpoint
 - Updating all **Basic Information** fields: `fullName`, `email`, `phone`, `department`, `designation`, `employmentType`, `status`, `joiningDate`, `country`, `currency`, `bankAccount`
 - Accepting a **salary revision** sub-object: `baseMonthlySalary` + `effectiveFrom` (always required — both sections must be sent together)
 - Creating a new **salary history** record when salary fields change; no update if salary fields are unchanged
@@ -71,7 +71,7 @@ The frontend "Edit Employee" page (see screenshot below) allows HR Admins to mod
 ### Endpoint
 
 ```
-PUT /api/employees/:id
+PUT /api/v1/employees/:id
 Content-Type: application/json
 ```
 
@@ -153,7 +153,7 @@ Content-Type: application/json
 
 ## Acceptance Criteria
 
-- [ ] Given a valid payload, when `PUT /api/employees/:id` is called, then all basic information fields are persisted and the updated employee object is returned with `200 OK`.
+- [ ] Given a valid payload, when `PUT /api/v1/employees/:id` is called, then all basic information fields are persisted and the updated employee object is returned with `200 OK`.
 - [ ] Given a valid payload with a new `salary.baseMonthlySalary` or `salary.effectiveFrom`, when the endpoint is called, then a new salary history entry is created and the response includes the computed salary breakdown.
 - [ ] Given a payload where `salary` fields are identical to the current active record, when the endpoint is called, then no new salary history entry is created (idempotent salary update).
 - [ ] Given a payload containing `employeeId`, when the endpoint is called, then a `400 Bad Request` is returned with message `"employeeId is read-only and cannot be updated"`.
