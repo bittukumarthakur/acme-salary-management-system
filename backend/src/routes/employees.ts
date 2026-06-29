@@ -98,7 +98,17 @@ router.post('/', async (req: Request, res: Response<unknown | ValidationErrorRes
  */
 router.get('/:id', async (req: Request, res: Response<unknown | ErrorResponse>) => {
   try {
-    const rawEmployeeId = req.params.id?.trim() ?? '';
+    let id: string | undefined;
+    if (Array.isArray(req.params.id)) {
+      id = req.params.id[0];
+    } else {
+      id = req.params.id;
+    }
+    if (!id) {
+      res.status(400).json({ error: 'Invalid employee id format. Use EMP followed by digits.' });
+      return;
+    }
+    const rawEmployeeId = id.trim();
     if (!isValidEmployeeCodeId(rawEmployeeId)) {
       res.status(400).json({ error: 'Invalid employee id format. Use EMP followed by digits.' });
       return;
