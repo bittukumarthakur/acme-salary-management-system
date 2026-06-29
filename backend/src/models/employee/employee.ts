@@ -13,6 +13,7 @@ export interface Employee {
   employeeId: string;
   fullName: string;
   email: string;
+  phone?: string; // Optional phone number
   department: string;
   designation: string;
   basicSalary: number;

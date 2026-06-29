@@ -1,6 +1,9 @@
 /**
  * API routes for employees endpoint.
  * GET /api/v1/employees - List employees with filtering, pagination, and currency conversion.
+ * POST /api/v1/employees - Create a new employee.
+ * GET /api/v1/employees/:id - Get employee by ID.
+ * PUT /api/v1/employees/:id - Update employee details and salary.
  */
 
 import { Router, Request, Response } from 'express';
@@ -10,8 +13,15 @@ import {
   getEmployeeById,
   getEmployees,
 } from '../services/employeesService';
+import {
+  updateEmployee,
+  EmployeeNotFoundError,
+  EmailAlreadyInUseError,
+  DuplicateSalaryDateError,
+} from '../services/updateEmployeeService';
 import { parseEmployeeQuery } from '../utils/employeesQuery';
 import { parseCreateEmployeePayload } from '../utils/createEmployeePayload';
+import { parseUpdateEmployeePayload } from '../utils/updateEmployeePayload';
 import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
 import type { ErrorResponse, ValidationErrorResponse } from '../models/employee/types';
 
@@ -125,6 +135,103 @@ router.get('/:id', async (req: Request, res: Response<unknown | ErrorResponse>) 
   } catch (error) {
     console.error('Failed to fetch employee by id:', error);
     res.status(500).json({ error: 'Failed to fetch employee' });
+  }
+});
+
+/**
+ * PUT /api/v1/employees/:id
+ * Updates an employee's basic information and salary structure.
+ *
+ * Request body:
+ * - fullName: string (required)
+ * - email: string (required, must be unique)
+ * - phone: string (required)
+ * - department: string (required, must be valid enum)
+ * - designation: string (required)
+ * - employmentType: string (required, must be valid enum)
+ * - status: string (required, must be valid enum)
+ * - joiningDate: string (required, ISO date)
+ * - country: string (required)
+ * - currency: string (required, ISO 4217 code)
+ * - bankAccount: string (required, FK reference)
+ * - salary: object (required)
+ *   - baseMonthlySalary: number (required, positive)
+ *   - effectiveFrom: string (required, ISO date, >= joiningDate)
+ *
+ * Success response: 200 with updated employee and salary details
+ * Error responses:
+ * - 400: Validation error or employeeId in body
+ * - 404: Employee not found
+ * - 409: Email conflict or duplicate salary date
+ * - 500: Server error
+ */
+router.put('/:id', async (req: Request, res: Response<unknown | ValidationErrorResponse>) => {
+  try {
+    // Parse and validate request body
+    const parseResult = parseUpdateEmployeePayload(req.body);
+    if (!parseResult.ok) {
+      // Check for specific errors to return as main error message
+      if ('employeeId' in parseResult.details) {
+        res.status(400).json({
+          error: parseResult.details.employeeId,
+          details: parseResult.details,
+        });
+      } else if ('salary.effectiveFrom' in parseResult.details) {
+        res.status(400).json({
+          error: parseResult.details['salary.effectiveFrom'],
+          details: parseResult.details,
+        });
+      } else {
+        res.status(400).json({
+          error: parseResult.error,
+          details: parseResult.details,
+        });
+      }
+      return;
+    }
+
+    // Extract and validate ID parameter
+    let id: string | undefined;
+    if (Array.isArray(req.params.id)) {
+      id = req.params.id[0];
+    } else {
+      id = req.params.id;
+    }
+
+    if (!id) {
+      res.status(400).json({ error: 'Invalid employee id parameter' });
+      return;
+    }
+
+    // Try to update the employee
+    const updatedEmployee = await updateEmployee(id.trim(), parseResult.value);
+    res.status(200).json(updatedEmployee);
+  } catch (error) {
+    if (error instanceof EmployeeNotFoundError) {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof EmailAlreadyInUseError) {
+      res.status(409).json({
+        error: 'Email already in use by another employee',
+        details: {
+          email: 'This email is already associated with another employee',
+        },
+      });
+      return;
+    }
+
+    if (error instanceof DuplicateSalaryDateError) {
+      res.status(409).json({
+        error: error.message,
+      });
+      return;
+    }
+
+    console.error('Failed to update employee:', error);
+    const errorMsg = error instanceof Error ? error.message : 'Failed to update employee';
+    res.status(500).json({ error: errorMsg });
   }
 });
 

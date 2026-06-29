@@ -1,0 +1,186 @@
+/**
+ * Service for updating employee information.
+ * Handles PUT /api/v1/employees/:id operations.
+ */
+
+import { prisma } from '../../lib/prisma';
+import type { EmployeeWithSalary, UpdateEmployeePayload } from '../models/employee/types';
+import { calculateSalaryComponents } from './salaryCalculation';
+import { toEmployeeWithSalary } from './employeeMapper';
+
+/**
+ * Error thrown when employee is not found.
+ */
+export class EmployeeNotFoundError extends Error {
+  constructor(id: string | number) {
+    super(`Employee ${id} not found`);
+    this.name = 'EmployeeNotFoundError';
+  }
+}
+
+/**
+ * Error thrown when email is already in use by another employee.
+ */
+export class EmailAlreadyInUseError extends Error {
+  constructor(email: string) {
+    super(`Email already in use by another employee`);
+    this.name = 'EmailAlreadyInUseError';
+  }
+}
+
+/**
+ * Error thrown when a salary record with the same effectiveFrom already exists.
+ */
+export class DuplicateSalaryDateError extends Error {
+  constructor(effectiveFrom: string) {
+    super(`A salary record with effectiveFrom ${effectiveFrom} already exists`);
+    this.name = 'DuplicateSalaryDateError';
+  }
+}
+
+/**
+ * Updates an employee's basic information and salary structure.
+ *
+ * @param employeeId - Numeric ID or employeeId (EMP0001)
+ * @param payload - Update payload with all required fields
+ * @returns Updated employee with salary details
+ * @throws EmployeeNotFoundError if employee doesn't exist
+ * @throws EmailAlreadyInUseError if email is used by another employee
+ * @throws DuplicateSalaryDateError if salary effective date already exists
+ */
+export async function updateEmployee(
+  employeeId: string | number,
+  payload: UpdateEmployeePayload,
+): Promise<EmployeeWithSalary> {
+  // Resolve employee ID (could be numeric or string like EMP0001)
+  const numericId = typeof employeeId === 'string' ? Number(employeeId) : employeeId;
+  const isNumericId = !isNaN(numericId) && Number.isInteger(numericId);
+
+  // Find the employee
+  const employee = isNumericId
+    ? await prisma.employee.findUnique({ where: { id: numericId } })
+    : await prisma.employee.findUnique({ where: { employeeId: String(employeeId) } });
+
+  if (!employee) {
+    throw new EmployeeNotFoundError(employeeId);
+  }
+
+  // Check if email is already in use by another employee
+  if (payload.email !== employee.email) {
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { email: payload.email },
+    });
+    if (existingEmployee) {
+      throw new EmailAlreadyInUseError(payload.email);
+    }
+  }
+
+  // Resolve department and designation by name
+  const department = await prisma.department.findFirst({
+    where: { name: payload.department },
+  });
+  if (!department) {
+    throw new Error(`Department ${payload.department} not found`);
+  }
+
+  const designation = await prisma.designation.findFirst({
+    where: { title: payload.designation },
+  });
+  if (!designation) {
+    throw new Error(`Designation ${payload.designation} not found`);
+  }
+
+  // Update employee basic information
+  await prisma.employee.update({
+    where: { id: employee.id },
+    data: {
+      name: payload.fullName,
+      email: payload.email,
+      phoneNumber: payload.phone,
+      departmentId: department.id,
+      designationId: designation.id,
+      employmentType: payload.employmentType,
+      status: payload.status,
+      joiningDate: new Date(payload.joiningDate),
+      country: payload.country,
+      currency: payload.currency,
+      basicSalary: payload.salary.baseMonthlySalary,
+    },
+  });
+
+  // Re-fetch the updated employee with relationships
+  const updatedEmployee = await prisma.employee.findUniqueOrThrow({
+    where: { id: employee.id },
+    include: {
+      department: {
+        select: { id: true, name: true },
+      },
+      designation: {
+        select: { id: true, title: true },
+      },
+    },
+  });
+
+  // Check if we need to create a new salary history entry
+  const effectiveFromDate = new Date(payload.salary.effectiveFrom);
+
+  // Check if a salary entry with this effectiveDate already exists
+  const existingSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
+    where: {
+      employeeId: employee.id,
+      effectiveDate: effectiveFromDate,
+    },
+  });
+
+  // Only create a new salary history entry if:
+  // 1. The salary amount changed, OR
+  // 2. The effective date is new
+  const previousSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
+    where: { employeeId: employee.id },
+    orderBy: { effectiveDate: 'desc' },
+  });
+
+  const salaryChanged =
+    !previousSalaryEntry ||
+    previousSalaryEntry.basicSalary !== payload.salary.baseMonthlySalary;
+
+  if (salaryChanged && !existingSalaryEntry) {
+    // Create new salary history entry
+    await prisma.employeeSalaryStructure.create({
+      data: {
+        employeeId: employee.id,
+        basicSalary: payload.salary.baseMonthlySalary,
+        effectiveDate: effectiveFromDate,
+        currency: payload.currency,
+      },
+    });
+  } else if (salaryChanged && existingSalaryEntry) {
+    // Update existing salary entry
+    await prisma.employeeSalaryStructure.update({
+      where: { id: existingSalaryEntry.id },
+      data: {
+        basicSalary: payload.salary.baseMonthlySalary,
+        currency: payload.currency,
+      },
+    });
+  }
+
+  // Get the latest salary entry for response
+  const latestSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
+    where: { employeeId: employee.id },
+    orderBy: { effectiveDate: 'desc' },
+  });
+
+  // Calculate salary components
+  const salaryComponents = calculateSalaryComponents(payload.salary.baseMonthlySalary);
+
+  // Map to domain model with salary details
+  return toEmployeeWithSalary(
+    updatedEmployee,
+    latestSalaryEntry || {
+      basicSalary: payload.salary.baseMonthlySalary,
+      effectiveDate: effectiveFromDate,
+    },
+    salaryComponents,
+  );
+}

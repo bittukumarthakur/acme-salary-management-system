@@ -111,3 +111,57 @@ export interface CreateEmployeePayload {
 export interface ValidationErrorResponse extends ErrorResponse {
   details: Record<string, string>;
 }
+
+/** Salary component for response */
+export interface SalaryComponent {
+  name: string;
+  amount: number;
+}
+
+/** Salary structure breakdown in response */
+export interface SalaryComponentsBreakdown {
+  earnings: SalaryComponent[];
+  deductions: SalaryComponent[];
+}
+
+/** Salary information in update/get response */
+export interface SalaryInfo {
+  baseMonthlySalary: number;
+  effectiveFrom: string; // ISO date YYYY-MM-DD
+  ctcAnnual: number;
+  netPayMonthly: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  components: SalaryComponentsBreakdown;
+}
+
+/** Employee with salary details for PUT response */
+export interface EmployeeWithSalary extends Employee {
+  salary: SalaryInfo;
+  updatedAt: string; // ISO timestamp
+}
+
+/** Salary revision input for PUT payload */
+export interface UpdateSalaryInput {
+  baseMonthlySalary: number;
+  effectiveFrom: string; // ISO date YYYY-MM-DD
+}
+
+/** Employee details for PUT /api/v1/employees/:id payload */
+export interface UpdateEmployeeInput {
+  fullName: string;
+  email: string;
+  phone: string;
+  department: string;
+  designation: string;
+  employmentType: string;
+  status: string;
+  joiningDate: string; // ISO date YYYY-MM-DD
+  country: string;
+  currency: string;
+  bankAccount: string;
+  salary: UpdateSalaryInput;
+}
+
+/** Payload for PUT /api/v1/employees/:id */
+export interface UpdateEmployeePayload extends UpdateEmployeeInput {}
