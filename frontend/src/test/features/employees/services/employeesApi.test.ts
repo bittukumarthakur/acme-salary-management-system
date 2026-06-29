@@ -6,6 +6,7 @@ import {
   updateEmployee,
   type EmployeesQueryParams,
 } from '../../../../features/employees/services/employeesApi'
+import type { UpdateEmployeePayload } from '../../../../features/employees/types/employees'
 import { employeeDetailsFixture } from '../../../data/employeeDetails'
 
 const expectedBaseUrl =
@@ -232,7 +233,7 @@ describe('employeesApi', () => {
       }),
     } as Response)
 
-    const payload = {
+    const payload: UpdateEmployeePayload = {
       fullName: 'John Doe',
       email: 'john.doe@acme.com',
       phone: '+91 98765 43210',
