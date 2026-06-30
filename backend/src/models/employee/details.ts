@@ -65,5 +65,4 @@ export interface EmployeeDetailsResponse {
     jobInformation: JobInformation;
   };
   salaryStructure: SalaryStructure;
-  salaryHistory: SalaryHistoryEntry[];
 }

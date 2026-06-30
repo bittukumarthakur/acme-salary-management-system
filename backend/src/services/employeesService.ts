@@ -24,7 +24,6 @@ import {
   mapEmployeeRowToApi,
 } from '../utils/employeesService';
 import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
-import { toSalaryHistoryEntry } from './employeeMapper';
 
 export const DUPLICATE_EMPLOYEE_ID_ERROR = 'EMPLOYEE_ID_ALREADY_EXISTS';
 
@@ -202,47 +201,9 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
     earningsLineItems.push({ component: 'Basic Salary', amount: baseSalaryMonthly });
   }
 
-  // Create SalaryComponent format for salary history (uses 'name' field)
-  const earningsComponents = salaryComponents
-    .filter((item) => item.component.type === 'EARNING')
-    .map((item) => ({ name: item.component.name, amount: item.amount }));
-  const deductionsComponents = salaryComponents
-    .filter((item) => item.component.type === 'DEDUCTION')
-    .map((item) => ({ name: item.component.name, amount: item.amount }));
-
-  if (earningsComponents.length === 0) {
-    earningsComponents.push({ name: 'Basic Salary', amount: baseSalaryMonthly });
-  }
-
   const totalEarnings = earningsLineItems.reduce((total, item) => total + item.amount, 0);
   const totalDeductions = deductionsLineItems.reduce((total, item) => total + item.amount, 0);
   const netPayMonthly = totalEarnings - totalDeductions;
-
-  // Build salary history from fetched structures
-  const salaryStructures = row.salaryStructures ?? [];
-  const salaryHistory = salaryStructures.map((structure, index) => {
-    const isCurrent = index === 0; // First (newest) is current
-    return toSalaryHistoryEntry(
-      structure,
-      { earnings: earningsComponents, deductions: deductionsComponents },
-      isCurrent,
-    );
-  });
-
-  // Ensure at least one entry in history (current salary)
-  if (salaryHistory.length === 0) {
-    salaryHistory.push(
-      toSalaryHistoryEntry(
-        {
-          id: 0,
-          basicSalary: baseSalaryMonthly,
-          effectiveDate: row.updatedAt || new Date(),
-        },
-        { earnings: earningsComponents, deductions: deductionsComponents },
-        true,
-      ),
-    );
-  }
 
   const response: EmployeeDetailsResponse = {
     summary: {
@@ -289,7 +250,6 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
       baseSalaryMonthly,
       effectiveFrom,
     },
-    salaryHistory,
   };
 
   return response;

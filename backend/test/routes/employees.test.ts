@@ -6,7 +6,6 @@
 import request from 'supertest';
 import { createApp } from '../../src/app';
 import { createEmployee, getEmployees } from '../../src/services/employeesService';
-import type { SalaryHistoryEntry } from '../../src/models/employee/details';
 import { alice, bob, charlie, inactive } from '../data/employees';
 
 jest.mock('../../src/services/employeesService', () => ({
@@ -877,53 +876,6 @@ describe('GET /api/v1/employees/:id', () => {
       expect(typeof entry.netPayMonthly).toBe('number');
       expect(typeof entry.ctcAnnual).toBe('number');
       expect(typeof entry.isCurrent).toBe('boolean');
-    });
-  });
-
-  describe('Salary History - AC4: Only latest entry marked as isCurrent', () => {
-    it('only the most recent entry has isCurrent=true, all others have isCurrent=false', async () => {
-      const employeeWithHistory = {
-        ...employeeDetailsResponse,
-        salaryHistory: [
-          {
-            id: 'rev_3',
-            effectiveFrom: '2024-01-01',
-            baseSalaryMonthly: 2252910,
-            netPayMonthly: 247821,
-            ctcAnnual: 6218040,
-            isCurrent: true,
-          },
-          {
-            id: 'rev_2',
-            effectiveFrom: '2023-01-01',
-            baseSalaryMonthly: 2000000,
-            netPayMonthly: 220000,
-            ctcAnnual: 5500000,
-            isCurrent: false,
-          },
-          {
-            id: 'rev_1',
-            effectiveFrom: '2022-06-15',
-            baseSalaryMonthly: 1800000,
-            netPayMonthly: 190000,
-            ctcAnnual: 4500000,
-            isCurrent: false,
-          },
-        ],
-      };
-
-      mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeWithHistory);
-
-      const res = await request(app).get('/api/v1/employees/EMP0001');
-
-      expect(res.status).toBe(200);
-      const history = res.body.salaryHistory as SalaryHistoryEntry[];
-      const currentCount = history.filter((e) => e.isCurrent === true).length;
-      expect(currentCount).toBe(1);
-      expect(history[0].isCurrent).toBe(true);
-      history.slice(1).forEach((entry) => {
-        expect(entry.isCurrent).toBe(false);
-      });
     });
   });
 });
