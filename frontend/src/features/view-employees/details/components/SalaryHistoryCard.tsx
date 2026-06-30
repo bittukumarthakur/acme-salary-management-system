@@ -47,16 +47,22 @@ export function SalaryHistoryCard({ entry }: SalaryHistoryCardProps) {
             label="Base Salary (Monthly)"
             value={formatCurrencyWithCode(
               entry.baseSalaryMonthly,
-              entry.currency,
+              entry.currency || 'INR',
             )}
           />
           <DetailField
             label="Net Pay (Monthly)"
-            value={formatCurrencyWithCode(entry.netPayMonthly, entry.currency)}
+            value={formatCurrencyWithCode(
+              entry.netPayMonthly,
+              entry.currency || 'INR',
+            )}
           />
           <DetailField
             label="CTC (Annual)"
-            value={formatCurrencyWithCode(entry.ctcAnnual, entry.currency)}
+            value={formatCurrencyWithCode(
+              entry.ctcAnnual,
+              entry.currency || 'INR',
+            )}
           />
         </Stack>
       </CardContent>

@@ -9,6 +9,8 @@ import {
   Stack,
   Box,
   Paper,
+  CircularProgress,
+  Alert,
 } from '@mui/material'
 import { useSalaryHistory } from '../hooks/useSalaryHistory'
 import { CurrentBadge } from './CurrentBadge'
@@ -17,11 +19,12 @@ import { formatCurrencyWithCode } from '../../../../shared/utils/formatters'
 
 /**
  * SalaryHistorySection displays salary revision history in a table layout.
+ * Fetches data from: GET /api/v1/employees/:id/salary-history
  * Shows: Effective From, Base Salary (Monthly), CTC (Annual), Currency, Remarks
  * Current entry marked with "Current" badge in Remarks column
  */
 export function SalaryHistorySection() {
-  const history = useSalaryHistory()
+  const { history, isLoading, error } = useSalaryHistory()
 
   // Sort by effectiveFrom descending (newest first) as per API contract
   const sortedHistory = [...history].sort(
@@ -30,10 +33,38 @@ export function SalaryHistorySection() {
       new Date(a.effectiveFrom || '').getTime(),
   )
 
+  if (isLoading) {
+    return (
+      <Stack
+        spacing={2}
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4,
+        }}
+      >
+        <CircularProgress size={40} />
+        <Typography variant="body2">Loading salary history...</Typography>
+      </Stack>
+    )
+  }
+
+  if (error) {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="h6">Salary Revision History</Typography>
+        <Alert severity="error">{error.message}</Alert>
+      </Stack>
+    )
+  }
+
   if (sortedHistory.length === 0) {
     return (
       <Stack spacing={2}>
         <Typography variant="h6">Salary Revision History</Typography>
+        <Typography variant="body2" color="textSecondary">
+          No salary history available
+        </Typography>
       </Stack>
     )
   }
@@ -68,13 +99,16 @@ export function SalaryHistorySection() {
                 <TableCell>
                   {formatCurrencyWithCode(
                     entry.baseSalaryMonthly,
-                    entry.currency,
+                    entry.currency || 'INR',
                   )}
                 </TableCell>
                 <TableCell>
-                  {formatCurrencyWithCode(entry.ctcAnnual, entry.currency)}
+                  {formatCurrencyWithCode(
+                    entry.ctcAnnual,
+                    entry.currency || 'INR',
+                  )}
                 </TableCell>
-                <TableCell>{entry.currency}</TableCell>
+                <TableCell>{entry.currency || 'INR'}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="body2">

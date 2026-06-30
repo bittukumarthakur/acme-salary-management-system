@@ -5,9 +5,34 @@ import * as useSalaryHistoryModule from '../../../../../src/features/view-employ
 
 describe('SalaryHistorySection', () => {
   it('renders the section heading', () => {
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue([])
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: [],
+      isLoading: false,
+      error: null,
+    })
     render(<SalaryHistorySection />)
     expect(screen.getByText('Salary Revision History')).toBeInTheDocument()
+  })
+
+  it('shows loading spinner when data is being fetched', () => {
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: [],
+      isLoading: true,
+      error: null,
+    })
+    render(<SalaryHistorySection />)
+    expect(screen.getByText('Loading salary history...')).toBeInTheDocument()
+  })
+
+  it('shows error alert when API fails', () => {
+    const errorMessage = 'Failed to fetch salary history'
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: [],
+      isLoading: false,
+      error: new Error(errorMessage),
+    })
+    render(<SalaryHistorySection />)
+    expect(screen.getByText(errorMessage)).toBeInTheDocument()
   })
 
   it('renders table with header columns', () => {
@@ -34,9 +59,11 @@ describe('SalaryHistorySection', () => {
       },
     ]
 
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue(
-      mockHistory,
-    )
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: mockHistory,
+      isLoading: false,
+      error: null,
+    })
 
     render(<SalaryHistorySection />)
 
@@ -72,9 +99,11 @@ describe('SalaryHistorySection', () => {
       },
     ]
 
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue(
-      mockHistory,
-    )
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: mockHistory,
+      isLoading: false,
+      error: null,
+    })
 
     render(<SalaryHistorySection />)
 
@@ -121,9 +150,11 @@ describe('SalaryHistorySection', () => {
       },
     ]
 
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue(
-      mockHistory,
-    )
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: mockHistory,
+      isLoading: false,
+      error: null,
+    })
 
     render(<SalaryHistorySection />)
 
@@ -133,10 +164,14 @@ describe('SalaryHistorySection', () => {
   })
 
   it('renders empty state when no history is provided', () => {
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue([])
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: [],
+      isLoading: false,
+      error: null,
+    })
     render(<SalaryHistorySection />)
 
-    expect(screen.getByText('Salary Revision History')).toBeInTheDocument()
+    expect(screen.getByText('No salary history available')).toBeInTheDocument()
   })
 
   it('shows "Current" badge only in the entry with isCurrent true', () => {
@@ -163,9 +198,11 @@ describe('SalaryHistorySection', () => {
       },
     ]
 
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue(
-      mockHistory,
-    )
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: mockHistory,
+      isLoading: false,
+      error: null,
+    })
 
     render(<SalaryHistorySection />)
 
@@ -198,9 +235,11 @@ describe('SalaryHistorySection', () => {
       },
     ]
 
-    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue(
-      mockHistory,
-    )
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: mockHistory,
+      isLoading: false,
+      error: null,
+    })
 
     render(<SalaryHistorySection />)
 

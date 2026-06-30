@@ -5,9 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { EmployeeDetailsPage } from '../../../../../features/view-employees/details/pages/EmployeeDetailsPage'
 import { fetchEmployeeDetails } from '../../../../../features/employees/services/employeesApi'
+import * as useSalaryHistoryModule from '../../../../../features/view-employees/details/hooks/useSalaryHistory'
 import { employeeDetailsFixture } from '../../../../data/employeeDetails'
 
 vi.mock('../../../../../features/employees/services/employeesApi')
+vi.mock('../../../../../features/view-employees/details/hooks/useSalaryHistory')
 
 const theme = createTheme({
   palette: {
@@ -19,6 +21,27 @@ const theme = createTheme({
 })
 
 const mockFetchEmployeeDetails = vi.mocked(fetchEmployeeDetails)
+
+const mockSalaryHistory = [
+  {
+    id: 'rev_1',
+    effectiveFrom: '2024-01-01',
+    currency: 'INR',
+    baseSalaryMonthly: 2252910,
+    netPayMonthly: 247821,
+    ctcAnnual: 6218040,
+    isCurrent: true,
+  },
+  {
+    id: 'rev_2',
+    effectiveFrom: '2023-01-01',
+    currency: 'INR',
+    baseSalaryMonthly: 2000000,
+    netPayMonthly: 220000,
+    ctcAnnual: 5500000,
+    isCurrent: false,
+  },
+]
 
 function renderEmployeeDetailsPage(initialEntry = '/employees/EMP0001') {
   return render(
@@ -44,6 +67,11 @@ describe('EmployeeDetailsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetchEmployeeDetails.mockResolvedValue(employeeDetailsFixture)
+    vi.spyOn(useSalaryHistoryModule, 'useSalaryHistory').mockReturnValue({
+      history: mockSalaryHistory,
+      isLoading: false,
+      error: null,
+    })
   })
 
   it('renders employee profile, overview details, and tab content from the API', async () => {

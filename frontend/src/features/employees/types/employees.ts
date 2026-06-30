@@ -103,7 +103,7 @@ export interface SalaryStructure {
 export interface SalaryHistoryEntry {
   id: string
   effectiveFrom: string | null
-  currency: string
+  currency?: string
   baseSalaryMonthly: number
   netPayMonthly: number
   ctcAnnual: number

@@ -1,43 +1,53 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import type { SalaryHistoryEntry } from '../../../employees/types/employees'
 
 /**
- * Hook to provide hardcoded salary history data aligned with API contract.
- * This matches the API structure: id, effectiveFrom (ISO date), baseSalaryMonthly,
- * netPayMonthly, ctcAnnual, isCurrent (boolean).
- *
- * TODO: Replace with actual API call once backend story is complete.
+ * Hook to fetch salary history from the dedicated API endpoint.
+ * Fetches all salary revisions for the current employee from:
+ * GET /api/v1/employees/:id/salary-history
  */
-export function useSalaryHistory(): SalaryHistoryEntry[] {
-  // Hardcoded data matching the API contract structure
-  const history: SalaryHistoryEntry[] = [
-    {
-      id: 'rev_3',
-      effectiveFrom: '2024-01-01',
-      currency: 'INR',
-      baseSalaryMonthly: 2252910,
-      netPayMonthly: 247821,
-      ctcAnnual: 6218040,
-      isCurrent: true,
-    },
-    {
-      id: 'rev_2',
-      effectiveFrom: '2023-01-01',
-      currency: 'INR',
-      baseSalaryMonthly: 2000000,
-      netPayMonthly: 220000,
-      ctcAnnual: 5500000,
-      isCurrent: false,
-    },
-    {
-      id: 'rev_1',
-      effectiveFrom: '2022-06-15',
-      currency: 'INR',
-      baseSalaryMonthly: 1800000,
-      netPayMonthly: 190000,
-      ctcAnnual: 4500000,
-      isCurrent: false,
-    },
-  ]
+export function useSalaryHistory() {
+  const { employeeId } = useParams<{ employeeId: string }>()
+  const [history, setHistory] = useState<SalaryHistoryEntry[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
-  return history
+  useEffect(() => {
+    if (!employeeId) {
+      return
+    }
+
+    const fetchSalaryHistory = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(
+          `/api/v1/employees/${employeeId}/salary-history`,
+        )
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch salary history: ${response.statusText}`,
+          )
+        }
+
+        const data = (await response.json()) as SalaryHistoryEntry[]
+        setHistory(data)
+      } catch (err) {
+        const errorObj = err instanceof Error ? err : new Error('Unknown error')
+        setError(errorObj)
+        setHistory([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchSalaryHistory()
+  }, [employeeId])
+
+  return { history, isLoading, error }
 }
