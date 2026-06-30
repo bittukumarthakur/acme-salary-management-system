@@ -90,7 +90,9 @@ export function OverviewTabPanel({
     },
     {
       label: 'Status',
-      value: <EmployeeStatusChip status={personalInformation.status} size="small" />,
+      value: (
+        <EmployeeStatusChip status={personalInformation.status} size="small" />
+      ),
     },
     {
       label: 'Avatar URL',

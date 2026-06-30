@@ -63,7 +63,10 @@ export function EmployeeSummaryCard({
                   <Typography variant="h5" component="h1">
                     {details.summary.fullName}
                   </Typography>
-                  <EmployeeStatusChip status={details.summary.status} size="small" />
+                  <EmployeeStatusChip
+                    status={details.summary.status}
+                    size="small"
+                  />
                 </Stack>
                 <Typography color="primary.main" sx={{ fontWeight: 700 }}>
                   {details.summary.employeeId}
