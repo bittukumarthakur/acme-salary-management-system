@@ -132,4 +132,13 @@ describe('HomePage', () => {
     expect(screen.getByText('Generate Payroll')).toBeInTheDocument()
     expect(screen.getByText('View Payslips')).toBeInTheDocument()
   })
+
+  it('does not load dashboard data when rendering route content in the shell', () => {
+    renderWithTheme(
+      <HomePage mainContent={<div>Employees Route Content</div>} />,
+    )
+
+    expect(screen.getByText('Employees Route Content')).toBeInTheDocument()
+    expect(useDashboardData).not.toHaveBeenCalled()
+  })
 })

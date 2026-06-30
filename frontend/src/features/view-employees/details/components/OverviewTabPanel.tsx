@@ -177,6 +177,7 @@ export function OverviewTabPanel({
       <SalaryBreakdownSection
         salaryStructure={details.salaryStructure}
         title="Salary Structure (Monthly)"
+        disableContainerPadding
       />
     </Stack>
   )

@@ -16,17 +16,11 @@ export interface HomePageProps {
   pageTitle?: string
 }
 
-export function HomePage({
-  activeNavItem = 'Dashboard',
-  onSelectNavItem,
-  mainContent,
-  pageTitle = 'Dashboard',
-}: HomePageProps) {
+function DashboardMainContent() {
   const dashboardData = useDashboardData()
 
-  const resolvedMainContent = mainContent ?? (
+  return (
     <>
-      {/* Error Alert */}
       {dashboardData.state === 'error' && (
         <Alert
           severity="error"
@@ -46,13 +40,11 @@ export function HomePage({
         </Alert>
       )}
 
-      {/* Section 1: Summary Cards */}
       <SummaryCards
         data={dashboardData.data}
         isLoading={dashboardData.state === 'loading'}
       />
 
-      {/* Section 2: Payroll & Recent Payrolls */}
       <Box sx={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
         <Grid container spacing={2} sx={{ height: '100%' }}>
           <Grid
@@ -73,10 +65,18 @@ export function HomePage({
         </Grid>
       </Box>
 
-      {/* Section 3: Quick Actions */}
       <QuickActions />
     </>
   )
+}
+
+export function HomePage({
+  activeNavItem = 'Dashboard',
+  onSelectNavItem,
+  mainContent,
+  pageTitle = 'Dashboard',
+}: HomePageProps) {
+  const resolvedMainContent = mainContent ?? <DashboardMainContent />
 
   return (
     <Box
