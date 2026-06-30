@@ -109,7 +109,6 @@ export function EmployeeDetailsPage() {
   }
 
   const details = detailsState.details
-  const salaryHistory = details.salaryHistory ?? []
 
   return (
     <Stack
@@ -178,15 +177,11 @@ export function EmployeeDetailsPage() {
         <SalaryBreakdownSection
           salaryStructure={details.salaryStructure}
           title="Current Salary Breakdown"
-          changeSummary={salaryHistory[0]?.changeSummary}
         />
       </EmployeeDetailsTabPanel>
 
       <EmployeeDetailsTabPanel activeTab={activeTab} value="salary-history">
-        <SalaryHistorySection
-          history={salaryHistory}
-          fallback={details.salaryStructure}
-        />
+        <SalaryHistorySection />
       </EmployeeDetailsTabPanel>
     </Stack>
   )

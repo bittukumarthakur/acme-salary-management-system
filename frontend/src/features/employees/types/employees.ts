@@ -101,13 +101,15 @@ export interface SalaryStructure {
 }
 
 export interface SalaryHistoryEntry {
+  id: string
   effectiveFrom: string | null
   currency: string
   baseSalaryMonthly: number
   netPayMonthly: number
   ctcAnnual: number
-  totalEarnings: number
-  totalDeductions: number
+  isCurrent: boolean
+  totalEarnings?: number
+  totalDeductions?: number
   changeSummary?: string | null
 }
 

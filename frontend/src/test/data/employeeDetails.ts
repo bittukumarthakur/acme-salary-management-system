@@ -56,6 +56,7 @@ export const employeeDetailsFixture = {
   },
   salaryHistory: [
     {
+      id: 'rev_2',
       effectiveFrom: '01 Apr 2024',
       currency: 'INR',
       baseSalaryMonthly: 60000,
@@ -63,9 +64,11 @@ export const employeeDetailsFixture = {
       ctcAnnual: 1063200,
       totalEarnings: 88600,
       totalDeductions: 16950,
+      isCurrent: true,
       changeSummary: 'Annual compensation revision',
     },
     {
+      id: 'rev_1',
       effectiveFrom: '01 Jan 2024',
       currency: 'INR',
       baseSalaryMonthly: 56000,
@@ -73,6 +76,7 @@ export const employeeDetailsFixture = {
       ctcAnnual: 1005600,
       totalEarnings: 84200,
       totalDeductions: 16400,
+      isCurrent: false,
       changeSummary: 'Base salary adjustment',
     },
   ],
