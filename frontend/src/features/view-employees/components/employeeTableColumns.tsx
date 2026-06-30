@@ -9,16 +9,6 @@ import { EmployeeDetailsCell } from './EmployeeDetailsCell'
 import { EmployeeRowActions } from './EmployeeRowActions'
 import { EmployeeStatusChip } from '../../employees/components/EmployeeStatusChip'
 
-const COLUMN_LAYOUT = {
-  employeeDetails: 23,
-  employeeId: 13,
-  department: 13,
-  designation: 20,
-  basicSalary: 13,
-  status: 10,
-  actions: 8,
-} as const
-
 export interface CreateEmployeeColumnsOptions {
   currency: string
   onEditEmployeeClick: (employeeId: string) => void
@@ -37,8 +27,8 @@ export function createEmployeeColumns({
       display: 'flex',
       headerAlign: 'left',
       align: 'left',
-      flex: COLUMN_LAYOUT.employeeDetails,
-      minWidth: 280,
+      flex: 1.6,
+      minWidth: 300,
       renderCell: ({ row }) => <EmployeeDetailsCell employee={row} />,
     },
     {
@@ -47,7 +37,7 @@ export function createEmployeeColumns({
       display: 'flex',
       headerAlign: 'left',
       align: 'left',
-      flex: COLUMN_LAYOUT.employeeId,
+      flex: 0.8,
       minWidth: 140,
       renderCell: ({ row }) => (
         <Typography variant="body1">{row.employeeId}</Typography>
@@ -59,8 +49,8 @@ export function createEmployeeColumns({
       display: 'flex',
       headerAlign: 'left',
       align: 'left',
-      flex: COLUMN_LAYOUT.department,
-      minWidth: 140,
+      flex: 0.8,
+      minWidth: 160,
       renderCell: ({ row }) => (
         <Typography variant="body1">{toTitleCase(row.department)}</Typography>
       ),
@@ -72,8 +62,8 @@ export function createEmployeeColumns({
       filterable: false,
       headerAlign: 'left',
       align: 'left',
-      flex: COLUMN_LAYOUT.designation,
-      minWidth: 190,
+      flex: 1,
+      minWidth: 180,
       renderCell: ({ row }) => (
         <Typography variant="body1">{toTitleCase(row.designation)}</Typography>
       ),
@@ -86,8 +76,8 @@ export function createEmployeeColumns({
       filterable: false,
       align: 'left',
       headerAlign: 'left',
-      flex: COLUMN_LAYOUT.basicSalary,
-      minWidth: 160,
+      flex: 0.9,
+      minWidth: 170,
       renderCell: ({ row }) => (
         <Typography variant="body1">
           {formatCurrencyWithSymbol(row.basicSalary, row.currency || currency)}
@@ -102,8 +92,8 @@ export function createEmployeeColumns({
       filterable: false,
       align: 'left',
       headerAlign: 'left',
-      flex: COLUMN_LAYOUT.status,
-      minWidth: 130,
+      flex: 0.7,
+      minWidth: 140,
       renderCell: ({ row }) => <EmployeeStatusChip status={row.status} />,
     },
     {
@@ -114,8 +104,8 @@ export function createEmployeeColumns({
       filterable: false,
       align: 'left',
       headerAlign: 'left',
-      flex: COLUMN_LAYOUT.actions,
-      minWidth: 100,
+      flex: 0.6,
+      minWidth: 120,
       renderCell: ({ row }) => (
         <EmployeeRowActions
           employee={row}

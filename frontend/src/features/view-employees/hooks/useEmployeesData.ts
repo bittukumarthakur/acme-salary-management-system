@@ -13,7 +13,7 @@ import type {
 type EmployeesViewState = 'loading' | 'success' | 'error'
 
 const DEFAULT_PAGE = 1
-const DEFAULT_PAGE_LIMIT = 10
+const DEFAULT_PAGE_LIMIT = 15
 const DEFAULT_CURRENCY = 'INR'
 
 const emptyMeta: EmployeesMeta = {

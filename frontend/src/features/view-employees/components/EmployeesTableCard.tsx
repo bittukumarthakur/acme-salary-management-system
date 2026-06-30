@@ -80,6 +80,11 @@ export function EmployeesTableCard({
         columns={columns}
         getRowId={(row) => row.employeeId}
         loading={isLoading}
+        sx={{
+          flex: 1,
+          height: '100%',
+          border: 0,
+        }}
         slots={{
           footer: EmployeesFooter,
         }}

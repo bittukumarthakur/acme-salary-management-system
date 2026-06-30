@@ -34,7 +34,7 @@ const mockEmployeesResponse: EmployeesListResponse = {
   ],
   meta: {
     page: 1,
-    pageLimit: 10,
+    pageLimit: 15,
     totalRecords: 10,
     totalPages: 1,
     hasNextPage: false,
@@ -76,7 +76,7 @@ describe('useEmployeesData', () => {
       department: '',
       status: '',
       page: 1,
-      pageLimit: 10,
+      pageLimit: 15,
       targetCurrencyCode: 'INR',
     })
   })
@@ -115,7 +115,7 @@ describe('useEmployeesData', () => {
       department: '',
       status: '',
       page: 1,
-      pageLimit: 10,
+      pageLimit: 15,
       targetCurrencyCode: 'INR',
     })
 
@@ -143,7 +143,7 @@ describe('useEmployeesData', () => {
         department: '',
         status: '',
         page: 3,
-        pageLimit: 10,
+        pageLimit: 15,
         targetCurrencyCode: 'INR',
       })
     })
@@ -159,7 +159,7 @@ describe('useEmployeesData', () => {
         department: 'FINANCE',
         status: 'ACTIVE',
         page: 1,
-        pageLimit: 10,
+        pageLimit: 15,
         targetCurrencyCode: 'INR',
       })
     })

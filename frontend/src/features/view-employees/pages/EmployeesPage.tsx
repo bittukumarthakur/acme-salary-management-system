@@ -54,18 +54,20 @@ export function EmployeesPage() {
         </Alert>
       )}
 
-      <EmployeesTableCard
-        employees={employees}
-        meta={meta}
-        isLoading={state === 'loading'}
-        onPageChange={setPage}
-        onEditEmployeeClick={(employeeId) =>
-          navigate(`/employees/${employeeId}/edit`)
-        }
-        onViewEmployeeClick={(employeeId) =>
-          navigate(`/employees/${employeeId}`)
-        }
-      />
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <EmployeesTableCard
+          employees={employees}
+          meta={meta}
+          isLoading={state === 'loading'}
+          onPageChange={setPage}
+          onEditEmployeeClick={(employeeId) =>
+            navigate(`/employees/${employeeId}/edit`)
+          }
+          onViewEmployeeClick={(employeeId) =>
+            navigate(`/employees/${employeeId}`)
+          }
+        />
+      </Box>
     </Box>
   )
 }

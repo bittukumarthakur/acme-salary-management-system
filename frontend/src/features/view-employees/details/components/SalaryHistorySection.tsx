@@ -81,22 +81,32 @@ export function SalaryHistorySection() {
           overflowY: 'hidden',
         }}
       >
-        <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+        <Table
+          sx={{
+            width: '100%',
+          }}
+        >
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableCell sx={{ fontWeight: 600, width: '20%' }}>
+              <TableCell sx={{ fontWeight: 600, minWidth: '120px' }}>
                 Effective From
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: '20%' }} align="right">
+              <TableCell
+                sx={{ fontWeight: 600, minWidth: '150px' }}
+                align="right"
+              >
                 Base Salary (Monthly)
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: '20%' }} align="right">
+              <TableCell
+                sx={{ fontWeight: 600, minWidth: '140px' }}
+                align="right"
+              >
                 CTC (Annual)
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: '15%' }}>
+              <TableCell sx={{ fontWeight: 600, minWidth: '80px' }}>
                 Currency
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, width: '25%' }}>
+              <TableCell sx={{ fontWeight: 600, minWidth: '150px' }}>
                 Remarks
               </TableCell>
             </TableRow>
@@ -104,27 +114,27 @@ export function SalaryHistorySection() {
           <TableBody>
             {sortedHistory.map((entry) => (
               <TableRow key={entry.id}>
-                <TableCell sx={{ width: '20%' }}>
+                <TableCell sx={{ minWidth: '120px' }}>
                   {entry.effectiveFrom
                     ? formatHistoryDate(entry.effectiveFrom)
                     : 'No date'}
                 </TableCell>
-                <TableCell sx={{ width: '20%' }} align="right">
+                <TableCell sx={{ minWidth: '150px' }} align="right">
                   {formatCurrencyWithCode(
                     entry.baseSalaryMonthly,
                     entry.currency || 'INR',
                   )}
                 </TableCell>
-                <TableCell sx={{ width: '20%' }} align="right">
+                <TableCell sx={{ minWidth: '140px' }} align="right">
                   {formatCurrencyWithCode(
                     entry.ctcAnnual,
                     entry.currency || 'INR',
                   )}
                 </TableCell>
-                <TableCell sx={{ width: '15%' }}>
+                <TableCell sx={{ minWidth: '80px' }}>
                   {entry.currency || 'INR'}
                 </TableCell>
-                <TableCell sx={{ width: '25%' }}>
+                <TableCell sx={{ minWidth: '150px' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography
                       variant="body2"
