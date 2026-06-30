@@ -6,6 +6,7 @@
 import request from 'supertest';
 import { createApp } from '../../src/app';
 import { createEmployee, getEmployees } from '../../src/services/employeesService';
+import type { SalaryHistoryEntry } from '../../src/models/employee/details';
 import { alice, bob, charlie, inactive } from '../data/employees';
 
 jest.mock('../../src/services/employeesService', () => ({
@@ -683,6 +684,16 @@ describe('GET /api/v1/employees/:id', () => {
       baseSalaryMonthly: 60000,
       effectiveFrom: '01 Apr 2024',
     },
+    salaryHistory: [
+      {
+        id: 'rev_1',
+        effectiveFrom: '2024-04-01',
+        baseSalaryMonthly: 60000,
+        netPayMonthly: 71800,
+        ctcAnnual: 864000,
+        isCurrent: true,
+      },
+    ],
   };
 
   it('returns 200 with one employee object for a valid employee id', async () => {
@@ -757,5 +768,162 @@ describe('GET /api/v1/employees/:id', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toContain('Invalid employee id format');
     expect(mockedEmployeesService.getEmployeeById).not.toHaveBeenCalled();
+  });
+
+  describe('Salary History - AC1: Multiple revisions ordered descending', () => {
+    it('returns salaryHistory array with multiple revisions ordered newest-first', async () => {
+      const employeeWithHistory = {
+        ...employeeDetailsResponse,
+        salaryHistory: [
+          {
+            id: 'rev_3',
+            effectiveFrom: '2024-01-01',
+            baseSalaryMonthly: 2252910,
+            netPayMonthly: 247821,
+            ctcAnnual: 6218040,
+            isCurrent: true,
+          },
+          {
+            id: 'rev_2',
+            effectiveFrom: '2023-01-01',
+            baseSalaryMonthly: 2000000,
+            netPayMonthly: 220000,
+            ctcAnnual: 5500000,
+            isCurrent: false,
+          },
+          {
+            id: 'rev_1',
+            effectiveFrom: '2022-06-15',
+            baseSalaryMonthly: 1800000,
+            netPayMonthly: 190000,
+            ctcAnnual: 4500000,
+            isCurrent: false,
+          },
+        ],
+      };
+
+      mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeWithHistory);
+
+      const res = await request(app).get('/api/v1/employees/EMP0001');
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.salaryHistory)).toBe(true);
+      expect(res.body.salaryHistory).toHaveLength(3);
+      expect(res.body.salaryHistory[0].effectiveFrom).toBe('2024-01-01');
+      expect(res.body.salaryHistory[1].effectiveFrom).toBe('2023-01-01');
+      expect(res.body.salaryHistory[2].effectiveFrom).toBe('2022-06-15');
+    });
+  });
+
+  describe('Salary History - AC2: Single current salary when no prior revisions', () => {
+    it('returns salaryHistory with one entry (current) when no prior revisions exist', async () => {
+      const employeeWithoutHistory = {
+        ...employeeDetailsResponse,
+        salaryHistory: [
+          {
+            id: 'rev_current',
+            effectiveFrom: '2022-06-15',
+            baseSalaryMonthly: 2252910,
+            netPayMonthly: 247821,
+            ctcAnnual: 6218040,
+            isCurrent: true,
+          },
+        ],
+      };
+
+      mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeWithoutHistory);
+
+      const res = await request(app).get('/api/v1/employees/EMP0001');
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.salaryHistory)).toBe(true);
+      expect(res.body.salaryHistory).toHaveLength(1);
+      expect(res.body.salaryHistory[0].isCurrent).toBe(true);
+      expect(res.body.salaryHistory[0].effectiveFrom).toBe('2022-06-15');
+    });
+  });
+
+  describe('Salary History - AC3: Correct schema for each entry', () => {
+    it('each salaryHistory entry contains id, effectiveFrom, baseSalaryMonthly, netPayMonthly, ctcAnnual, isCurrent', async () => {
+      const employeeWithHistory = {
+        ...employeeDetailsResponse,
+        salaryHistory: [
+          {
+            id: 'rev_1',
+            effectiveFrom: '2024-01-01',
+            baseSalaryMonthly: 2252910,
+            netPayMonthly: 247821,
+            ctcAnnual: 6218040,
+            isCurrent: true,
+          },
+        ],
+      };
+
+      mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeWithHistory);
+
+      const res = await request(app).get('/api/v1/employees/EMP0001');
+
+      expect(res.status).toBe(200);
+      const entry = res.body.salaryHistory[0];
+      expect(entry).toHaveProperty('id');
+      expect(entry).toHaveProperty('effectiveFrom');
+      expect(entry).toHaveProperty('baseSalaryMonthly');
+      expect(entry).toHaveProperty('netPayMonthly');
+      expect(entry).toHaveProperty('ctcAnnual');
+      expect(entry).toHaveProperty('isCurrent');
+      expect(typeof entry.id).toBe('string');
+      expect(typeof entry.effectiveFrom).toBe('string');
+      expect(typeof entry.baseSalaryMonthly).toBe('number');
+      expect(typeof entry.netPayMonthly).toBe('number');
+      expect(typeof entry.ctcAnnual).toBe('number');
+      expect(typeof entry.isCurrent).toBe('boolean');
+    });
+  });
+
+  describe('Salary History - AC4: Only latest entry marked as isCurrent', () => {
+    it('only the most recent entry has isCurrent=true, all others have isCurrent=false', async () => {
+      const employeeWithHistory = {
+        ...employeeDetailsResponse,
+        salaryHistory: [
+          {
+            id: 'rev_3',
+            effectiveFrom: '2024-01-01',
+            baseSalaryMonthly: 2252910,
+            netPayMonthly: 247821,
+            ctcAnnual: 6218040,
+            isCurrent: true,
+          },
+          {
+            id: 'rev_2',
+            effectiveFrom: '2023-01-01',
+            baseSalaryMonthly: 2000000,
+            netPayMonthly: 220000,
+            ctcAnnual: 5500000,
+            isCurrent: false,
+          },
+          {
+            id: 'rev_1',
+            effectiveFrom: '2022-06-15',
+            baseSalaryMonthly: 1800000,
+            netPayMonthly: 190000,
+            ctcAnnual: 4500000,
+            isCurrent: false,
+          },
+        ],
+      };
+
+      mockedEmployeesService.getEmployeeById.mockResolvedValue(employeeWithHistory);
+
+      const res = await request(app).get('/api/v1/employees/EMP0001');
+
+      expect(res.status).toBe(200);
+      const history = res.body.salaryHistory as SalaryHistoryEntry[];
+      const currentCount = history.filter((e) => e.isCurrent === true).length;
+      expect(currentCount).toBe(1);
+      expect(history[0].isCurrent).toBe(true);
+      history.slice(1).forEach((entry) => {
+        expect(entry.isCurrent).toBe(false);
+      });
+    });
   });
 });

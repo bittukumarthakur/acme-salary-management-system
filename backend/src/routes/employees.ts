@@ -3,6 +3,7 @@
  * GET /api/v1/employees - List employees with filtering, pagination, and currency conversion.
  * POST /api/v1/employees - Create a new employee.
  * GET /api/v1/employees/:id - Get employee by ID.
+ * GET /api/v1/employees/:id/salary-history - Get employee salary history.
  * PUT /api/v1/employees/:id - Update employee details and salary.
  */
 
@@ -13,6 +14,7 @@ import {
   getEmployeeById,
   getEmployees,
 } from '../services/employeesService';
+import { getSalaryHistory } from '../services/salaryHistoryService';
 import {
   updateEmployee,
   EmployeeNotFoundError,
@@ -135,6 +137,43 @@ router.get('/:id', async (req: Request, res: Response<unknown | ErrorResponse>) 
   } catch (error) {
     console.error('Failed to fetch employee by id:', error);
     res.status(500).json({ error: 'Failed to fetch employee' });
+  }
+});
+
+/**
+ * GET /api/v1/employees/:id/salary-history
+ * Fetches salary history for an employee.
+ * Returns all historical salary revisions ordered newest-first.
+ */
+router.get('/:id/salary-history', async (req: Request, res: Response<unknown | ErrorResponse>) => {
+  try {
+    let id: string | undefined;
+    if (Array.isArray(req.params.id)) {
+      id = req.params.id[0];
+    } else {
+      id = req.params.id;
+    }
+    if (!id) {
+      res.status(400).json({ error: 'Invalid employee id format. Use EMP followed by digits.' });
+      return;
+    }
+    const rawEmployeeId = id.trim();
+    if (!isValidEmployeeCodeId(rawEmployeeId)) {
+      res.status(400).json({ error: 'Invalid employee id format. Use EMP followed by digits.' });
+      return;
+    }
+
+    const salaryHistory = await getSalaryHistory(normalizeEmployeeCodeId(rawEmployeeId));
+
+    if (!salaryHistory) {
+      res.status(404).json({ error: 'Employee not found' });
+      return;
+    }
+
+    res.json(salaryHistory);
+  } catch (error) {
+    console.error('Failed to fetch salary history:', error);
+    res.status(500).json({ error: 'Failed to fetch salary history' });
   }
 });
 

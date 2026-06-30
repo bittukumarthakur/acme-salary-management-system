@@ -9,6 +9,7 @@ import type {
   SalaryComponentsBreakdown,
   SalaryInfo,
 } from '../models/employee/types';
+import type { SalaryHistoryEntry } from '../models/employee/details';
 import { calculateNetPayAndCTC } from './salaryCalculation';
 
 /**
@@ -135,5 +136,45 @@ export function toEmployeeWithSalary(
     ...employee,
     salary,
     updatedAt: updatedAtStr || '',
+  };
+}
+
+/**
+ * Builds a salary history entry from salary structure data.
+ * Converts DB salary amounts to salary history format.
+ *
+ * @param salaryStructure - Salary structure record from DB
+ * @param components - Salary components for this effective date
+ * @param isCurrent - Whether this is the current/latest salary
+ * @returns SalaryHistoryEntry for API response
+ */
+export function toSalaryHistoryEntry(
+  salaryStructure: {
+    id: number;
+    basicSalary: number;
+    effectiveDate: Date;
+  },
+  components: SalaryComponentsBreakdown,
+  isCurrent: boolean,
+): SalaryHistoryEntry {
+  // Convert effective date to ISO format YYYY-MM-DD
+  const effectiveFromStr =
+    salaryStructure.effectiveDate instanceof Date
+      ? salaryStructure.effectiveDate.toISOString().split('T')[0] || ''
+      : String(salaryStructure.effectiveDate || '');
+
+  // Calculate earnings and deductions
+  const totalEarnings = components.earnings.reduce((sum, comp) => sum + comp.amount, 0);
+  const totalDeductions = components.deductions.reduce((sum, comp) => sum + comp.amount, 0);
+  const netPayMonthly = totalEarnings - totalDeductions;
+  const ctcAnnual = totalEarnings * 12;
+
+  return {
+    id: String(salaryStructure.id),
+    effectiveFrom: effectiveFromStr,
+    baseSalaryMonthly: Math.round(salaryStructure.basicSalary),
+    netPayMonthly: Math.round(netPayMonthly),
+    ctcAnnual: Math.round(ctcAnnual),
+    isCurrent,
   };
 }

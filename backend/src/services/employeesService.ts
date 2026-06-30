@@ -24,6 +24,7 @@ import {
   mapEmployeeRowToApi,
 } from '../utils/employeesService';
 import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
+import { toSalaryHistoryEntry } from './employeeMapper';
 
 export const DUPLICATE_EMPLOYEE_ID_ERROR = 'EMPLOYEE_ID_ALREADY_EXISTS';
 
@@ -115,6 +116,7 @@ export async function getEmployees(query: EmployeeQuery): Promise<EmployeeListRe
 /**
  * Fetches one employee by id.
  * Supports numeric DB id as well as external employeeId values.
+ * Includes salary history ordered newest-first.
  */
 export async function getEmployeeById(id: string): Promise<EmployeeDetailsResponse | null> {
   const trimmedId = id.trim();
@@ -147,8 +149,8 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
       },
       salaryStructures: {
         orderBy: { effectiveDate: 'desc' },
-        take: 1,
         select: {
+          id: true,
           basicSalary: true,
           currency: true,
           effectiveDate: true,
@@ -178,6 +180,7 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
   const joinedOn = toDisplayDate(row.joiningDate);
   const primaryBankAccount = row.bankAccounts?.[0]?.accountNumber ?? null;
 
+  // Get the latest salary structure for current salary display
   const latestSalaryStructure = row.salaryStructures?.[0];
   const salaryCurrency = latestSalaryStructure?.currency ?? row.currency;
   const baseSalaryMonthly = latestSalaryStructure?.basicSalary ?? row.basicSalary;
@@ -186,20 +189,60 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
     : null;
 
   const salaryComponents = row.salaryComponents ?? [];
-  const earnings = salaryComponents
+
+  // Create SalaryLineItem format for SalaryStructure response (uses 'component' field)
+  const earningsLineItems = salaryComponents
     .filter((item) => item.component.type === 'EARNING')
     .map((item) => ({ component: item.component.name, amount: item.amount }));
-  const deductions = salaryComponents
+  const deductionsLineItems = salaryComponents
     .filter((item) => item.component.type === 'DEDUCTION')
     .map((item) => ({ component: item.component.name, amount: item.amount }));
 
-  if (earnings.length === 0) {
-    earnings.push({ component: 'Basic Salary', amount: baseSalaryMonthly });
+  if (earningsLineItems.length === 0) {
+    earningsLineItems.push({ component: 'Basic Salary', amount: baseSalaryMonthly });
   }
 
-  const totalEarnings = earnings.reduce((total, item) => total + item.amount, 0);
-  const totalDeductions = deductions.reduce((total, item) => total + item.amount, 0);
+  // Create SalaryComponent format for salary history (uses 'name' field)
+  const earningsComponents = salaryComponents
+    .filter((item) => item.component.type === 'EARNING')
+    .map((item) => ({ name: item.component.name, amount: item.amount }));
+  const deductionsComponents = salaryComponents
+    .filter((item) => item.component.type === 'DEDUCTION')
+    .map((item) => ({ name: item.component.name, amount: item.amount }));
+
+  if (earningsComponents.length === 0) {
+    earningsComponents.push({ name: 'Basic Salary', amount: baseSalaryMonthly });
+  }
+
+  const totalEarnings = earningsLineItems.reduce((total, item) => total + item.amount, 0);
+  const totalDeductions = deductionsLineItems.reduce((total, item) => total + item.amount, 0);
   const netPayMonthly = totalEarnings - totalDeductions;
+
+  // Build salary history from fetched structures
+  const salaryStructures = row.salaryStructures ?? [];
+  const salaryHistory = salaryStructures.map((structure, index) => {
+    const isCurrent = index === 0; // First (newest) is current
+    return toSalaryHistoryEntry(
+      structure,
+      { earnings: earningsComponents, deductions: deductionsComponents },
+      isCurrent,
+    );
+  });
+
+  // Ensure at least one entry in history (current salary)
+  if (salaryHistory.length === 0) {
+    salaryHistory.push(
+      toSalaryHistoryEntry(
+        {
+          id: 0,
+          basicSalary: baseSalaryMonthly,
+          effectiveDate: row.updatedAt || new Date(),
+        },
+        { earnings: earningsComponents, deductions: deductionsComponents },
+        true,
+      ),
+    );
+  }
 
   const response: EmployeeDetailsResponse = {
     summary: {
@@ -237,8 +280,8 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
     },
     salaryStructure: {
       currency: salaryCurrency,
-      earnings,
-      deductions,
+      earnings: earningsLineItems,
+      deductions: deductionsLineItems,
       totalEarnings,
       totalDeductions,
       netPayMonthly,
@@ -246,6 +289,7 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
       baseSalaryMonthly,
       effectiveFrom,
     },
+    salaryHistory,
   };
 
   return response;

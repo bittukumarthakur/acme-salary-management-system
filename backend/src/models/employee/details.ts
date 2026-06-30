@@ -49,6 +49,15 @@ export interface SalaryStructure {
   effectiveFrom: string | null;
 }
 
+export interface SalaryHistoryEntry {
+  id: string;
+  effectiveFrom: string; // ISO date: YYYY-MM-DD
+  baseSalaryMonthly: number; // integer value
+  netPayMonthly: number; // integer value
+  ctcAnnual: number; // integer value
+  isCurrent: boolean;
+}
+
 export interface EmployeeDetailsResponse {
   summary: EmployeeSummary;
   overview: {
@@ -56,4 +65,5 @@ export interface EmployeeDetailsResponse {
     jobInformation: JobInformation;
   };
   salaryStructure: SalaryStructure;
+  salaryHistory: SalaryHistoryEntry[];
 }
