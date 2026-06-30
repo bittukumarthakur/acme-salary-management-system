@@ -12,7 +12,8 @@ export interface EditEmployeeFormState {
   fullName: string
   employeeId: string
   email: string
-  phone: string
+  phoneCountryCode: string
+  phoneNumber: string
   department: string
   designation: string
   employmentType: EditableEmploymentType | ''
@@ -116,9 +117,67 @@ function isBaseSalaryComponent(component: string): boolean {
   return component.toLowerCase().includes('basic salary')
 }
 
+function parsePhoneParts(value: string | null | undefined): {
+  phoneCountryCode: string
+  phoneNumber: string
+} {
+  const fallback = {
+    phoneCountryCode: '+91',
+    phoneNumber: '',
+  }
+
+  if (!value) {
+    return fallback
+  }
+
+  const normalized = value.trim()
+  if (!normalized) {
+    return fallback
+  }
+
+  const plusPrefixedMatch = normalized.match(/^(\+\d{1,4})[\s-]*(.*)$/)
+  if (plusPrefixedMatch) {
+    return {
+      phoneCountryCode: plusPrefixedMatch[1],
+      phoneNumber: plusPrefixedMatch[2].replace(/\D/g, ''),
+    }
+  }
+
+  const swappedPlusMatch = normalized.match(/^(\d{1,4})\+\s*(.*)$/)
+  if (swappedPlusMatch) {
+    return {
+      phoneCountryCode: `+${swappedPlusMatch[1]}`,
+      phoneNumber: swappedPlusMatch[2].replace(/\D/g, ''),
+    }
+  }
+
+  const digitsOnly = normalized.replace(/\D/g, '')
+  if (!digitsOnly) {
+    return fallback
+  }
+
+  if (digitsOnly.length > 10) {
+    return {
+      phoneCountryCode: `+${digitsOnly.slice(0, digitsOnly.length - 10)}`,
+      phoneNumber: digitsOnly.slice(-10),
+    }
+  }
+
+  return {
+    phoneCountryCode: '+91',
+    phoneNumber: digitsOnly,
+  }
+}
+
+export function composePhoneNumber(form: EditEmployeeFormState): string {
+  return `${form.phoneCountryCode.trim()} ${form.phoneNumber.trim()}`.trim()
+}
+
 export function buildInitialEditEmployeeForm(
   details: EmployeeDetailsResponse,
 ): EditEmployeeFormState {
+  const phoneParts = parsePhoneParts(details.summary.phone)
+
   const earnings = details.salaryStructure.earnings
     .filter((item) => !isBaseSalaryComponent(item.component))
     .reduce<Record<string, string>>((acc, item) => {
@@ -130,7 +189,8 @@ export function buildInitialEditEmployeeForm(
     fullName: details.summary.fullName,
     employeeId: details.summary.employeeId,
     email: details.summary.email,
-    phone: details.summary.phone ?? '',
+    phoneCountryCode: phoneParts.phoneCountryCode,
+    phoneNumber: phoneParts.phoneNumber,
     department: details.summary.department,
     designation: details.summary.designation,
     employmentType: normalizeEmploymentType(details.summary.employmentType),
@@ -150,7 +210,8 @@ export function buildInitialEditEmployeeForm(
 const requiredFields: Array<keyof EditEmployeeFormState> = [
   'fullName',
   'email',
-  'phone',
+  'phoneCountryCode',
+  'phoneNumber',
   'department',
   'designation',
   'employmentType',
@@ -165,6 +226,8 @@ const requiredFields: Array<keyof EditEmployeeFormState> = [
 
 const fieldLabels: Partial<Record<keyof EditEmployeeFormState, string>> = {
   fullName: 'Full Name',
+  phoneCountryCode: 'Country Code',
+  phoneNumber: 'Phone Number',
   employmentType: 'Employment Type',
   joiningDate: 'Joining Date',
   bankAccount: 'Bank Account',
@@ -194,8 +257,12 @@ export function validateEditEmployeeForm(
     nextErrors.email = 'Enter a valid email address'
   }
 
-  if (form.phone && !/^\+?[0-9 ]{10,15}$/.test(form.phone)) {
-    nextErrors.phone = 'Enter a valid phone number'
+  if (form.phoneCountryCode && !/^\+\d{1,4}$/.test(form.phoneCountryCode)) {
+    nextErrors.phoneCountryCode = 'Enter a valid country code (example: +91)'
+  }
+
+  if (form.phoneNumber && !/^\d{6,14}$/.test(form.phoneNumber)) {
+    nextErrors.phoneNumber = 'Enter a valid phone number'
   }
 
   if (form.joiningDate && form.joiningDate > todayIso) {

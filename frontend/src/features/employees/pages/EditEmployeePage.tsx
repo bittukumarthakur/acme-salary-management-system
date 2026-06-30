@@ -19,6 +19,7 @@ import { EditEmployeeSalarySection } from '../components/edit/EditEmployeeSalary
 import { getInitials } from '../components/details/utils'
 import {
   buildInitialEditEmployeeForm,
+  composePhoneNumber,
   type EditEmployeeFormErrors,
   type EditEmployeeFormState,
   validateEditEmployeeForm,
@@ -233,7 +234,8 @@ export function EditEmployeePage() {
         fullName: true,
         employeeId: true,
         email: true,
-        phone: true,
+        phoneCountryCode: true,
+        phoneNumber: true,
         department: true,
         designation: true,
         employmentType: true,
@@ -252,7 +254,7 @@ export function EditEmployeePage() {
     const payload: UpdateEmployeePayload = {
       fullName: loadState.form.fullName.trim(),
       email: loadState.form.email.trim(),
-      phone: loadState.form.phone.trim(),
+      phone: composePhoneNumber(loadState.form),
       department: loadState.form.department.trim(),
       designation: loadState.form.designation.trim(),
       employmentType: loadState.form.employmentType as EditableEmploymentType,

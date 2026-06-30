@@ -131,17 +131,40 @@ export function EditEmployeeBasicInfoSection({
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-              <TextField
-                label="Phone"
-                size="small"
-                value={form.phone}
-                onChange={(event) => onFieldChange('phone', event.target.value)}
-                onBlur={() => onFieldBlur('phone')}
-                error={Boolean(errors.phone)}
-                helperText={errors.phone}
-                fullWidth
-                required
-              />
+              <Grid container spacing={1.5}>
+                <Grid size={{ xs: 4 }}>
+                  <TextField
+                    label="Code"
+                    size="small"
+                    placeholder="+91"
+                    value={form.phoneCountryCode}
+                    onChange={(event) =>
+                      onFieldChange('phoneCountryCode', event.target.value)
+                    }
+                    onBlur={() => onFieldBlur('phoneCountryCode')}
+                    error={Boolean(errors.phoneCountryCode)}
+                    helperText={errors.phoneCountryCode}
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid size={{ xs: 8 }}>
+                  <TextField
+                    label="Phone"
+                    size="small"
+                    placeholder="7485855955"
+                    value={form.phoneNumber}
+                    onChange={(event) =>
+                      onFieldChange('phoneNumber', event.target.value)
+                    }
+                    onBlur={() => onFieldBlur('phoneNumber')}
+                    error={Boolean(errors.phoneNumber)}
+                    helperText={errors.phoneNumber}
+                    fullWidth
+                    required
+                  />
+                </Grid>
+              </Grid>
             </Grid>
             <Grid size={{ xs: 12, md: 6, xl: 4 }}>
               <FormControl

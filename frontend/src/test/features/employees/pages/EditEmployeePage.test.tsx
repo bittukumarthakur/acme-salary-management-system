@@ -109,6 +109,7 @@ describe('EditEmployeePage', () => {
       expect.objectContaining({
         fullName: 'John Doe Updated',
         email: 'john.doe@acme.com',
+        phone: '+91 9876543210',
         employmentType: 'PERMANENT',
         salary: {
           baseMonthlySalary: 60000,

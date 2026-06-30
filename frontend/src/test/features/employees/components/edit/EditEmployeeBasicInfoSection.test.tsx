@@ -62,6 +62,8 @@ describe('<EditEmployeeBasicInfoSection />', () => {
     expect(screen.getByLabelText(/employee id/i)).toBeDisabled()
     expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
     expect(screen.getByDisplayValue('john.doe@acme.com')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('+91')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('9876543210')).toBeInTheDocument()
 
     const changePhotoButton = screen.getByRole('button', {
       name: /change photo/i,
@@ -87,6 +89,23 @@ describe('<EditEmployeeBasicInfoSection />', () => {
 
     expect(onFieldChange).toHaveBeenCalledWith('fullName', 'John Doe Updated')
     expect(onFieldBlur).toHaveBeenCalledWith('fullName')
+
+    const countryCodeInput = screen.getByLabelText(/code/i)
+    fireEvent.change(countryCodeInput, {
+      target: { value: '+1' },
+    })
+    fireEvent.blur(countryCodeInput)
+
+    const phoneInput = screen.getByLabelText(/phone/i)
+    fireEvent.change(phoneInput, {
+      target: { value: '2025550143' },
+    })
+    fireEvent.blur(phoneInput)
+
+    expect(onFieldChange).toHaveBeenCalledWith('phoneCountryCode', '+1')
+    expect(onFieldBlur).toHaveBeenCalledWith('phoneCountryCode')
+    expect(onFieldChange).toHaveBeenCalledWith('phoneNumber', '2025550143')
+    expect(onFieldBlur).toHaveBeenCalledWith('phoneNumber')
   })
 
   it('shows provided validation errors inline', () => {
