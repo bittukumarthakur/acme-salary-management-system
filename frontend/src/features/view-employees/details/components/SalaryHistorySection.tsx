@@ -74,44 +74,66 @@ export function SalaryHistorySection() {
       <Typography variant="h6">Salary Revision History</Typography>
       <TableContainer
         component={Paper}
-        sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}
+        sx={{
+          boxShadow: 'none',
+          border: '1px solid #e0e0e0',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+        }}
       >
-        <Table>
+        <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableCell sx={{ fontWeight: 600 }}>Effective From</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>
+              <TableCell sx={{ fontWeight: 600, width: '20%' }}>
+                Effective From
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, width: '20%' }} align="right">
                 Base Salary (Monthly)
               </TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>CTC (Annual)</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Currency</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Remarks</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: '20%' }} align="right">
+                CTC (Annual)
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, width: '15%' }}>
+                Currency
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600, width: '25%' }}>
+                Remarks
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {sortedHistory.map((entry) => (
               <TableRow key={entry.id}>
-                <TableCell>
+                <TableCell sx={{ width: '20%' }}>
                   {entry.effectiveFrom
                     ? formatHistoryDate(entry.effectiveFrom)
                     : 'No date'}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '20%' }} align="right">
                   {formatCurrencyWithCode(
                     entry.baseSalaryMonthly,
                     entry.currency || 'INR',
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '20%' }} align="right">
                   {formatCurrencyWithCode(
                     entry.ctcAnnual,
                     entry.currency || 'INR',
                   )}
                 </TableCell>
-                <TableCell>{entry.currency || 'INR'}</TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '15%' }}>
+                  {entry.currency || 'INR'}
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body2">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {entry.changeSummary
                         ? entry.changeSummary
                         : 'Salary Revision'}
