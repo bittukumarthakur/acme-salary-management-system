@@ -14,7 +14,7 @@ export function AppShellLayout() {
       activeNavItem={activeNavItem}
       onSelectNavItem={handleSelectNavItem}
       pageTitle={pageTitle}
-      mainContent={outlet ?? undefined}
+      mainContent={outlet}
     />
   )
 }

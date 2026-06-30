@@ -1,18 +1,10 @@
 import { Alert, Box, Button } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 import { useEmployeesData } from '../hooks/useEmployeesData'
 import { EmployeesFilters, EmployeesTableCard } from '../components'
 
-export interface EmployeesPageProps {
-  onAddEmployeeClick?: () => void
-  onEditEmployeeClick?: (employeeId: string) => void
-  onViewEmployeeClick?: (employeeId: string) => void
-}
-
-export function EmployeesPage({
-  onAddEmployeeClick,
-  onEditEmployeeClick,
-  onViewEmployeeClick,
-}: EmployeesPageProps) {
+export function EmployeesPage() {
+  const navigate = useNavigate()
   const {
     state,
     error,
@@ -46,7 +38,7 @@ export function EmployeesPage({
         onSearchTermChange={setSearchTerm}
         onDepartmentChange={setDepartment}
         onStatusChange={setStatus}
-        onAddEmployeeClick={onAddEmployeeClick ?? (() => undefined)}
+        onAddEmployeeClick={() => navigate('/employees/add')}
       />
 
       {state === 'error' && (
@@ -67,8 +59,12 @@ export function EmployeesPage({
         meta={meta}
         isLoading={state === 'loading'}
         onPageChange={setPage}
-        onEditEmployeeClick={onEditEmployeeClick}
-        onViewEmployeeClick={onViewEmployeeClick}
+        onEditEmployeeClick={(employeeId) =>
+          navigate(`/employees/${employeeId}/edit`)
+        }
+        onViewEmployeeClick={(employeeId) =>
+          navigate(`/employees/${employeeId}`)
+        }
       />
     </Box>
   )

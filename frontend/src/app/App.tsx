@@ -1,4 +1,4 @@
-import { EmployeesRoutePage } from '../features/employees/pages/EmployeesRoutePage'
+import { EmployeesPage } from '../features/employees/pages/EmployeesPage'
 import { AddEmployeePage } from '../features/add-employee/pages/AddEmployeePage'
 import { EmployeeDetailsPage } from '../features/employees/pages/EmployeeDetailsPage'
 import { EditEmployeePage } from '../features/employees/pages/EditEmployeePage'
@@ -14,7 +14,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AppShellLayout />}>
-            <Route path="employees" element={<EmployeesRoutePage />} />
+            <Route path="employees" element={<EmployeesPage />} />
             <Route path="employees/add" element={<AddEmployeePage />} />
             <Route
               path="employees/:employeeId"

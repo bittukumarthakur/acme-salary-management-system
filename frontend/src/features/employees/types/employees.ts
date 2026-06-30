@@ -51,7 +51,7 @@ export interface EmployeesListResponse {
 
 export interface EmployeeSummary {
   fullName: string
-  status: EmployeeStatus | string
+  status: EmployeeStatus
   employeeId: string
   email: string
   phone: string | null
@@ -72,7 +72,7 @@ export interface PersonalInformation {
   joiningDate: string
   country: string
   employmentType: string
-  status: EmployeeStatus | string
+  status: EmployeeStatus
   avatarUrl: string | null
 }
 

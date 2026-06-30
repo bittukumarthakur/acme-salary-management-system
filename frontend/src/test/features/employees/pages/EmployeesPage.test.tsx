@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ThemeProvider, createTheme } from '@mui/material'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { EmployeesPage } from '../../../../features/employees/pages/EmployeesPage'
 import { useEmployeesData } from '../../../../features/employees/hooks/useEmployeesData'
 
@@ -16,8 +17,25 @@ const theme = createTheme({
   },
 })
 
-const renderWithTheme = (component: React.ReactElement) =>
-  render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
+const renderWithTheme = (initialEntry = '/employees') =>
+  render(
+    <ThemeProvider theme={theme}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/employees/add" element={<div>Add Employee Page</div>} />
+          <Route
+            path="/employees/:employeeId"
+            element={<div>Employee Details Page</div>}
+          />
+          <Route
+            path="/employees/:employeeId/edit"
+            element={<div>Edit Employee Page</div>}
+          />
+        </Routes>
+      </MemoryRouter>
+    </ThemeProvider>,
+  )
 
 const mockUseEmployeesData = vi.mocked(useEmployeesData)
 
@@ -73,7 +91,7 @@ describe('EmployeesPage', () => {
   })
 
   it('renders employees table with expected columns and values', () => {
-    renderWithTheme(<EmployeesPage />)
+    renderWithTheme()
 
     expect(screen.getByText('Employee Details')).toBeInTheDocument()
     expect(screen.getByText('Employee ID')).toBeInTheDocument()
@@ -87,39 +105,34 @@ describe('EmployeesPage', () => {
     expect(screen.getByText('EMP00001')).toBeInTheDocument()
   })
 
-  it('shows placeholder feedback when Add Employee is clicked', async () => {
-    const onAddEmployeeClick = vi.fn()
-    renderWithTheme(<EmployeesPage onAddEmployeeClick={onAddEmployeeClick} />)
+  it('navigates to add employee page when Add Employee is clicked', async () => {
+    renderWithTheme()
 
     fireEvent.click(screen.getByRole('button', { name: /add employee/i }))
 
-    expect(onAddEmployeeClick).toHaveBeenCalledTimes(1)
+    expect(await screen.findByText('Add Employee Page')).toBeInTheDocument()
   })
 
-  it('triggers view callback with employee ID when View action is clicked', async () => {
+  it('navigates to employee details page when View action is clicked', async () => {
     const user = userEvent.setup()
-    const onViewEmployeeClick = vi.fn()
-    renderWithTheme(<EmployeesPage onViewEmployeeClick={onViewEmployeeClick} />)
+    renderWithTheme()
 
     const row = screen.getByRole('row', { name: /jalyn koch/i })
     await user.click(within(row).getByRole('button', { name: /open actions/i }))
     await user.click(await screen.findByRole('menuitem', { name: 'View' }))
 
-    expect(onViewEmployeeClick).toHaveBeenCalledTimes(1)
-    expect(onViewEmployeeClick).toHaveBeenCalledWith('EMP00001')
+    expect(await screen.findByText('Employee Details Page')).toBeInTheDocument()
   })
 
-  it('triggers edit callback with employee ID when Edit action is clicked', async () => {
+  it('navigates to edit employee page when Edit action is clicked', async () => {
     const user = userEvent.setup()
-    const onEditEmployeeClick = vi.fn()
-    renderWithTheme(<EmployeesPage onEditEmployeeClick={onEditEmployeeClick} />)
+    renderWithTheme()
 
     const row = screen.getByRole('row', { name: /jalyn koch/i })
     await user.click(within(row).getByRole('button', { name: /open actions/i }))
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
 
-    expect(onEditEmployeeClick).toHaveBeenCalledTimes(1)
-    expect(onEditEmployeeClick).toHaveBeenCalledWith('EMP00001')
+    expect(await screen.findByText('Edit Employee Page')).toBeInTheDocument()
   })
 
   it('shows empty state when no employees are returned', () => {
@@ -135,7 +148,7 @@ describe('EmployeesPage', () => {
       },
     })
 
-    renderWithTheme(<EmployeesPage />)
+    renderWithTheme()
 
     expect(screen.getByText('No rows')).toBeInTheDocument()
   })
@@ -150,7 +163,7 @@ describe('EmployeesPage', () => {
     })
 
     const user = userEvent.setup()
-    renderWithTheme(<EmployeesPage />)
+    renderWithTheme()
 
     expect(screen.getByRole('alert')).toBeInTheDocument()
     expect(screen.getByText('Network error')).toBeInTheDocument()

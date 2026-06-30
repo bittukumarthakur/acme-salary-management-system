@@ -5,10 +5,7 @@ import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined'
 import { Card, CardContent, Grid, Stack, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { EmployeeStatusChip } from '../EmployeeStatusChip'
-import type {
-  EmployeeDetailsResponse,
-  EmployeeStatus,
-} from '../../types/employees'
+import type { EmployeeDetailsResponse } from '../../types/employees'
 import { JobInfoRow } from './DetailPrimitives'
 import { SalaryBreakdownSection } from './SalaryBreakdownSection'
 import { getDisplayValue } from './utils'
@@ -93,12 +90,7 @@ export function OverviewTabPanel({
     },
     {
       label: 'Status',
-      value: (
-        <EmployeeStatusChip
-          status={personalInformation.status as EmployeeStatus}
-          size="small"
-        />
-      ),
+      value: <EmployeeStatusChip status={personalInformation.status} size="small" />,
     },
     {
       label: 'Avatar URL',

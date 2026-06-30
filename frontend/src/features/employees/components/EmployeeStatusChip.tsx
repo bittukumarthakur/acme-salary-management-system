@@ -11,26 +11,21 @@ const STATUS_CHIP_BASE_SX: SxProps<Theme> = {
   },
 }
 
-function getStatusChipColor(
-  status: EmployeeStatus | string,
-): 'success' | 'warning' | 'default' | 'error' {
-  if (status === 'ACTIVE') {
-    return 'success'
-  }
+type StatusChipColor = 'success' | 'warning' | 'default' | 'error'
 
-  if (status === 'INACTIVE') {
-    return 'default'
-  }
+const STATUS_CHIP_COLOR: Record<EmployeeStatus, StatusChipColor> = {
+  ACTIVE: 'success',
+  INACTIVE: 'default',
+  ON_LEAVE: 'warning',
+  TERMINATED: 'error',
+}
 
-  if (status === 'ON_LEAVE') {
-    return 'warning'
-  }
-
-  return 'error'
+function getStatusChipColor(status: EmployeeStatus): StatusChipColor {
+  return STATUS_CHIP_COLOR[status]
 }
 
 interface EmployeeStatusChipProps {
-  status: EmployeeStatus | string
+  status: EmployeeStatus
   size?: 'small' | 'medium'
 }
 

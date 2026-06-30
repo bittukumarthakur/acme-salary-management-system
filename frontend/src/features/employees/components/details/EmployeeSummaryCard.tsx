@@ -15,10 +15,7 @@ import {
   Typography,
 } from '@mui/material'
 import { EmployeeStatusChip } from '../EmployeeStatusChip'
-import type {
-  EmployeeDetailsResponse,
-  EmployeeStatus,
-} from '../../types/employees'
+import type { EmployeeDetailsResponse } from '../../types/employees'
 import { IconMetaRow, SummaryInfoTile } from './DetailPrimitives'
 import { getInitials } from './utils'
 
@@ -66,10 +63,7 @@ export function EmployeeSummaryCard({
                   <Typography variant="h5" component="h1">
                     {details.summary.fullName}
                   </Typography>
-                  <EmployeeStatusChip
-                    status={details.summary.status as EmployeeStatus}
-                    size="small"
-                  />
+                  <EmployeeStatusChip status={details.summary.status} size="small" />
                 </Stack>
                 <Typography color="primary.main" sx={{ fontWeight: 700 }}>
                   {details.summary.employeeId}
