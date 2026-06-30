@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom/vitest'
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { SalaryHistorySection } from '../../../../../src/features/view-employees/details/components/SalaryHistorySection'
