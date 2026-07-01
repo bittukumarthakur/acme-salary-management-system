@@ -8,6 +8,7 @@ import {
   formatCurrencyWithSymbol,
   toTitleCase,
 } from '../../../shared/utils/formatters'
+import { apiRoutes } from '../../../shared/api/endpoints'
 
 export type SummaryCard = SummaryCardType
 export type PayrollSummary = PayrollSummaryType
@@ -42,9 +43,7 @@ interface DashboardApiResponse {
   }
 }
 
-const clientEnv = import.meta.env as Record<string, string | undefined>
-const configuredApiBaseUrl = clientEnv.ACME_BACKEND_API_BASE_URL?.trim() ?? ''
-const DASHBOARD_ENDPOINT = `${configuredApiBaseUrl}/api/v1/dashboard`
+const DASHBOARD_ENDPOINT = apiRoutes.dashboard()
 
 function getEmployeeTrendMetadata(response: DashboardApiResponse) {
   const currentMonthCount = response.meta.employeeTrend.currentMonthCount

@@ -9,6 +9,7 @@ import type {
   UpdateEmployeePayload,
   UpdateEmployeeResponse,
 } from '../types/employees'
+import { apiRoutes } from '../../../shared/api/endpoints'
 
 interface EmployeeApiErrorResponse {
   message?: string
@@ -59,10 +60,7 @@ export interface EmployeesQueryParams {
   pageLimit: number
 }
 
-const clientEnv = import.meta.env as Record<string, string | undefined>
-const configuredApiBaseUrl =
-  clientEnv.ACME_BACKEND_API_BASE_URL?.trim().replace(/\/$/, '') ?? ''
-const EMPLOYEES_ENDPOINT = `${configuredApiBaseUrl}/api/v1/employees`
+const EMPLOYEES_ENDPOINT = apiRoutes.employees()
 
 function buildEmployeesUrl(query: EmployeesQueryParams): string {
   const params = new URLSearchParams()

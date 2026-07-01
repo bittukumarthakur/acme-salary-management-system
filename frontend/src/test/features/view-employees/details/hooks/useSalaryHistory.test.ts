@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { useSalaryHistory } from '../../../../../src/features/view-employees/details/hooks/useSalaryHistory'
+import { useSalaryHistory } from '../../../../../features/view-employees/details/hooks/useSalaryHistory'
+import { apiRoutes } from '../../../../../shared/api/endpoints'
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -32,7 +33,7 @@ const mockSalaryData = [
 describe('useSalaryHistory', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    global.fetch = vi.fn()
+    globalThis.fetch = vi.fn()
   })
 
   afterEach(() => {
@@ -40,7 +41,7 @@ describe('useSalaryHistory', () => {
   })
 
   it('initializes with empty history and loading state', () => {
-    vi.mocked(global.fetch).mockImplementation(
+    vi.mocked(globalThis.fetch).mockImplementation(
       () =>
         new Promise(() => {
           // Never resolves
@@ -54,8 +55,8 @@ describe('useSalaryHistory', () => {
     expect(result.current.error).toBe(null)
   })
 
-  it('fetches salary history from the API endpoint', async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+  it('requests the salary-history route for the current employee', async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockSalaryData,
     } as Response)
@@ -68,14 +69,14 @@ describe('useSalaryHistory', () => {
 
     expect(result.current.history).toEqual(mockSalaryData)
     expect(result.current.error).toBe(null)
-    expect(global.fetch).toHaveBeenCalledWith(
-      '/api/v1/employees/EMP0001/salary-history',
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      apiRoutes.employeeSalaryHistory('EMP0001'),
     )
   })
 
   it('handles API errors gracefully', async () => {
     const errorMessage = 'Network error'
-    vi.mocked(global.fetch).mockRejectedValueOnce(new Error(errorMessage))
+    vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error(errorMessage))
 
     const { result } = renderHook(() => useSalaryHistory())
 
@@ -89,7 +90,7 @@ describe('useSalaryHistory', () => {
   })
 
   it('handles non-200 responses as errors', async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce({
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce({
       ok: false,
       statusText: 'Not Found',
     } as Response)

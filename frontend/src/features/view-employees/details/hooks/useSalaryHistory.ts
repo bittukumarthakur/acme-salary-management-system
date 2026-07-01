@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { SalaryHistoryEntry } from '../../../employees/types/employees'
+import { apiRoutes } from '../../../../shared/api/endpoints'
 
 /**
  * Hook to fetch salary history from the dedicated API endpoint.
@@ -26,7 +27,7 @@ export function useSalaryHistory() {
 
       try {
         const response = await fetch(
-          `/api/v1/employees/${employeeId}/salary-history`,
+          apiRoutes.employeeSalaryHistory(employeeId),
         )
 
         if (!response.ok) {
