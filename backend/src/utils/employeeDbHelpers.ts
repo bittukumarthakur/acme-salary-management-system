@@ -6,13 +6,7 @@ export function formatGeneratedEmployeeId(id: number): string {
   return `EMP${id.toString().padStart(5, '0')}`;
 }
 
-export function mapEmployeeRowToApi(
-  row: EmployeeRow,
-  targetCurrency: string,
-): {
-  employee: Employee;
-  convertedSalary: number;
-} {
+export function mapEmployeeRowToApi(row: EmployeeRow, targetCurrency: string): Employee {
   const salaryConversion = convertSalary(row.basicSalary, targetCurrency);
   const date = row.joiningDate instanceof Date ? row.joiningDate : new Date();
   const joiningDateStr: string = date.toISOString().split('T')[0] as string;
@@ -38,10 +32,7 @@ export function mapEmployeeRowToApi(
     employee.avatarUrl = row.avatarUrl;
   }
 
-  return {
-    employee,
-    convertedSalary: salaryConversion.convertedAmount,
-  };
+  return employee;
 }
 
 export function buildEmployeesWhere(query: EmployeeQuery): Record<string, unknown> {

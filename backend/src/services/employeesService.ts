@@ -78,8 +78,7 @@ export async function getEmployees(query: EmployeeQuery): Promise<EmployeeListRe
 
   // Convert employees to API contract shape
   const employees = rows.map((row) => {
-    const { employee } = mapEmployeeRowToApi(row as unknown as EmployeeRow, targetCurrencyCode);
-    return employee;
+    return mapEmployeeRowToApi(row as unknown as EmployeeRow, targetCurrencyCode);
   });
 
   const totalPages = Math.max(0, Math.ceil(totalRecords / pageLimit));
@@ -379,6 +378,5 @@ export async function createEmployee(payload: CreateEmployeePayload): Promise<Em
     throw error;
   }
 
-  const { employee: apiEmployee } = mapEmployeeRowToApi(row as unknown as EmployeeRow, 'INR');
-  return apiEmployee;
+  return mapEmployeeRowToApi(row as unknown as EmployeeRow, 'INR');
 }
