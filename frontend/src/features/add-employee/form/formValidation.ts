@@ -22,14 +22,6 @@ const fieldLabels: Partial<Record<keyof AddEmployeeFormState, string>> = {
   basicSalary: 'Basic Salary',
 }
 
-export function parseOptionalAmount(value: string): number | undefined {
-  if (!value.trim()) {
-    return undefined
-  }
-
-  return Number(value)
-}
-
 export function validateAddEmployeeForm(
   form: AddEmployeeFormState,
   todayIso: string,
@@ -58,23 +50,6 @@ export function validateAddEmployeeForm(
   if (form.basicSalary && (Number.isNaN(salaryValue) || salaryValue < 0)) {
     nextErrors.basicSalary = 'Basic Salary must be zero or higher'
   }
-
-  const optionalAmountFields: Array<keyof AddEmployeeFormState> = [
-    'allowances',
-    'bonus',
-    'deduction',
-  ]
-
-  optionalAmountFields.forEach((field) => {
-    const numericValue = parseOptionalAmount(form[field] as string)
-    if (
-      numericValue !== undefined &&
-      (Number.isNaN(numericValue) || numericValue < 0)
-    ) {
-      nextErrors[field] =
-        `${field.charAt(0).toUpperCase() + field.slice(1)} must be zero or higher`
-    }
-  })
 
   if (form.dateOfBirth && form.dateOfBirth >= todayIso) {
     nextErrors.dateOfBirth = 'Date of Birth must be in the past'

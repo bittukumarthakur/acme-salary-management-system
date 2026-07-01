@@ -9,9 +9,6 @@ export interface AddEmployeeFormState {
   joiningDate: string
   employmentType: string
   basicSalary: string
-  allowances: string
-  bonus: string
-  deduction: string
   pfApplicable: boolean
   esiApplicable: boolean
 }
@@ -34,9 +31,6 @@ export const initialFormState: AddEmployeeFormState = {
   joiningDate: '',
   employmentType: '',
   basicSalary: '',
-  allowances: '',
-  bonus: '',
-  deduction: '',
   pfApplicable: false,
   esiApplicable: false,
 }

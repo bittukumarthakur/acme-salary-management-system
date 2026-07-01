@@ -44,45 +44,6 @@ export function SalaryInfoSection({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Allowances"
-            variant="outlined"
-            type="number"
-            placeholder="Enter allowances"
-            value={form.allowances}
-            onChange={(event) => setField('allowances', event.target.value)}
-            error={Boolean(errors.allowances)}
-            helperText={errors.allowances}
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Bonus"
-            variant="outlined"
-            type="number"
-            placeholder="Enter bonus"
-            value={form.bonus}
-            onChange={(event) => setField('bonus', event.target.value)}
-            error={Boolean(errors.bonus)}
-            helperText={errors.bonus}
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Deduction"
-            variant="outlined"
-            type="number"
-            placeholder="Enter deduction"
-            value={form.deduction}
-            onChange={(event) => setField('deduction', event.target.value)}
-            error={Boolean(errors.deduction)}
-            helperText={errors.deduction}
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
           <FormControlLabel
             control={
               <Switch
