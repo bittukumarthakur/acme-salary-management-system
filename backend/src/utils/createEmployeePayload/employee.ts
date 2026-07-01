@@ -6,52 +6,29 @@ import {
   VALID_MARITAL_STATUSES,
   VALID_STATUSES,
 } from './constants';
-import {
-  isValidDate,
-  readOptionalString,
-  readRequiredString,
-  type ValidationErrors,
-} from './shared';
+import { isValidDate, fieldReader, type ValidationErrors } from './shared';
 
 export function parseEmployee(
   source: Record<string, unknown>,
   errors: ValidationErrors,
 ): CreateEmployeeInput {
-  const fullName = readRequiredString(source, 'fullName', 'employee.fullName', errors);
-  const email = readRequiredString(source, 'email', 'employee.email', errors);
-  const phoneNumber = readRequiredString(source, 'phoneNumber', 'employee.phoneNumber', errors);
-  const dateOfBirth = readRequiredString(source, 'dateOfBirth', 'employee.dateOfBirth', errors);
-  const gender = readRequiredString(source, 'gender', 'employee.gender', errors).toUpperCase();
-  const maritalStatus = readRequiredString(
-    source,
-    'maritalStatus',
-    'employee.maritalStatus',
-    errors,
-  ).toUpperCase();
-  const department = readRequiredString(
-    source,
-    'department',
-    'employee.department',
-    errors,
-  ).toUpperCase();
-  const designation = readRequiredString(source, 'designation', 'employee.designation', errors);
-  const joiningDate = readRequiredString(source, 'joiningDate', 'employee.joiningDate', errors);
-  const employmentType = readRequiredString(
-    source,
-    'employmentType',
-    'employee.employmentType',
-    errors,
-  ).toUpperCase();
+  const f = fieldReader(source, 'employee', errors);
 
-  const reportingManagerEmployeeId = readOptionalString(
-    source,
-    'reportingManagerEmployeeId',
-    'employee.reportingManagerEmployeeId',
-    errors,
-  );
-  const country = readOptionalString(source, 'country', 'employee.country', errors);
-  const status = readOptionalString(source, 'status', 'employee.status', errors)?.toUpperCase();
-  const avatarUrl = readOptionalString(source, 'avatarUrl', 'employee.avatarUrl', errors);
+  const fullName = f.requiredString('fullName');
+  const email = f.requiredString('email');
+  const phoneNumber = f.requiredString('phoneNumber');
+  const dateOfBirth = f.requiredString('dateOfBirth');
+  const gender = f.requiredString('gender').toUpperCase();
+  const maritalStatus = f.requiredString('maritalStatus').toUpperCase();
+  const department = f.requiredString('department').toUpperCase();
+  const designation = f.requiredString('designation');
+  const joiningDate = f.requiredString('joiningDate');
+  const employmentType = f.requiredString('employmentType').toUpperCase();
+
+  const reportingManagerEmployeeId = f.optionalString('reportingManagerEmployeeId');
+  const country = f.optionalString('country');
+  const status = f.optionalString('status')?.toUpperCase();
+  const avatarUrl = f.optionalString('avatarUrl');
 
   if ('employeeId' in source) {
     errors['employee.employeeId'] =

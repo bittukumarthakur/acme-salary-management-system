@@ -1,12 +1,6 @@
 import type { CreateBankAccountInput } from '../../models/employee/types';
 import { VALID_ACCOUNT_TYPES } from './constants';
-import {
-  asRecord,
-  readOptionalBoolean,
-  readOptionalString,
-  readRequiredString,
-  type ValidationErrors,
-} from './shared';
+import { asRecord, fieldReader, type ValidationErrors } from './shared';
 
 export function parseBankAccounts(
   raw: unknown,
@@ -30,55 +24,22 @@ export function parseBankAccounts(
       return;
     }
 
-    const bankName = readRequiredString(
-      account,
-      'bankName',
-      `bankAccounts.${index}.bankName`,
-      errors,
-    );
-    const accountNumber = readRequiredString(
-      account,
-      'accountNumber',
-      `bankAccounts.${index}.accountNumber`,
-      errors,
-    );
-    const ifscCode = readRequiredString(
-      account,
-      'ifscCode',
-      `bankAccounts.${index}.ifscCode`,
-      errors,
-    );
-    const accountHolderName = readRequiredString(
-      account,
-      'accountHolderName',
-      `bankAccounts.${index}.accountHolderName`,
-      errors,
-    );
+    const f = fieldReader(account, `bankAccounts.${index}`, errors);
 
-    const accountType = readOptionalString(
-      account,
-      'accountType',
-      `bankAccounts.${index}.accountType`,
-      errors,
-    )?.toUpperCase();
+    const bankName = f.requiredString('bankName');
+    const accountNumber = f.requiredString('accountNumber');
+    const ifscCode = f.requiredString('ifscCode');
+    const accountHolderName = f.requiredString('accountHolderName');
+
+    const accountType = f.optionalString('accountType')?.toUpperCase();
 
     if (accountType && !VALID_ACCOUNT_TYPES.includes(accountType)) {
-      errors[`bankAccounts.${index}.accountType`] =
+      errors[f.path('accountType')] =
         `bank account type must be one of ${VALID_ACCOUNT_TYPES.join(', ')}`;
     }
 
-    const isPrimary = readOptionalBoolean(
-      account,
-      'isPrimary',
-      `bankAccounts.${index}.isPrimary`,
-      errors,
-    );
-    const isActive = readOptionalBoolean(
-      account,
-      'isActive',
-      `bankAccounts.${index}.isActive`,
-      errors,
-    );
+    const isPrimary = f.optionalBoolean('isPrimary');
+    const isActive = f.optionalBoolean('isActive');
 
     accounts.push({
       bankName,

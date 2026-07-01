@@ -72,3 +72,32 @@ export function readOptionalBoolean(
 export function isValidDate(value: string): boolean {
   return !Number.isNaN(new Date(value).getTime());
 }
+
+/**
+ * A reader scoped to a single record and error-path prefix, so callers no longer
+ * repeat the `source`, `errors`, and `${prefix}.` arguments on every field.
+ * The error path for each field is derived as `${prefix}.${key}` (or just `key`
+ * when the prefix is empty).
+ */
+export interface FieldReader {
+  path(key: string): string;
+  requiredString(key: string): string;
+  optionalString(key: string): string | undefined;
+  requiredNumber(key: string): number;
+  optionalBoolean(key: string): boolean | undefined;
+}
+
+export function fieldReader(
+  source: Record<string, unknown>,
+  prefix: string,
+  errors: ValidationErrors,
+): FieldReader {
+  const path = (key: string) => (prefix ? `${prefix}.${key}` : key);
+  return {
+    path,
+    requiredString: (key) => readRequiredString(source, key, path(key), errors),
+    optionalString: (key) => readOptionalString(source, key, path(key), errors),
+    requiredNumber: (key) => readRequiredNumber(source, key, path(key), errors),
+    optionalBoolean: (key) => readOptionalBoolean(source, key, path(key), errors),
+  };
+}

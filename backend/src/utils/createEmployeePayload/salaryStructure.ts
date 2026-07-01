@@ -1,30 +1,16 @@
 import type { CreateSalaryStructureInput } from '../../models/employee/types';
-import {
-  isValidDate,
-  readOptionalBoolean,
-  readOptionalString,
-  readRequiredNumber,
-  type ValidationErrors,
-} from './shared';
+import { isValidDate, fieldReader, type ValidationErrors } from './shared';
 
 export function parseSalaryStructure(
   source: Record<string, unknown>,
   errors: ValidationErrors,
 ): CreateSalaryStructureInput {
-  const basicSalary = readRequiredNumber(
-    source,
-    'basicSalary',
-    'salaryStructure.basicSalary',
-    errors,
-  );
+  const f = fieldReader(source, 'salaryStructure', errors);
 
-  const currency = readOptionalString(source, 'currency', 'salaryStructure.currency', errors);
-  const effectiveDate = readOptionalString(
-    source,
-    'effectiveDate',
-    'salaryStructure.effectiveDate',
-    errors,
-  );
+  const basicSalary = f.requiredNumber('basicSalary');
+
+  const currency = f.optionalString('currency');
+  const effectiveDate = f.optionalString('effectiveDate');
 
   const endDateRaw = source.endDate;
   let endDate: string | null | undefined;
@@ -37,18 +23,8 @@ export function parseSalaryStructure(
     endDate = undefined;
   }
 
-  const pfApplicable = readOptionalBoolean(
-    source,
-    'pfApplicable',
-    'salaryStructure.pfApplicable',
-    errors,
-  );
-  const esiApplicable = readOptionalBoolean(
-    source,
-    'esiApplicable',
-    'salaryStructure.esiApplicable',
-    errors,
-  );
+  const pfApplicable = f.optionalBoolean('pfApplicable');
+  const esiApplicable = f.optionalBoolean('esiApplicable');
 
   if (basicSalary < 0) {
     errors['salaryStructure.basicSalary'] = 'salaryStructure.basicSalary must be zero or higher';
