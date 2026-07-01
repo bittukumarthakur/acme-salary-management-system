@@ -12,7 +12,7 @@ import {
   EmployeeNotFoundError,
   EmailAlreadyInUseError,
   DuplicateSalaryDateError,
-} from '../services/updateEmployeeService';
+} from '../services/errors';
 import { DUPLICATE_EMPLOYEE_ID_ERROR } from '../services/employeesService';
 
 export interface MappedError {

@@ -8,148 +8,62 @@ import type { EmploymentType, EmployeeStatus } from '../../generated/prisma/clie
 import type { EmployeeWithSalary, UpdateEmployeePayload } from '../models/employee/types';
 import { calculateSalaryComponents } from '../utils/salaryCalculation';
 import { toEmployeeWithSalary } from './employeeMapper';
+import { syncEditableEarnings } from './salaryComponentsSync';
+import { EmployeeNotFoundError, EmailAlreadyInUseError } from './errors';
 
-async function syncEditableEarnings(
+/**
+ * Records a salary change as a revision on the employee's salary structure.
+ *
+ * - No change in the base amount → does nothing.
+ * - Same effective date as the current revision → corrects it in place.
+ * - New effective date → appends a new revision and closes the previous one.
+ */
+async function recordSalaryRevision(
   employeeId: number,
   effectiveFromDate: Date,
-  earnings: Array<{ component: string; amount: number }>,
+  baseMonthlySalary: number,
+  currency: string,
 ): Promise<void> {
-  const normalized = new Map<string, number>();
-
-  earnings.forEach((item) => {
-    const component = item.component.trim();
-    if (!component) {
-      return;
-    }
-    normalized.set(component, item.amount);
+  // The current (latest) revision drives the change detection.
+  const currentSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
+    where: { employeeId },
+    orderBy: { effectiveDate: 'desc' },
   });
 
-  if (normalized.size === 0) {
+  const salaryChanged = !currentSalaryEntry || currentSalaryEntry.basicSalary !== baseMonthlySalary;
+
+  if (!salaryChanged) {
     return;
   }
 
-  const components = await prisma.salaryComponent.findMany({
-    where: {
-      type: 'EARNING',
-      isActive: true,
-      name: {
-        in: Array.from(normalized.keys()),
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+  const isSameEffectiveDate =
+    currentSalaryEntry !== null &&
+    currentSalaryEntry.effectiveDate.getTime() === effectiveFromDate.getTime();
 
-  const componentByName = new Map(components.map((component) => [component.name, component]));
-  const missing = Array.from(normalized.keys()).filter((name) => !componentByName.has(name));
-
-  if (missing.length > 0) {
-    throw new Error(`Earning component(s) not found: ${missing.join(', ')}`);
+  if (currentSalaryEntry && isSameEffectiveDate) {
+    // Same effective date as the current revision → correct it in place.
+    await prisma.employeeSalaryStructure.update({
+      where: { id: currentSalaryEntry.id },
+      data: { basicSalary: baseMonthlySalary, currency },
+    });
+    return;
   }
 
-  const selectedComponentIds = components.map((component) => component.id);
-
-  await prisma.employeeSalaryComponent.updateMany({
-    where: {
-      employeeId,
-      endDate: null,
-      effectiveDate: {
-        lt: effectiveFromDate,
-      },
-      component: {
-        type: 'EARNING',
-      },
-    },
+  // New effective date → append a revision and close the previous one.
+  if (currentSalaryEntry && currentSalaryEntry.endDate === null) {
+    await prisma.employeeSalaryStructure.update({
+      where: { id: currentSalaryEntry.id },
+      data: { endDate: effectiveFromDate },
+    });
+  }
+  await prisma.employeeSalaryStructure.create({
     data: {
-      endDate: effectiveFromDate,
-    },
-  });
-
-  await prisma.employeeSalaryComponent.deleteMany({
-    where: {
       employeeId,
+      basicSalary: baseMonthlySalary,
       effectiveDate: effectiveFromDate,
-      component: {
-        type: 'EARNING',
-      },
-      salaryComponentId: {
-        notIn: selectedComponentIds,
-      },
+      currency,
     },
   });
-
-  await Promise.all(
-    Array.from(normalized.entries()).map(async ([componentName, amount]) => {
-      const component = componentByName.get(componentName);
-      if (!component) {
-        return;
-      }
-
-      const existing = await prisma.employeeSalaryComponent.findFirst({
-        where: {
-          employeeId,
-          salaryComponentId: component.id,
-          effectiveDate: effectiveFromDate,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      if (existing) {
-        await prisma.employeeSalaryComponent.update({
-          where: { id: existing.id },
-          data: {
-            amount,
-            endDate: null,
-          },
-        });
-        return;
-      }
-
-      await prisma.employeeSalaryComponent.create({
-        data: {
-          employeeId,
-          salaryComponentId: component.id,
-          amount,
-          effectiveDate: effectiveFromDate,
-          endDate: null,
-        },
-      });
-    }),
-  );
-}
-
-/**
- * Error thrown when employee is not found.
- */
-export class EmployeeNotFoundError extends Error {
-  constructor(id: string | number) {
-    super(`Employee ${id} not found`);
-    this.name = 'EmployeeNotFoundError';
-  }
-}
-
-/**
- * Error thrown when email is already in use by another employee.
- */
-export class EmailAlreadyInUseError extends Error {
-  constructor(email: string) {
-    super(`Email ${email} is already in use by another employee`);
-    this.name = 'EmailAlreadyInUseError';
-  }
-}
-
-/**
- * Error thrown when a salary record with the same effectiveFrom already exists.
- */
-export class DuplicateSalaryDateError extends Error {
-  constructor(effectiveFrom: string) {
-    super(`A salary record with effectiveFrom ${effectiveFrom} already exists`);
-    this.name = 'DuplicateSalaryDateError';
-  }
 }
 
 /**
@@ -235,48 +149,14 @@ export async function updateEmployee(
     },
   });
 
-  // Check if we need to create a new salary history entry
+  // Record the salary as a revision if the amount changed.
   const effectiveFromDate = new Date(payload.salary.effectiveFrom);
-
-  // Check if a salary entry with this effectiveDate already exists
-  const existingSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
-    where: {
-      employeeId: employee.id,
-      effectiveDate: effectiveFromDate,
-    },
-  });
-
-  // Only create a new salary history entry if:
-  // 1. The salary amount changed, OR
-  // 2. The effective date is new
-  const previousSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
-    where: { employeeId: employee.id },
-    orderBy: { effectiveDate: 'desc' },
-  });
-
-  const salaryChanged =
-    !previousSalaryEntry || previousSalaryEntry.basicSalary !== payload.salary.baseMonthlySalary;
-
-  if (salaryChanged && !existingSalaryEntry) {
-    // Create new salary history entry
-    await prisma.employeeSalaryStructure.create({
-      data: {
-        employeeId: employee.id,
-        basicSalary: payload.salary.baseMonthlySalary,
-        effectiveDate: effectiveFromDate,
-        currency: payload.currency,
-      },
-    });
-  } else if (salaryChanged && existingSalaryEntry) {
-    // Update existing salary entry
-    await prisma.employeeSalaryStructure.update({
-      where: { id: existingSalaryEntry.id },
-      data: {
-        basicSalary: payload.salary.baseMonthlySalary,
-        currency: payload.currency,
-      },
-    });
-  }
+  await recordSalaryRevision(
+    employee.id,
+    effectiveFromDate,
+    payload.salary.baseMonthlySalary,
+    payload.currency,
+  );
 
   if (payload.salary.earnings && payload.salary.earnings.length > 0) {
     await syncEditableEarnings(employee.id, effectiveFromDate, payload.salary.earnings);

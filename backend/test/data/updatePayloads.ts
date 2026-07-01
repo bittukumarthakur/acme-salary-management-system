@@ -95,6 +95,36 @@ export const payloadWithChangedSalary: UpdateEmployeePayload = {
 };
 
 /**
+ * Salary change that reuses the current revision's effective date.
+ * Should be treated as an in-place correction of the current revision.
+ */
+export const payloadWithSameDateSalaryChange: UpdateEmployeePayload = {
+  ...baseUpdatePayload,
+  fullName: 'Frank Miller',
+  email: 'frank@example.com',
+  joiningDate: '2020-01-01',
+  salary: {
+    baseMonthlySalary: 65000, // Different amount, same effective date
+    effectiveFrom: '2020-01-01',
+  },
+};
+
+/**
+ * Update that keeps the salary amount unchanged.
+ * Should not create or modify any salary revision.
+ */
+export const payloadWithUnchangedSalary: UpdateEmployeePayload = {
+  ...baseUpdatePayload,
+  fullName: 'Frank Miller',
+  email: 'frank@example.com',
+  joiningDate: '2020-01-01',
+  salary: {
+    baseMonthlySalary: 50000, // Same as employee's current
+    effectiveFrom: '2020-01-01',
+  },
+};
+
+/**
  * Invalid payload with invalid employmentType enum (AC8).
  * Should be rejected with 400.
  */

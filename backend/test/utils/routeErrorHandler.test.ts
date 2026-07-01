@@ -4,7 +4,7 @@ import {
   EmployeeNotFoundError,
   EmailAlreadyInUseError,
   DuplicateSalaryDateError,
-} from '../../src/services/updateEmployeeService';
+} from '../../src/services/errors';
 import { DUPLICATE_EMPLOYEE_ID_ERROR } from '../../src/services/employeesService';
 
 function mockRes(): Response {

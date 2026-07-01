@@ -23,6 +23,8 @@ import {
   invalidPayloadWithEarlyEffectiveDate,
   payloadWithConflictingEmail,
   payloadWithChangedSalary,
+  payloadWithSameDateSalaryChange,
+  payloadWithUnchangedSalary,
   invalidPayloadWithInvalidEnum,
   payloadForOrmTypeCheck,
 } from '../data/updatePayloads';
@@ -262,7 +264,7 @@ describe('PUT /api/v1/employees/:id - Update Employee (Mocked)', () => {
   });
 
   describe('New salary history entry created if salary fields differ', () => {
-    it('should create new salary history entry when salary changes', async () => {
+    it('should append a new revision and close the previous one when salary changes', async () => {
       const mockEmployeeId = 4;
 
       prismaMock.employee.findUnique.mockResolvedValue(
@@ -307,32 +309,175 @@ describe('PUT /api/v1/employees/:id - Update Employee (Mocked)', () => {
         }),
       );
 
-      prismaMock.employeeSalaryStructure.findFirst
-        .mockResolvedValueOnce(null) // No existing entry with same date
-        .mockResolvedValueOnce(
-          createMockSalaryStructure({
-            id: 3,
-            employeeId: mockEmployeeId,
-            basicSalary: 50000,
-            effectiveDate: new Date('2020-01-01'),
-          }),
-        ); // Previous salary entry
+      const currentRevision = createMockSalaryStructure({
+        id: 3,
+        employeeId: mockEmployeeId,
+        basicSalary: 50000,
+        effectiveDate: new Date('2020-01-01'),
+        endDate: null,
+      });
+      const newRevision = createMockSalaryStructure({
+        id: 4,
+        employeeId: mockEmployeeId,
+        basicSalary: 65000,
+        effectiveDate: new Date('2024-04-01'),
+      });
 
-      prismaMock.employeeSalaryStructure.create.mockResolvedValue(
-        createMockSalaryStructure({
-          id: 4,
-          employeeId: mockEmployeeId,
-          basicSalary: 65000,
-          effectiveDate: new Date('2024-04-01'),
-        }),
-      );
+      prismaMock.employeeSalaryStructure.findFirst
+        .mockResolvedValueOnce(currentRevision) // current/latest revision
+        .mockResolvedValueOnce(newRevision); // latest revision for response
+
+      prismaMock.employeeSalaryStructure.create.mockResolvedValue(newRevision);
+      prismaMock.employeeSalaryStructure.update.mockResolvedValue(currentRevision);
 
       await request(app)
         .put(`/api/v1/employees/${mockEmployeeId}`)
         .send(payloadWithChangedSalary)
         .expect(200);
 
-      expect(prismaMock.employeeSalaryStructure.create).toHaveBeenCalled();
+      // Appends a brand new revision on the new effective date
+      expect(prismaMock.employeeSalaryStructure.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            employeeId: mockEmployeeId,
+            basicSalary: 65000,
+            effectiveDate: new Date('2024-04-01'),
+          }),
+        }),
+      );
+      // Closes the previous revision's open-ended timeline
+      expect(prismaMock.employeeSalaryStructure.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: currentRevision.id },
+          data: { endDate: new Date('2024-04-01') },
+        }),
+      );
+    });
+  });
+
+  describe('Same-date salary change corrects the current revision in place', () => {
+    it('should update the current revision and not append a new one', async () => {
+      const mockEmployeeId = 4;
+
+      prismaMock.employee.findUnique.mockResolvedValue(
+        createMockEmployee({
+          id: mockEmployeeId,
+          employeeId: 'EMP0006',
+          name: 'Frank Miller',
+          email: 'frank@example.com',
+          phoneNumber: '+91 99999 44444',
+          basicSalary: 50000,
+          joiningDate: new Date('2020-01-01'),
+        }),
+      );
+
+      prismaMock.department.findFirst.mockResolvedValue(mockDepartment);
+      prismaMock.designation.findFirst.mockResolvedValue(mockDesignation);
+      prismaMock.employee.update.mockResolvedValue(
+        createMockEmployee({
+          id: mockEmployeeId,
+          employeeId: 'EMP0006',
+          basicSalary: 65000,
+          joiningDate: new Date('2020-01-01'),
+        }),
+      );
+      prismaMock.employee.findUniqueOrThrow.mockResolvedValue(
+        createMockEmployeeWithRelations({
+          id: mockEmployeeId,
+          employeeId: 'EMP0006',
+          basicSalary: 65000,
+          joiningDate: new Date('2020-01-01'),
+        }),
+      );
+
+      const currentRevision = createMockSalaryStructure({
+        id: 3,
+        employeeId: mockEmployeeId,
+        basicSalary: 50000,
+        effectiveDate: new Date('2020-01-01'),
+        endDate: null,
+      });
+
+      prismaMock.employeeSalaryStructure.findFirst
+        .mockResolvedValueOnce(currentRevision) // current/latest revision
+        .mockResolvedValueOnce(
+          createMockSalaryStructure({
+            ...currentRevision,
+            basicSalary: 65000,
+          }),
+        ); // latest revision for response
+
+      prismaMock.employeeSalaryStructure.update.mockResolvedValue(currentRevision);
+
+      await request(app)
+        .put(`/api/v1/employees/${mockEmployeeId}`)
+        .send(payloadWithSameDateSalaryChange)
+        .expect(200);
+
+      expect(prismaMock.employeeSalaryStructure.create).not.toHaveBeenCalled();
+      expect(prismaMock.employeeSalaryStructure.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: currentRevision.id },
+          data: expect.objectContaining({ basicSalary: 65000 }),
+        }),
+      );
+    });
+  });
+
+  describe('Unchanged salary does not touch salary revisions', () => {
+    it('should neither create nor update any salary revision', async () => {
+      const mockEmployeeId = 4;
+
+      prismaMock.employee.findUnique.mockResolvedValue(
+        createMockEmployee({
+          id: mockEmployeeId,
+          employeeId: 'EMP0006',
+          name: 'Frank Miller',
+          email: 'frank@example.com',
+          phoneNumber: '+91 99999 44444',
+          basicSalary: 50000,
+          joiningDate: new Date('2020-01-01'),
+        }),
+      );
+
+      prismaMock.department.findFirst.mockResolvedValue(mockDepartment);
+      prismaMock.designation.findFirst.mockResolvedValue(mockDesignation);
+      prismaMock.employee.update.mockResolvedValue(
+        createMockEmployee({
+          id: mockEmployeeId,
+          employeeId: 'EMP0006',
+          basicSalary: 50000,
+          joiningDate: new Date('2020-01-01'),
+        }),
+      );
+      prismaMock.employee.findUniqueOrThrow.mockResolvedValue(
+        createMockEmployeeWithRelations({
+          id: mockEmployeeId,
+          employeeId: 'EMP0006',
+          basicSalary: 50000,
+          joiningDate: new Date('2020-01-01'),
+        }),
+      );
+
+      const currentRevision = createMockSalaryStructure({
+        id: 3,
+        employeeId: mockEmployeeId,
+        basicSalary: 50000,
+        effectiveDate: new Date('2020-01-01'),
+        endDate: null,
+      });
+
+      prismaMock.employeeSalaryStructure.findFirst
+        .mockResolvedValueOnce(currentRevision) // current/latest revision
+        .mockResolvedValueOnce(currentRevision); // latest revision for response
+
+      await request(app)
+        .put(`/api/v1/employees/${mockEmployeeId}`)
+        .send(payloadWithUnchangedSalary)
+        .expect(200);
+
+      expect(prismaMock.employeeSalaryStructure.create).not.toHaveBeenCalled();
+      expect(prismaMock.employeeSalaryStructure.update).not.toHaveBeenCalled();
     });
   });
 
