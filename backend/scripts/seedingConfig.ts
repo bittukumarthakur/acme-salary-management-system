@@ -12,15 +12,16 @@ import { faker } from '@faker-js/faker';
 // ============================================================================
 
 /**
- * Salary ranges by department (in INR)
- * Used to generate realistic salaries for employees
+ * Monthly basic salary ranges by department (in INR)
+ * Used to generate realistic monthly basic salaries for employees.
+ * `basicSalary` is stored and treated as a monthly amount; annual CTC is derived as ×12.
  */
 export const SALARY_RANGES: Record<string, { min: number; max: number }> = {
-  'DEPT-ENG': { min: 800000, max: 2500000 },
-  'DEPT-MKT': { min: 600000, max: 1800000 },
-  'DEPT-FIN': { min: 500000, max: 1600000 },
-  'DEPT-HR': { min: 450000, max: 1400000 },
-  'DEPT-SALES': { min: 400000, max: 1500000 },
+  'DEPT-ENG': { min: 65000, max: 210000 },
+  'DEPT-MKT': { min: 50000, max: 150000 },
+  'DEPT-FIN': { min: 42000, max: 133000 },
+  'DEPT-HR': { min: 38000, max: 117000 },
+  'DEPT-SALES': { min: 33000, max: 125000 },
 };
 
 /**
@@ -78,7 +79,7 @@ export function selectWeighted<T>(items: readonly T[], weights: readonly number[
  * @returns Random salary in the department's configured range
  */
 export function generateSalaryForDepartment(departmentId: string): number {
-  const range = SALARY_RANGES[departmentId] ?? { min: 400000, max: 2000000 };
+  const range = SALARY_RANGES[departmentId] ?? { min: 33000, max: 167000 };
   return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
 }
 

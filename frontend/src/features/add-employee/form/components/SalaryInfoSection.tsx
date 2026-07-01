@@ -31,14 +31,17 @@ export function SalaryInfoSection({
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
-            label="Basic Salary"
+            label="Basic Salary (Monthly)"
             variant="outlined"
             type="number"
-            placeholder="Enter basic salary"
+            placeholder="Enter monthly basic salary"
             value={form.basicSalary}
             onChange={(event) => setField('basicSalary', event.target.value)}
             error={Boolean(errors.basicSalary)}
-            helperText={errors.basicSalary}
+            helperText={
+              errors.basicSalary ??
+              'Monthly basic salary; annual CTC is calculated as ×12'
+            }
             fullWidth
             required
           />
