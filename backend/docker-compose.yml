@@ -1,0 +1,51 @@
+# Docker Compose for the backend service plus a local PostgreSQL database.
+#
+# Full stack (DB + built backend container):
+#   docker compose --profile full up --build
+#
+# Watch-mode dev (DB in Docker, backend on host with `yarn dev`):
+#   docker compose up -d postgres          # start only the database
+#   export DATABASE_URL=postgres://acme:acme@localhost:5432/acme_salary?sslmode=disable
+#   yarn prisma migrate deploy             # apply migrations once
+#   yarn dev                               # tsx watch against the Docker DB
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: acme
+      POSTGRES_PASSWORD: acme
+      POSTGRES_DB: acme_salary
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acme -d acme_salary"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    # Only starts with `--profile full`, so a plain `docker compose up` brings
+    # up just the database for host-side watch-mode development.
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Points at the postgres service above. Override to use a different DB.
+      DATABASE_URL: postgres://acme:acme@postgres:5432/acme_salary?sslmode=disable
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    # Apply pending migrations, then start the compiled server.
+    command: sh -c "yarn prisma migrate deploy && node dist/src/main.js"
+
+volumes:
+  postgres-data:
