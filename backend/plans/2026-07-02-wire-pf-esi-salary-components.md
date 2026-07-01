@@ -38,3 +38,4 @@ were never surfaced by the app.
 - 2026-07-02: Created
 - 2026-07-02: Implemented backend wiring; 138 backend tests pass, lint + format clean. Completed.
 - 2026-07-02: Added `Allowances` earning component end-to-end (catalog, payload, create-wiring, seed) with parser tests; 140 backend tests pass.
+- 2026-07-02: Aligned `calculateSalaryComponents` (used by the update/edit response) to the lean set — Basic Salary plus any entered earnings (e.g. Allowances) as earnings, PF (12%) and ESI (0.75%) as deductions. Removed the hardcoded DA/HRA/Conveyance earnings and Professional Tax / Income Tax (TDS) deductions. Added `test/utils/salaryCalculation.test.ts`; 143 backend tests pass, lint + format clean.

@@ -170,8 +170,14 @@ export async function updateEmployee(
     orderBy: { effectiveDate: 'desc' },
   });
 
-  // Calculate salary components
-  const salaryComponents = calculateSalaryComponents(payload.salary.baseMonthlySalary);
+  // Calculate salary components (lean set: Basic + entered earnings, PF + ESI)
+  const salaryComponents = calculateSalaryComponents(
+    payload.salary.baseMonthlySalary,
+    (payload.salary.earnings ?? []).map((item) => ({
+      name: item.component,
+      amount: item.amount,
+    })),
+  );
 
   // Map to domain model with salary details
   return toEmployeeWithSalary(

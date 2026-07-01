@@ -15,51 +15,33 @@ export const PF_RATE = 0.12;
 export const ESI_RATE = 0.0075;
 
 /**
- * Calculates salary breakdown components from basic monthly salary.
+ * Calculates the lean salary breakdown from basic monthly salary.
  *
- * Uses standard Indian salary structure as a reference:
- * - DA (Dearness Allowance): 20% of basic
- * - HRA (House Rent Allowance): 25% of basic
- * - Conveyance Allowance: fixed (assumes typical ACME structure)
- * - PF (Provident Fund): 12% of basic
- * - Professional Tax: fixed
- * - Income Tax (TDS): calculated progressively
+ * Earnings: Basic Salary plus any additional earning line items (e.g. Allowances).
+ * Deductions: PF (12% of basic) and ESI (0.75% of basic).
  *
  * @param baseSalary - Basic monthly salary
+ * @param additionalEarnings - Extra earning line items to include (e.g. Allowances)
  * @returns Breakdown of earnings and deductions
  */
-export function calculateSalaryComponents(baseSalary: number): SalaryComponentsBreakdown {
-  // Earnings (Allowances)
-  const da = baseSalary * 0.2; // 20% DA
-  const hra = baseSalary * 0.25; // 25% HRA
-  const conveyanceAllowance = 1600; // Fixed allowance
-
-  const totalEarnings = baseSalary + da + hra + conveyanceAllowance;
-
-  // Deductions
+export function calculateSalaryComponents(
+  baseSalary: number,
+  additionalEarnings: Array<{ name: string; amount: number }> = [],
+): SalaryComponentsBreakdown {
   const pf = baseSalary * PF_RATE; // 12% Provident Fund
-  const professionalTax = 200; // Fixed professional tax
-  // Simple progressive TDS calculation
-  let tds = 0;
-  if (totalEarnings > 500000) {
-    tds = totalEarnings * 0.15; // 15% TDS for high earners
-  } else if (totalEarnings > 250000) {
-    tds = totalEarnings * 0.1; // 10% TDS for mid-tier
-  } else if (totalEarnings > 0) {
-    tds = totalEarnings * 0.05; // 5% TDS for others
-  }
+  const esi = baseSalary * ESI_RATE; // 0.75% ESI
 
   return {
     earnings: [
       { name: 'Basic Salary', amount: baseSalary },
-      { name: 'DA (Dearness Allowance)', amount: Math.round(da * 100) / 100 },
-      { name: 'HRA (House Rent Allowance)', amount: Math.round(hra * 100) / 100 },
-      { name: 'Conveyance Allowance', amount: conveyanceAllowance },
+      ...additionalEarnings.map((item) => ({
+        name: item.name,
+        amount: Math.round(item.amount * 100) / 100,
+      })),
     ],
     deductions: [
-      { name: 'Provident Fund (Employee)', amount: Math.round(pf * 100) / 100 },
-      { name: 'Professional Tax', amount: professionalTax },
-      { name: 'Income Tax (TDS)', amount: Math.round(tds * 100) / 100 },
+      { name: 'PF', amount: Math.round(pf * 100) / 100 },
+      { name: 'ESI', amount: Math.round(esi * 100) / 100 },
     ],
   };
 }
