@@ -24,6 +24,7 @@ import {
   mapEmployeeRowToApi,
 } from '../utils/employeeDbHelpers';
 import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
+import { ESI_RATE, PF_RATE } from '../utils/salaryCalculation';
 
 export const DUPLICATE_EMPLOYEE_ID_ERROR = 'EMPLOYEE_ID_ALREADY_EXISTS';
 
@@ -351,6 +352,54 @@ export async function createEmployee(payload: CreateEmployeePayload): Promise<Em
           currency: salaryStructure.currency ?? 'INR',
         },
       });
+
+      // Persist salary components: the entered Allowances earning and any
+      // enabled statutory deductions (PF/ESI).
+      const componentEffectiveDate = new Date(
+        salaryStructure.effectiveDate ?? employee.joiningDate,
+      );
+      const allowancesAmount = salaryStructure.allowances ?? 0;
+      const salaryComponentRows = [
+        {
+          include: allowancesAmount > 0,
+          name: 'Allowances',
+          amount: Math.round(allowancesAmount * 100) / 100,
+        },
+        {
+          include: salaryStructure.pfApplicable ?? false,
+          name: 'PF',
+          amount: Math.round(salaryStructure.basicSalary * PF_RATE * 100) / 100,
+        },
+        {
+          include: salaryStructure.esiApplicable ?? false,
+          name: 'ESI',
+          amount: Math.round(salaryStructure.basicSalary * ESI_RATE * 100) / 100,
+        },
+      ];
+
+      for (const { include, name, amount } of salaryComponentRows) {
+        if (!include) {
+          continue;
+        }
+
+        const component = await tx.salaryComponent.findUnique({
+          where: { name },
+          select: { id: true },
+        });
+
+        if (!component) {
+          continue;
+        }
+
+        await tx.employeeSalaryComponent.create({
+          data: {
+            employeeId: createdEmployee.id,
+            salaryComponentId: component.id,
+            amount,
+            effectiveDate: componentEffectiveDate,
+          },
+        });
+      }
 
       if (bankAccounts && bankAccounts.length > 0) {
         for (const bankAccount of bankAccounts) {

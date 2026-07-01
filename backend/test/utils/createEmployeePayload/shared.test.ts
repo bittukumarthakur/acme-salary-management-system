@@ -55,4 +55,21 @@ describe('fieldReader', () => {
     expect(f.optionalBoolean('isPrimary')).toBeUndefined();
     expect(errors['bankAccounts.1.isPrimary']).toBeDefined();
   });
+
+  it('returns an optional number when present and undefined when absent', () => {
+    const errors: ValidationErrors = {};
+    const f = fieldReader({ allowances: 5000 }, 'salaryStructure', errors);
+
+    expect(f.optionalNumber('allowances')).toBe(5000);
+    expect(f.optionalNumber('missing')).toBeUndefined();
+    expect(errors).toEqual({});
+  });
+
+  it('records a prefixed error when an optional number is the wrong type', () => {
+    const errors: ValidationErrors = {};
+    const f = fieldReader({ allowances: 'abc' }, 'salaryStructure', errors);
+
+    expect(f.optionalNumber('allowances')).toBeUndefined();
+    expect(errors['salaryStructure.allowances']).toBeDefined();
+  });
 });

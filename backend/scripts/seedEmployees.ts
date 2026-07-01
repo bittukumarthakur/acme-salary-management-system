@@ -25,6 +25,7 @@ import {
   generateIFSC,
 } from './seedingConfig';
 import { BANKS } from './masterData';
+import { ESI_RATE, PF_RATE } from '../src/utils/salaryCalculation';
 
 // ============================================================================
 // CONFIGURATION
@@ -155,22 +156,12 @@ async function seedEmployeeSalaryComponents() {
       let amount = 0;
 
       // Calculate amounts based on component type
-      if (comp.name === 'DA') {
-        amount = emp.basicSalary * 0.08; // 8% of basic
-      } else if (comp.name === 'HRA') {
-        amount = emp.basicSalary * 0.15; // 15% of basic
-      } else if (comp.name === 'Conveyance') {
-        amount = 2000; // Fixed amount
-      } else if (comp.name === 'Meal Allowance') {
-        amount = 1500; // Fixed amount
+      if (comp.name === 'Allowances') {
+        amount = emp.basicSalary * 0.1; // 10% of basic
       } else if (comp.name === 'PF') {
-        amount = emp.basicSalary * 0.12; // 12% of basic
-      } else if (comp.name === 'Health & Wellness Cess') {
-        amount = emp.basicSalary * 0.01; // 1% of basic
-      } else if (comp.name === 'IncomeTax') {
-        // Approximate tax calculation
-        const grossSalary = emp.basicSalary * 1.25; // basic + DA + HRA
-        amount = grossSalary > 250000 ? grossSalary * 0.05 : 0;
+        amount = emp.basicSalary * PF_RATE; // 12% of basic
+      } else if (comp.name === 'ESI') {
+        amount = emp.basicSalary * ESI_RATE; // 0.75% of basic
       }
 
       salaryComponentMappings.push({

@@ -8,6 +8,12 @@
 
 import type { SalaryComponentsBreakdown } from '../models/employee/types';
 
+/** Employee-share Provident Fund rate applied to basic salary. */
+export const PF_RATE = 0.12;
+
+/** Employee-share ESI rate applied to basic salary. */
+export const ESI_RATE = 0.0075;
+
 /**
  * Calculates salary breakdown components from basic monthly salary.
  *
@@ -31,7 +37,7 @@ export function calculateSalaryComponents(baseSalary: number): SalaryComponentsB
   const totalEarnings = baseSalary + da + hra + conveyanceAllowance;
 
   // Deductions
-  const pf = baseSalary * 0.12; // 12% Provident Fund
+  const pf = baseSalary * PF_RATE; // 12% Provident Fund
   const professionalTax = 200; // Fixed professional tax
   // Simple progressive TDS calculation
   let tds = 0;

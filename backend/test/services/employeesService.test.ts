@@ -13,6 +13,12 @@ jest.mock('../../lib/prisma', () => ({
     employeeSalaryStructure: {
       create: jest.fn(),
     },
+    salaryComponent: {
+      findUnique: jest.fn(),
+    },
+    employeeSalaryComponent: {
+      create: jest.fn(),
+    },
     bankAccount: {
       create: jest.fn(),
     },
@@ -33,6 +39,12 @@ const mockedPrisma = prisma as unknown as {
     findUnique: jest.Mock;
   };
   employeeSalaryStructure: {
+    create: jest.Mock;
+  };
+  salaryComponent: {
+    findUnique: jest.Mock;
+  };
+  employeeSalaryComponent: {
     create: jest.Mock;
   };
   bankAccount: {
@@ -171,6 +183,133 @@ describe('createEmployee', () => {
       currency: 'INR',
       status: 'ACTIVE',
     });
+  });
+
+  it('creates PF and ESI deduction components when their toggles are enabled', async () => {
+    mockedPrisma.department.findUnique.mockResolvedValue({
+      id: 'DEPT-ENG',
+      name: 'ENGINEERING',
+    });
+    mockedPrisma.designation.upsert.mockResolvedValue({
+      id: 'DES-ENG',
+      title: 'Engineer',
+    });
+    const createdEmployee = {
+      id: 120,
+      employeeId: 'TMP-abc',
+      name: 'Ari Example',
+      email: 'ari@example.com',
+      country: 'India',
+      departmentId: 'DEPT-ENG',
+      department: { id: 'DEPT-ENG', name: 'ENGINEERING' },
+      designationId: 'DES-ENG',
+      designation: { id: 'DES-ENG', title: 'Engineer' },
+      employmentType: 'PERMANENT',
+      joiningDate: new Date('2023-01-11T00:00:00.000Z'),
+      status: 'ACTIVE',
+      basicSalary: 100000,
+      currency: 'INR',
+      avatarUrl: null,
+    };
+
+    mockedPrisma.employee.create.mockResolvedValue(createdEmployee);
+    mockedPrisma.employee.update.mockResolvedValue({
+      ...createdEmployee,
+      employeeId: 'EMP00120',
+    });
+    mockedPrisma.employeeSalaryStructure.create.mockResolvedValue({ id: 1 });
+    mockedPrisma.salaryComponent.findUnique.mockImplementation(
+      async ({ where }: { where: { name: string } }) =>
+        where.name === 'PF'
+          ? { id: 'COMP-PF' }
+          : where.name === 'ESI'
+            ? { id: 'COMP-ESI' }
+            : where.name === 'Allowances'
+              ? { id: 'COMP-ALLOW' }
+              : null,
+    );
+
+    await createEmployee({
+      employee: payload.employee,
+      salaryStructure: {
+        basicSalary: 100000,
+        effectiveDate: '2023-01-11',
+        pfApplicable: true,
+        esiApplicable: true,
+        allowances: 5000,
+      },
+    });
+
+    expect(mockedPrisma.employeeSalaryComponent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          employeeId: 120,
+          salaryComponentId: 'COMP-ALLOW',
+          amount: 5000,
+        }),
+      }),
+    );
+    expect(mockedPrisma.employeeSalaryComponent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          employeeId: 120,
+          salaryComponentId: 'COMP-PF',
+          amount: 12000,
+        }),
+      }),
+    );
+    expect(mockedPrisma.employeeSalaryComponent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          employeeId: 120,
+          salaryComponentId: 'COMP-ESI',
+          amount: 750,
+        }),
+      }),
+    );
+  });
+
+  it('does not create deduction components when PF and ESI toggles are disabled', async () => {
+    mockedPrisma.department.findUnique.mockResolvedValue({
+      id: 'DEPT-ENG',
+      name: 'ENGINEERING',
+    });
+    mockedPrisma.designation.upsert.mockResolvedValue({
+      id: 'DES-ENG',
+      title: 'Engineer',
+    });
+    const createdEmployee = {
+      id: 120,
+      employeeId: 'TMP-abc',
+      name: 'Ari Example',
+      email: 'ari@example.com',
+      country: 'India',
+      departmentId: 'DEPT-ENG',
+      department: { id: 'DEPT-ENG', name: 'ENGINEERING' },
+      designationId: 'DES-ENG',
+      designation: { id: 'DES-ENG', title: 'Engineer' },
+      employmentType: 'PERMANENT',
+      joiningDate: new Date('2023-01-11T00:00:00.000Z'),
+      status: 'ACTIVE',
+      basicSalary: 100000,
+      currency: 'INR',
+      avatarUrl: null,
+    };
+
+    mockedPrisma.employee.create.mockResolvedValue(createdEmployee);
+    mockedPrisma.employee.update.mockResolvedValue({
+      ...createdEmployee,
+      employeeId: 'EMP00120',
+    });
+    mockedPrisma.employeeSalaryStructure.create.mockResolvedValue({ id: 1 });
+
+    await createEmployee({
+      employee: payload.employee,
+      salaryStructure: { basicSalary: 100000, pfApplicable: false, esiApplicable: false },
+    });
+
+    expect(mockedPrisma.salaryComponent.findUnique).not.toHaveBeenCalled();
+    expect(mockedPrisma.employeeSalaryComponent.create).not.toHaveBeenCalled();
   });
 
   it('maps unique-constraint conflicts to duplicate employee ID error', async () => {

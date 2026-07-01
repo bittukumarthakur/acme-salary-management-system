@@ -69,6 +69,23 @@ export function readOptionalBoolean(
   return value;
 }
 
+export function readOptionalNumber(
+  source: Record<string, unknown>,
+  key: string,
+  path: string,
+  errors: ValidationErrors,
+): number | undefined {
+  const value = source[key];
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    errors[path] = `${path} must be a number`;
+    return undefined;
+  }
+  return value;
+}
+
 export function isValidDate(value: string): boolean {
   return !Number.isNaN(new Date(value).getTime());
 }
@@ -84,6 +101,7 @@ export interface FieldReader {
   requiredString(key: string): string;
   optionalString(key: string): string | undefined;
   requiredNumber(key: string): number;
+  optionalNumber(key: string): number | undefined;
   optionalBoolean(key: string): boolean | undefined;
 }
 
@@ -98,6 +116,7 @@ export function fieldReader(
     requiredString: (key) => readRequiredString(source, key, path(key), errors),
     optionalString: (key) => readOptionalString(source, key, path(key), errors),
     requiredNumber: (key) => readRequiredNumber(source, key, path(key), errors),
+    optionalNumber: (key) => readOptionalNumber(source, key, path(key), errors),
     optionalBoolean: (key) => readOptionalBoolean(source, key, path(key), errors),
   };
 }

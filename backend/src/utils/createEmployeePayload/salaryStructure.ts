@@ -25,9 +25,14 @@ export function parseSalaryStructure(
 
   const pfApplicable = f.optionalBoolean('pfApplicable');
   const esiApplicable = f.optionalBoolean('esiApplicable');
+  const allowances = f.optionalNumber('allowances');
 
   if (basicSalary < 0) {
     errors['salaryStructure.basicSalary'] = 'salaryStructure.basicSalary must be zero or higher';
+  }
+
+  if (allowances !== undefined && allowances < 0) {
+    errors['salaryStructure.allowances'] = 'salaryStructure.allowances must be zero or higher';
   }
 
   if (effectiveDate && !isValidDate(effectiveDate)) {
@@ -56,5 +61,6 @@ export function parseSalaryStructure(
     ...(endDate !== undefined ? { endDate } : {}),
     ...(pfApplicable !== undefined ? { pfApplicable } : {}),
     ...(esiApplicable !== undefined ? { esiApplicable } : {}),
+    ...(allowances !== undefined ? { allowances } : {}),
   };
 }

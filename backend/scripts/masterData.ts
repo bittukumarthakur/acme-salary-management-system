@@ -36,13 +36,9 @@ export const DESIGNATIONS = [
  * All earning, allowance, deduction, and tax components
  */
 export const SALARY_COMPONENTS = [
-  { id: 'COMP-DA', name: 'DA', type: 'EARNING' as const, calculationType: 'PERCENTAGE' as const, displayOrder: 1 },
-  { id: 'COMP-HRA', name: 'HRA', type: 'EARNING' as const, calculationType: 'PERCENTAGE' as const, displayOrder: 2 },
-  { id: 'COMP-CONV', name: 'Conveyance', type: 'ALLOWANCE' as const, calculationType: 'FIXED' as const, displayOrder: 3 },
-  { id: 'COMP-MEAL', name: 'Meal Allowance', type: 'ALLOWANCE' as const, calculationType: 'FIXED' as const, displayOrder: 4 },
-  { id: 'COMP-PF', name: 'PF', type: 'DEDUCTION' as const, calculationType: 'PERCENTAGE' as const, displayOrder: 5 },
-  { id: 'COMP-CESS', name: 'Health & Wellness Cess', type: 'TAX' as const, calculationType: 'PERCENTAGE' as const, displayOrder: 6 },
-  { id: 'COMP-IT', name: 'IncomeTax', type: 'TAX' as const, calculationType: 'FORMULA' as const, displayOrder: 7 },
+  { id: 'COMP-ALLOW', name: 'Allowances', type: 'EARNING' as const, calculationType: 'FIXED' as const, displayOrder: 1 },
+  { id: 'COMP-PF', name: 'PF', type: 'DEDUCTION' as const, calculationType: 'PERCENTAGE' as const, displayOrder: 2 },
+  { id: 'COMP-ESI', name: 'ESI', type: 'DEDUCTION' as const, calculationType: 'PERCENTAGE' as const, displayOrder: 3 },
 ];
 
 /**

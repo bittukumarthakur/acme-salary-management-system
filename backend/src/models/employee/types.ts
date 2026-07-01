@@ -87,6 +87,7 @@ export interface CreateSalaryStructureInput {
   endDate?: string | null;
   pfApplicable?: boolean;
   esiApplicable?: boolean;
+  allowances?: number;
 }
 
 /** Optional bank account details for transactional create payload. */
