@@ -6,7 +6,7 @@
 import { prisma } from '../../lib/prisma';
 import type { EmploymentType, EmployeeStatus } from '../../generated/prisma/client';
 import type { EmployeeWithSalary, UpdateEmployeePayload } from '../models/employee/types';
-import { calculateSalaryComponents } from './salaryCalculation';
+import { calculateSalaryComponents } from '../utils/salaryCalculation';
 import { toEmployeeWithSalary } from './employeeMapper';
 
 async function syncEditableEarnings(

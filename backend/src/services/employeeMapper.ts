@@ -10,7 +10,7 @@ import type {
   SalaryInfo,
 } from '../models/employee/types';
 import type { SalaryHistoryEntry } from '../models/employee/details';
-import { calculateNetPayAndCTC } from './salaryCalculation';
+import { calculateNetPayAndCTC } from '../utils/salaryCalculation';
 
 /**
  * Maps a Prisma employee row to the domain Employee model.

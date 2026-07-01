@@ -1,7 +1,7 @@
 # Backend services/ Cleanup
 
 - **Date**: 2026-07-01
-- **Status**: in-progress
+- **Status**: completed
 
 ## Summary
 
@@ -24,3 +24,9 @@ suite.
 ## Status Updates
 
 - 2026-07-01: Created
+- 2026-07-01: Step 1 done (539984f) — deleted dead stack, added employeesQuery test.
+- 2026-07-01: Step 2 done (f5b166c) — renamed utils/employeesService → employeeDbHelpers.
+- 2026-07-01: Step 3 done (f060141) — simplified mapEmployeeRowToApi (dropped dead
+  convertedSalary); confirmed it is intentionally distinct from toEmployee, not merged.
+- 2026-07-01: Step 4 done — relocated pure salaryCalculation.ts to utils/. All 4 steps
+  complete; suite green (128 tests). Status: completed.
