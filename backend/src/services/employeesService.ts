@@ -22,7 +22,7 @@ import {
   formatGeneratedEmployeeId,
   isUniqueConstraintError,
   mapEmployeeRowToApi,
-} from '../utils/employeesService';
+} from '../utils/employeeDbHelpers';
 import { isValidEmployeeCodeId, normalizeEmployeeCodeId } from '../utils/employeeId';
 
 export const DUPLICATE_EMPLOYEE_ID_ERROR = 'EMPLOYEE_ID_ALREADY_EXISTS';
