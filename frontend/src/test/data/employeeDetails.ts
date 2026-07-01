@@ -32,7 +32,6 @@ export const employeeDetailsFixture = {
     jobInformation: {
       department: 'Engineering',
       designation: 'Senior Developer',
-      reportingManager: 'Jane Smith',
       workLocation: 'Bangalore, India',
     },
   },

@@ -91,21 +91,6 @@ export function WorkInfoSection({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <TextField
-            label="Reporting Manager"
-            variant="outlined"
-            placeholder="Enter reporting manager"
-            value={form.reportingManager}
-            onChange={(event) =>
-              setField('reportingManager', event.target.value)
-            }
-            error={Boolean(errors.reportingManager)}
-            helperText={errors.reportingManager}
-            fullWidth
-            required
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
           <FormControl
             fullWidth
             required

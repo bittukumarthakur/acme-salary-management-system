@@ -3,7 +3,6 @@ import {
   VALID_DEPARTMENTS,
   VALID_EMPLOYMENT_TYPES,
   VALID_GENDERS,
-  VALID_MARITAL_STATUSES,
   VALID_STATUSES,
 } from './constants';
 import { isValidDate, fieldReader, type ValidationErrors } from './shared';
@@ -19,13 +18,11 @@ export function parseEmployee(
   const phoneNumber = f.requiredString('phoneNumber');
   const dateOfBirth = f.requiredString('dateOfBirth');
   const gender = f.requiredString('gender').toUpperCase();
-  const maritalStatus = f.requiredString('maritalStatus').toUpperCase();
   const department = f.requiredString('department').toUpperCase();
   const designation = f.requiredString('designation');
   const joiningDate = f.requiredString('joiningDate');
   const employmentType = f.requiredString('employmentType').toUpperCase();
 
-  const reportingManagerEmployeeId = f.optionalString('reportingManagerEmployeeId');
   const country = f.optionalString('country');
   const status = f.optionalString('status')?.toUpperCase();
   const avatarUrl = f.optionalString('avatarUrl');
@@ -45,11 +42,6 @@ export function parseEmployee(
 
   if (gender && !VALID_GENDERS.includes(gender)) {
     errors['employee.gender'] = `employee.gender must be one of ${VALID_GENDERS.join(', ')}`;
-  }
-
-  if (maritalStatus && !VALID_MARITAL_STATUSES.includes(maritalStatus)) {
-    errors['employee.maritalStatus'] =
-      `employee.maritalStatus must be one of ${VALID_MARITAL_STATUSES.join(', ')}`;
   }
 
   if (department && !VALID_DEPARTMENTS.includes(department)) {
@@ -99,12 +91,10 @@ export function parseEmployee(
     phoneNumber,
     dateOfBirth,
     gender,
-    maritalStatus,
     department,
     designation,
     joiningDate,
     employmentType,
-    ...(reportingManagerEmployeeId !== undefined ? { reportingManagerEmployeeId } : {}),
     ...(country !== undefined ? { country } : {}),
     ...(status !== undefined ? { status } : {}),
     ...(avatarUrl !== undefined ? { avatarUrl } : {}),

@@ -54,11 +54,9 @@ describe('createEmployee', () => {
       phoneNumber: '+919999999999',
       dateOfBirth: '1993-01-10',
       gender: 'FEMALE',
-      maritalStatus: 'SINGLE',
       department: 'ENGINEERING',
       designation: 'Engineer',
       joiningDate: '2023-01-11',
-      reportingManagerEmployeeId: 'EMP00010',
       employmentType: 'PERMANENT',
     },
     salaryStructure: {

@@ -236,7 +236,6 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
       jobInformation: {
         department: departmentName,
         designation: designationTitle,
-        reportingManager: null,
         workLocation: row.country || null,
       },
     },

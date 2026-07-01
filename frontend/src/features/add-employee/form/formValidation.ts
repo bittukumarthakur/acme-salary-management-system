@@ -6,11 +6,9 @@ const requiredFields: Array<keyof AddEmployeeFormState> = [
   'phoneNumber',
   'dateOfBirth',
   'gender',
-  'maritalStatus',
   'department',
   'designation',
   'joiningDate',
-  'reportingManager',
   'employmentType',
   'basicSalary',
 ]
@@ -20,7 +18,6 @@ const fieldLabels: Partial<Record<keyof AddEmployeeFormState, string>> = {
   phoneNumber: 'Phone Number',
   dateOfBirth: 'Date of Birth',
   joiningDate: 'Joining Date',
-  reportingManager: 'Reporting Manager',
   employmentType: 'Employment Type',
   basicSalary: 'Basic Salary',
 }

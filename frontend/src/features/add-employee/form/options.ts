@@ -9,12 +9,6 @@ export const genderOptions: Option[] = [
   { value: 'OTHER', label: 'Other' },
 ]
 
-export const maritalStatusOptions: Option[] = [
-  { value: 'SINGLE', label: 'Single' },
-  { value: 'MARRIED', label: 'Married' },
-  { value: 'DIVORCED', label: 'Divorced' },
-]
-
 // Department and employment-type options are shared with the Edit form to keep
 // values (which must match the backend enums) and labels consistent.
 export {

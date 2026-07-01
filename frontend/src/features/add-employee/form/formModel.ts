@@ -4,11 +4,9 @@ export interface AddEmployeeFormState {
   phoneNumber: string
   dateOfBirth: string
   gender: string
-  maritalStatus: string
   department: string
   designation: string
   joiningDate: string
-  reportingManager: string
   employmentType: string
   basicSalary: string
   allowances: string
@@ -31,11 +29,9 @@ export const initialFormState: AddEmployeeFormState = {
   phoneNumber: '',
   dateOfBirth: '',
   gender: '',
-  maritalStatus: '',
   department: '',
   designation: '',
   joiningDate: '',
-  reportingManager: '',
   employmentType: '',
   basicSalary: '',
   allowances: '',

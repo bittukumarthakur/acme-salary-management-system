@@ -30,7 +30,6 @@ export interface PersonalInformation {
 export interface JobInformation {
   department: string;
   designation: string;
-  reportingManager: string | null;
   workLocation: string | null;
 }
 

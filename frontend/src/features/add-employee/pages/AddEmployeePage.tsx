@@ -48,11 +48,9 @@ export function AddEmployeePage() {
       phoneNumber: form.phoneNumber.trim(),
       dateOfBirth: form.dateOfBirth,
       gender: form.gender,
-      maritalStatus: form.maritalStatus,
       department: form.department,
       designation: form.designation.trim(),
       joiningDate: form.joiningDate,
-      reportingManagerEmployeeId: form.reportingManager.trim() || undefined,
       employmentType: form.employmentType,
     },
     salaryStructure: {

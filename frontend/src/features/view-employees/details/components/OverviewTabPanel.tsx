@@ -1,7 +1,6 @@
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined'
-import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined'
 import { Card, CardContent, Grid, Stack, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { EmployeeStatusChip } from '../../../employees/components/EmployeeStatusChip'
@@ -157,11 +156,6 @@ export function OverviewTabPanel({
                   icon={BadgeOutlinedIcon}
                   label="Designation"
                   value={jobInformation.designation}
-                />
-                <JobInfoRow
-                  icon={PermIdentityOutlinedIcon}
-                  label="Reporting Manager"
-                  value={jobInformation.reportingManager}
                 />
                 <JobInfoRow
                   icon={LocationOnOutlinedIcon}

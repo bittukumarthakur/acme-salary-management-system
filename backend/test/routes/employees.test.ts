@@ -452,11 +452,9 @@ describe('POST /api/v1/employees', () => {
       phoneNumber: '+919999999999',
       dateOfBirth: '1993-01-10',
       gender: 'FEMALE',
-      maritalStatus: 'SINGLE',
       department: 'ENGINEERING',
       designation: 'Engineer',
       joiningDate: '2023-01-11',
-      reportingManagerEmployeeId: 'EMP00010',
       employmentType: 'PERMANENT',
     },
     salaryStructure: {
@@ -665,7 +663,6 @@ describe('GET /api/v1/employees/:id', () => {
       jobInformation: {
         department: 'Engineering',
         designation: 'Senior Developer',
-        reportingManager: 'Jane Smith',
         workLocation: 'Bangalore, India',
       },
     },

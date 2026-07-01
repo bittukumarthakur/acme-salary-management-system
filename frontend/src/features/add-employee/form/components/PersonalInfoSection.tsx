@@ -15,7 +15,7 @@ import type {
   FormErrors,
 } from '../formModel'
 import { toPickerValue } from '../dateUtils'
-import { genderOptions, maritalStatusOptions } from '../options'
+import { genderOptions } from '../options'
 
 interface PersonalInfoSectionProps {
   form: AddEmployeeFormState
@@ -113,31 +113,6 @@ export function PersonalInfoSection({
             {errors.gender && (
               <Typography variant="caption" color="error">
                 {errors.gender}
-              </Typography>
-            )}
-          </FormControl>
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth required error={Boolean(errors.maritalStatus)}>
-            <InputLabel id="marital-status-label">Marital Status</InputLabel>
-            <Select
-              labelId="marital-status-label"
-              label="Marital Status"
-              value={form.maritalStatus}
-              onChange={(event) =>
-                setField('maritalStatus', event.target.value)
-              }
-            >
-              <MenuItem value="">Select Status</MenuItem>
-              {maritalStatusOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-            {errors.maritalStatus && (
-              <Typography variant="caption" color="error">
-                {errors.maritalStatus}
               </Typography>
             )}
           </FormControl>

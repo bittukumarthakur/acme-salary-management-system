@@ -81,7 +81,6 @@ export interface PersonalInformation {
 export interface JobInformation {
   department: string
   designation: string
-  reportingManager: string | null
   workLocation: string | null
 }
 
@@ -172,11 +171,9 @@ export interface CreateEmployeePayload {
     phoneNumber: string
     dateOfBirth: string
     gender: string
-    maritalStatus: string
     department: string
     designation: string
     joiningDate: string
-    reportingManagerEmployeeId?: string
     employmentType: string
     country?: string
     status?: string

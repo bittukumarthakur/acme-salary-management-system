@@ -136,7 +136,6 @@ describe('EmployeeDetailsPage', () => {
         },
         jobInformation: {
           ...employeeDetailsFixture.overview.jobInformation,
-          reportingManager: null,
         },
       },
       salaryHistory: [],
