@@ -186,6 +186,7 @@ export interface CreateEmployeePayload {
     endDate?: string | null
     pfApplicable?: boolean
     esiApplicable?: boolean
+    allowances?: number
   }
   bankAccounts?: Array<{
     bankName: string

@@ -57,6 +57,9 @@ export function AddEmployeePage() {
       basicSalary: Number(form.basicSalary),
       pfApplicable: form.pfApplicable,
       esiApplicable: form.esiApplicable,
+      ...(form.allowances.trim()
+        ? { allowances: Number(form.allowances) }
+        : {}),
     },
   })
 

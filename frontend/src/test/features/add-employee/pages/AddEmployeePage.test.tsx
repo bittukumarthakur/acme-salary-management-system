@@ -62,6 +62,7 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByLabelText(/employment type/i))
   await user.click(await screen.findByRole('option', { name: 'Full Time' }))
   setFieldValue(/basic salary/i, '100000')
+  setFieldValue(/allowances/i, '5000')
 }
 
 describe('AddEmployeePage', () => {
@@ -164,6 +165,7 @@ describe('AddEmployeePage', () => {
         }),
         salaryStructure: expect.objectContaining({
           basicSalary: 100000,
+          allowances: 5000,
         }),
       }),
     )

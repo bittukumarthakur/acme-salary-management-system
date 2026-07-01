@@ -51,6 +51,13 @@ export function validateAddEmployeeForm(
     nextErrors.basicSalary = 'Basic Salary must be zero or higher'
   }
 
+  if (form.allowances.trim()) {
+    const allowancesValue = Number(form.allowances)
+    if (Number.isNaN(allowancesValue) || allowancesValue < 0) {
+      nextErrors.allowances = 'Allowances must be zero or higher'
+    }
+  }
+
   if (form.dateOfBirth && form.dateOfBirth >= todayIso) {
     nextErrors.dateOfBirth = 'Date of Birth must be in the past'
   }

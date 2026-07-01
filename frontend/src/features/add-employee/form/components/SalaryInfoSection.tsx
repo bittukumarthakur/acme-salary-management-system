@@ -44,6 +44,19 @@ export function SalaryInfoSection({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
+          <TextField
+            label="Allowances"
+            variant="outlined"
+            type="number"
+            placeholder="Enter allowances"
+            value={form.allowances}
+            onChange={(event) => setField('allowances', event.target.value)}
+            error={Boolean(errors.allowances)}
+            helperText={errors.allowances}
+            fullWidth
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
           <FormControlLabel
             control={
               <Switch
