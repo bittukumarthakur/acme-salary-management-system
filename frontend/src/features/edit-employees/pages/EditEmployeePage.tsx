@@ -255,6 +255,10 @@ export function EditEmployeePage() {
       fullName: loadState.form.fullName.trim(),
       email: loadState.form.email.trim(),
       phone: composePhoneNumber(loadState.form),
+      ...(loadState.form.dateOfBirth
+        ? { dateOfBirth: loadState.form.dateOfBirth }
+        : {}),
+      ...(loadState.form.gender ? { gender: loadState.form.gender } : {}),
       department: loadState.form.department.trim(),
       designation: loadState.form.designation.trim(),
       employmentType: loadState.form.employmentType as EditableEmploymentType,

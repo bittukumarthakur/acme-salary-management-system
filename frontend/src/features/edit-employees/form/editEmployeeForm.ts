@@ -14,6 +14,8 @@ export interface EditEmployeeFormState {
   email: string
   phoneCountryCode: string
   phoneNumber: string
+  dateOfBirth: string
+  gender: string
   department: string
   designation: string
   employmentType: EditableEmploymentType | ''
@@ -41,6 +43,7 @@ export type EditEmployeeSetField = <K extends keyof EditEmployeeFormState>(
 export {
   departmentOptions,
   employmentTypeOptions,
+  genderOptions,
 } from '../../../shared/constants/employeeOptions'
 
 export const statusOptions: Array<{
@@ -181,6 +184,10 @@ export function buildInitialEditEmployeeForm(
     email: details.summary.email,
     phoneCountryCode: phoneParts.phoneCountryCode,
     phoneNumber: phoneParts.phoneNumber,
+    dateOfBirth: parseDisplayDate(
+      details.overview.personalInformation.dateOfBirth,
+    ),
+    gender: details.overview.personalInformation.gender ?? '',
     department: details.summary.department,
     designation: details.summary.designation,
     employmentType: normalizeEmploymentType(details.summary.employmentType),

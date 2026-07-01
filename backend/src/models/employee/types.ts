@@ -158,6 +158,8 @@ export interface UpdateEmployeeInput {
   fullName: string;
   email: string;
   phone: string;
+  dateOfBirth?: string;
+  gender?: string;
   department: string;
   designation: string;
   employmentType: string;

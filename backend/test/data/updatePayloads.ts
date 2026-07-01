@@ -31,6 +31,8 @@ export const validUpdatePayload: UpdateEmployeePayload = {
   fullName: 'Jane Doe',
   email: 'jane@example.com',
   phone: '+91 98765 43210',
+  dateOfBirth: '1990-05-20',
+  gender: 'FEMALE',
 };
 
 /**

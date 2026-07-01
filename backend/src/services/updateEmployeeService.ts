@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '../../lib/prisma';
-import type { EmploymentType, EmployeeStatus } from '../../generated/prisma/client';
+import type { EmploymentType, EmployeeStatus, Gender } from '../../generated/prisma/client';
 import type { EmployeeWithSalary, UpdateEmployeePayload } from '../models/employee/types';
 import { calculateSalaryComponents } from '../utils/salaryCalculation';
 import { toEmployeeWithSalary } from './employeeMapper';
@@ -133,6 +133,8 @@ export async function updateEmployee(
       country: payload.country,
       currency: payload.currency,
       basicSalary: payload.salary.baseMonthlySalary,
+      ...(payload.dateOfBirth ? { dateOfBirth: new Date(payload.dateOfBirth) } : {}),
+      ...(payload.gender ? { gender: payload.gender as Gender } : {}),
     },
   });
 

@@ -69,6 +69,8 @@ export interface PersonalInformation {
   employeeId: string
   email: string
   phone: string | null
+  dateOfBirth: string | null
+  gender: string | null
   joiningDate: string
   country: string
   employmentType: string
@@ -141,6 +143,8 @@ export interface UpdateEmployeePayload {
   fullName: string
   email: string
   phone: string
+  dateOfBirth?: string
+  gender?: string
   department: string
   designation: string
   employmentType: ApiEmploymentType

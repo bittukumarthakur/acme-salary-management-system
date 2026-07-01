@@ -18,6 +18,8 @@ export interface PersonalInformation {
   employeeId: string;
   email: string;
   phone: string | null;
+  dateOfBirth: string | null;
+  gender: string | null;
   joiningDate: string;
   country: string;
   employmentType: string;

@@ -21,6 +21,8 @@ export const employeeDetailsFixture = {
       employeeId: 'EMP00001',
       email: 'john.doe@acme.com',
       phone: '+91 98765 43210',
+      dateOfBirth: '20 May 1990',
+      gender: 'MALE',
       joiningDate: '15 Jan 2022',
       country: 'India',
       employmentType: 'Full Time',

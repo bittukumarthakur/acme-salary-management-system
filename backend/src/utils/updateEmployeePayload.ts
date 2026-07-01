@@ -9,6 +9,7 @@ import {
   VALID_EMPLOYMENT_TYPES,
   VALID_STATUSES,
   VALID_DEPARTMENTS,
+  VALID_GENDERS,
 } from './createEmployeePayload/constants';
 
 export type ParseUpdateResult =
@@ -63,6 +64,14 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
   const country = readRequiredString(source, 'country', 'country', errors);
   const currency = readRequiredString(source, 'currency', 'currency', errors);
   const bankAccount = readRequiredString(source, 'bankAccount', 'bankAccount', errors);
+
+  // Parse optional personal fields
+  const dateOfBirthRaw = source.dateOfBirth;
+  const dateOfBirth =
+    typeof dateOfBirthRaw === 'string' && dateOfBirthRaw.trim() ? dateOfBirthRaw.trim() : undefined;
+  const genderRaw = source.gender;
+  const gender =
+    typeof genderRaw === 'string' && genderRaw.trim() ? genderRaw.trim().toUpperCase() : undefined;
 
   // Parse salary structure
   const salarySource = asRecord(source.salary);
@@ -155,6 +164,16 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
     errors.status = `status must be one of ${VALID_STATUSES.join(', ')}`;
   }
 
+  // Validate gender enum (optional)
+  if (gender && !VALID_GENDERS.includes(gender)) {
+    errors.gender = `gender must be one of ${VALID_GENDERS.join(', ')}`;
+  }
+
+  // Validate optional date of birth
+  if (dateOfBirth && !isValidDate(dateOfBirth)) {
+    errors.dateOfBirth = 'dateOfBirth must be a valid ISO date (YYYY-MM-DD)';
+  }
+
   // Validate date formats
   if (joiningDate && !isValidDate(joiningDate)) {
     errors.joiningDate = 'joiningDate must be a valid ISO date (YYYY-MM-DD)';
@@ -181,6 +200,8 @@ export function parseUpdateEmployeePayload(raw: unknown): ParseUpdateResult {
     fullName,
     email,
     phone,
+    ...(dateOfBirth ? { dateOfBirth } : {}),
+    ...(gender ? { gender } : {}),
     department,
     designation,
     employmentType,

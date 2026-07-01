@@ -21,4 +21,14 @@ describe('buildInitialEditEmployeeForm', () => {
       String(employeeDetailsFixture.salaryStructure.baseSalaryMonthly),
     )
   })
+
+  it('pre-populates date of birth (as ISO) and gender from the details', () => {
+    const form = buildInitialEditEmployeeForm(
+      employeeDetailsFixture,
+      '2026-07-01',
+    )
+
+    expect(form.dateOfBirth).toBe('1990-05-20')
+    expect(form.gender).toBe('MALE')
+  })
 })

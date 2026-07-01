@@ -246,6 +246,8 @@ describe('getEmployeeById', () => {
     mockedPrisma.employee.findUnique.mockResolvedValue({
       ...aliceRow,
       phoneNumber: '+919876543210',
+      dateOfBirth: new Date('1990-05-20T00:00:00.000Z'),
+      gender: 'FEMALE',
       bankAccounts: [{ accountNumber: 'ACC-000123' }],
       salaryStructures: [
         {
@@ -324,6 +326,8 @@ describe('getEmployeeById', () => {
       overview: {
         personalInformation: {
           employeeId: 'EMP00001',
+          dateOfBirth: '20 May 1990',
+          gender: 'FEMALE',
         },
       },
       salaryStructure: {

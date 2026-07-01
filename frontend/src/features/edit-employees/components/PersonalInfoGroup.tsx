@@ -1,14 +1,17 @@
 import { Grid } from '@mui/material'
 import { FormTextField } from './FormTextField'
+import { FormSelect } from './FormSelect'
+import { FormDateField } from './FormDateField'
 import {
   FIELD_GRID_SIZES,
   PHONE_FIELD_GRID,
   PHONE_PLACEHOLDER,
 } from './editFormConstants'
-import type {
-  EditEmployeeFormErrors,
-  EditEmployeeFormState,
-  EditEmployeeSetField,
+import {
+  genderOptions,
+  type EditEmployeeFormErrors,
+  type EditEmployeeFormState,
+  type EditEmployeeSetField,
 } from '../form/editEmployeeForm'
 
 interface PersonalInfoGroupProps {
@@ -86,6 +89,27 @@ export function PersonalInfoGroup({
             />
           </Grid>
         </Grid>
+      </Grid>
+      <Grid size={FIELD_GRID_SIZES}>
+        <FormDateField
+          label="Date of Birth"
+          field="dateOfBirth"
+          value={form.dateOfBirth}
+          error={errors.dateOfBirth}
+          onFieldChange={onFieldChange}
+          onFieldBlur={onFieldBlur}
+        />
+      </Grid>
+      <Grid size={FIELD_GRID_SIZES}>
+        <FormSelect
+          label="Gender"
+          field="gender"
+          value={form.gender}
+          options={genderOptions}
+          error={errors.gender}
+          onFieldChange={onFieldChange}
+          onFieldBlur={onFieldBlur}
+        />
       </Grid>
     </>
   )

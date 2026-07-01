@@ -23,3 +23,9 @@ export const employmentTypeOptions: EmployeeSelectOption[] = [
   { value: 'TEMPORARY', label: 'Part Time' },
   { value: 'INTERN', label: 'Intern' },
 ]
+
+export const genderOptions: EmployeeSelectOption[] = [
+  { value: 'MALE', label: 'Male' },
+  { value: 'FEMALE', label: 'Female' },
+  { value: 'OTHER', label: 'Other' },
+]

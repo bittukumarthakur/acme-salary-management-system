@@ -1,7 +1,7 @@
 # Fix Add/Edit employee field mismatches
 
 - **Date**: 2026-07-01
-- **Status**: in-progress
+- **Status**: completed
 
 ## Summary
 
@@ -32,3 +32,7 @@ Also aligning editable fields: make **Date of Birth** and **Gender** editable en
 ## Status Updates
 
 - 2026-07-01: Created; starting Commit 1 (shared options).
+- 2026-07-01: Commit 1 done (shared department + employment-type options).
+- 2026-07-01: Commit 2 done (DOB & gender editable end-to-end: backend details
+  response, update payload parser + service persistence; frontend types, edit form
+  fields, submit payload). Backend 136 tests pass, frontend 164 tests pass.

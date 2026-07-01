@@ -186,6 +186,14 @@ describe('PUT /api/v1/employees/:id - Update Employee (Mocked)', () => {
       expect(response.body).toHaveProperty('fullName', 'Jane Doe');
       expect(response.body).toHaveProperty('email', 'jane@example.com');
       expect(response.body).toHaveProperty('phone', '+91 98765 43210');
+      expect(prismaMock.employee.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            dateOfBirth: new Date('1990-05-20'),
+            gender: 'FEMALE',
+          }),
+        }),
+      );
     });
   });
 

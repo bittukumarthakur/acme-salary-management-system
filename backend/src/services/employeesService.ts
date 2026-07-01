@@ -225,6 +225,8 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
         employeeId: row.employeeId,
         email: row.email,
         phone: row.phoneNumber ?? null,
+        dateOfBirth: row.dateOfBirth ? toDisplayDate(row.dateOfBirth) : null,
+        gender: row.gender ?? null,
         joiningDate: joinedOn,
         country: row.country,
         employmentType: row.employmentType,
