@@ -163,7 +163,7 @@ export function EditEmployeePage() {
         setLoadState({
           status: 'ready',
           details,
-          form: buildInitialEditEmployeeForm(details),
+          form: buildInitialEditEmployeeForm(details, todayIso),
         })
       })
       .catch((error) => {
@@ -177,7 +177,7 @@ export function EditEmployeePage() {
             error instanceof Error ? error.message : 'Failed to load employee',
         })
       })
-  }, [employeeId])
+  }, [employeeId, todayIso])
 
   if (!employeeId) {
     return <EditEmployeeError message="Employee not found" />

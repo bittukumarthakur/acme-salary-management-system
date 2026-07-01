@@ -175,6 +175,7 @@ export function composePhoneNumber(form: EditEmployeeFormState): string {
 
 export function buildInitialEditEmployeeForm(
   details: EmployeeDetailsResponse,
+  todayIso: string,
 ): EditEmployeeFormState {
   const phoneParts = parsePhoneParts(details.summary.phone)
 
@@ -202,7 +203,9 @@ export function buildInitialEditEmployeeForm(
     currency: details.summary.currency,
     bankAccount: details.summary.bankAccount ?? '',
     baseMonthlySalary: String(details.salaryStructure.baseSalaryMonthly),
-    effectiveFrom: parseDisplayDate(details.salaryStructure.effectiveFrom),
+    // Default to today so a salary change is recorded as a new revision
+    // effective now rather than overwriting the current one.
+    effectiveFrom: todayIso,
     earnings,
   }
 }

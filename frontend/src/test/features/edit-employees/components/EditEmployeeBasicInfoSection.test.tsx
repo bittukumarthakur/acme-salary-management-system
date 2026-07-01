@@ -22,7 +22,10 @@ function renderSection(overrides?: {
   onFieldBlur?: (field: string) => void
   onFieldChange?: (field: string, value: string) => void
 }) {
-  const form = buildInitialEditEmployeeForm(employeeDetailsFixture)
+  const form = buildInitialEditEmployeeForm(
+    employeeDetailsFixture,
+    '2026-07-01',
+  )
   const onFieldBlur = vi.fn()
   const onFieldChange = vi.fn()
 

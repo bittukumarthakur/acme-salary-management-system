@@ -113,7 +113,7 @@ describe('EditEmployeePage', () => {
         employmentType: 'PERMANENT',
         salary: {
           baseMonthlySalary: 60000,
-          effectiveFrom: '2024-04-01',
+          effectiveFrom: new Date().toISOString().slice(0, 10),
           earnings: [
             { component: 'DA (Dearness Allowance)', amount: 12000 },
             { component: 'HRA (House Rent Allowance)', amount: 15000 },
