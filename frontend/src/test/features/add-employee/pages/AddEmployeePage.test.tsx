@@ -63,7 +63,7 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   setDatePickerValue('select joining date', '01/11/2023')
   setFieldValue(/reporting manager/i, 'Chris')
   await user.click(screen.getByLabelText(/employment type/i))
-  await user.click(await screen.findByRole('option', { name: 'Permanent' }))
+  await user.click(await screen.findByRole('option', { name: 'Full Time' }))
   setFieldValue(/basic salary/i, '100000')
 }
 

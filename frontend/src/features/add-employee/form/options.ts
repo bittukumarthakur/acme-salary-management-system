@@ -15,16 +15,9 @@ export const maritalStatusOptions: Option[] = [
   { value: 'DIVORCED', label: 'Divorced' },
 ]
 
-export const departmentOptions: Option[] = [
-  { value: 'ENGINEERING', label: 'Engineering' },
-  { value: 'MARKETING', label: 'Marketing' },
-  { value: 'FINANCE', label: 'Finance' },
-  { value: 'HR', label: 'HR' },
-  { value: 'SALES', label: 'Sales' },
-]
-
-export const employmentTypeOptions: Option[] = [
-  { value: 'PERMANENT', label: 'Permanent' },
-  { value: 'CONTRACT', label: 'Contract' },
-  { value: 'INTERN', label: 'Intern' },
-]
+// Department and employment-type options are shared with the Edit form to keep
+// values (which must match the backend enums) and labels consistent.
+export {
+  departmentOptions,
+  employmentTypeOptions,
+} from '../../../shared/constants/employeeOptions'

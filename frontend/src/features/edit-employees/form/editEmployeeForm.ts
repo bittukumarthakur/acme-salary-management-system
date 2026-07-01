@@ -36,15 +36,12 @@ export type EditEmployeeSetField = <K extends keyof EditEmployeeFormState>(
   value: EditEmployeeFormState[K],
 ) => void
 
-export const employmentTypeOptions: Array<{
-  value: EditableEmploymentType
-  label: string
-}> = [
-  { value: 'PERMANENT', label: 'Full Time' },
-  { value: 'CONTRACT', label: 'Contract' },
-  { value: 'TEMPORARY', label: 'Part Time' },
-  { value: 'INTERN', label: 'Intern' },
-]
+// Department and employment-type options are shared with the Add form so values
+// (which must match the backend enums) and labels stay consistent.
+export {
+  departmentOptions,
+  employmentTypeOptions,
+} from '../../../shared/constants/employeeOptions'
 
 export const statusOptions: Array<{
   value: EditableEmployeeStatus
@@ -54,14 +51,6 @@ export const statusOptions: Array<{
   { value: 'INACTIVE', label: 'Inactive' },
   { value: 'ON_LEAVE', label: 'On Leave' },
   { value: 'TERMINATED', label: 'Terminated' },
-]
-
-export const departmentOptions = [
-  'Engineering',
-  'Marketing',
-  'Finance',
-  'HR',
-  'Sales',
 ]
 
 export const currencyOptions = ['INR', 'USD']
