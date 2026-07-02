@@ -86,7 +86,7 @@ async function seedEmployees() {
         employeeId,
         name: `${firstName} ${lastName}`,
         email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${currentEmployeeNumber}@acme.com`,
-        phoneNumber: faker.phone.number('+91-##########'),
+        phoneNumber: faker.phone.number(),
         dateOfBirth: faker.date.birthdate({ min: 20, max: 60, mode: 'age' }),
         gender: faker.helpers.arrayElement(GENDERS),
         country: 'India',
