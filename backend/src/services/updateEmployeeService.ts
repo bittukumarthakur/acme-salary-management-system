@@ -15,8 +15,9 @@ import { EmployeeNotFoundError, EmailAlreadyInUseError } from './errors';
  * Records a salary change as a revision on the employee's salary structure.
  *
  * - No change in the base amount → does nothing.
- * - Same effective date as the current revision → corrects it in place.
- * - New effective date → appends a new revision and closes the previous one.
+ * - Any change in the base amount → appends a new revision and closes the
+ *   previous one, even when the effective date is unchanged. This preserves the
+ *   prior amount in salary history rather than overwriting it.
  */
 async function recordSalaryRevision(
   employeeId: number,
@@ -24,10 +25,12 @@ async function recordSalaryRevision(
   baseMonthlySalary: number,
   currency: string,
 ): Promise<void> {
-  // The current (latest) revision drives the change detection.
+  // The current (latest) revision drives the change detection. Same-date
+  // revisions are broken by id so the most recently created one is treated as
+  // current.
   const currentSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
     where: { employeeId },
-    orderBy: { effectiveDate: 'desc' },
+    orderBy: [{ effectiveDate: 'desc' }, { id: 'desc' }],
   });
 
   const salaryChanged = !currentSalaryEntry || currentSalaryEntry.basicSalary !== baseMonthlySalary;
@@ -36,20 +39,8 @@ async function recordSalaryRevision(
     return;
   }
 
-  const isSameEffectiveDate =
-    currentSalaryEntry !== null &&
-    currentSalaryEntry.effectiveDate.getTime() === effectiveFromDate.getTime();
-
-  if (currentSalaryEntry && isSameEffectiveDate) {
-    // Same effective date as the current revision → correct it in place.
-    await prisma.employeeSalaryStructure.update({
-      where: { id: currentSalaryEntry.id },
-      data: { basicSalary: baseMonthlySalary, currency },
-    });
-    return;
-  }
-
-  // New effective date → append a revision and close the previous one.
+  // Any salary change is recorded as a new revision so the previous amount stays
+  // visible in salary history. Close the current open-ended revision first.
   if (currentSalaryEntry && currentSalaryEntry.endDate === null) {
     await prisma.employeeSalaryStructure.update({
       where: { id: currentSalaryEntry.id },
@@ -167,7 +158,7 @@ export async function updateEmployee(
   // Get the latest salary entry for response
   const latestSalaryEntry = await prisma.employeeSalaryStructure.findFirst({
     where: { employeeId: employee.id },
-    orderBy: { effectiveDate: 'desc' },
+    orderBy: [{ effectiveDate: 'desc' }, { id: 'desc' }],
   });
 
   // Calculate salary components (lean set: Basic + entered earnings, PF + ESI)

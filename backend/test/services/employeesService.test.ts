@@ -431,7 +431,7 @@ describe('getEmployeeById', () => {
           },
         },
         salaryStructures: {
-          orderBy: { effectiveDate: 'desc' },
+          orderBy: [{ effectiveDate: 'desc' }, { id: 'desc' }],
           select: {
             id: true,
             basicSalary: true,

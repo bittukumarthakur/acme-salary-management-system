@@ -147,7 +147,7 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
         },
       },
       salaryStructures: {
-        orderBy: { effectiveDate: 'desc' },
+        orderBy: [{ effectiveDate: 'desc' }, { id: 'desc' }],
         select: {
           id: true,
           basicSalary: true,

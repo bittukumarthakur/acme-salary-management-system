@@ -32,7 +32,7 @@ export async function getSalaryHistory(employeeId: string): Promise<SalaryHistor
       currency: true,
       updatedAt: true,
       salaryStructures: {
-        orderBy: { effectiveDate: 'desc' },
+        orderBy: [{ effectiveDate: 'desc' }, { id: 'desc' }],
         select: {
           id: true,
           basicSalary: true,

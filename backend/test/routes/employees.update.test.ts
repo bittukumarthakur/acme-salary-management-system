@@ -363,8 +363,8 @@ describe('PUT /api/v1/employees/:id - Update Employee (Mocked)', () => {
     });
   });
 
-  describe('Same-date salary change corrects the current revision in place', () => {
-    it('should update the current revision and not append a new one', async () => {
+  describe('Same-date salary change appends a new revision (preserves history)', () => {
+    it('should close the current revision and append a new one on the same date', async () => {
       const mockEmployeeId = 4;
 
       prismaMock.employee.findUnique.mockResolvedValue(
@@ -405,16 +405,18 @@ describe('PUT /api/v1/employees/:id - Update Employee (Mocked)', () => {
         effectiveDate: new Date('2020-01-01'),
         endDate: null,
       });
+      const newRevision = createMockSalaryStructure({
+        id: 4,
+        employeeId: mockEmployeeId,
+        basicSalary: 65000,
+        effectiveDate: new Date('2020-01-01'),
+      });
 
       prismaMock.employeeSalaryStructure.findFirst
         .mockResolvedValueOnce(currentRevision) // current/latest revision
-        .mockResolvedValueOnce(
-          createMockSalaryStructure({
-            ...currentRevision,
-            basicSalary: 65000,
-          }),
-        ); // latest revision for response
+        .mockResolvedValueOnce(newRevision); // latest revision for response
 
+      prismaMock.employeeSalaryStructure.create.mockResolvedValue(newRevision);
       prismaMock.employeeSalaryStructure.update.mockResolvedValue(currentRevision);
 
       await request(app)
@@ -422,11 +424,22 @@ describe('PUT /api/v1/employees/:id - Update Employee (Mocked)', () => {
         .send(payloadWithSameDateSalaryChange)
         .expect(200);
 
-      expect(prismaMock.employeeSalaryStructure.create).not.toHaveBeenCalled();
+      // Appends a new revision even though the effective date is unchanged,
+      // so the previous amount stays visible in salary history.
+      expect(prismaMock.employeeSalaryStructure.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            employeeId: mockEmployeeId,
+            basicSalary: 65000,
+            effectiveDate: new Date('2020-01-01'),
+          }),
+        }),
+      );
+      // Closes the previous revision's open-ended timeline.
       expect(prismaMock.employeeSalaryStructure.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: currentRevision.id },
-          data: expect.objectContaining({ basicSalary: 65000 }),
+          data: { endDate: new Date('2020-01-01') },
         }),
       );
     });

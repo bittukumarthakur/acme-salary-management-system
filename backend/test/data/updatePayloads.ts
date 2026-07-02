@@ -98,7 +98,8 @@ export const payloadWithChangedSalary: UpdateEmployeePayload = {
 
 /**
  * Salary change that reuses the current revision's effective date.
- * Should be treated as an in-place correction of the current revision.
+ * Should append a new revision (and close the previous one) so the prior
+ * amount stays visible in salary history.
  */
 export const payloadWithSameDateSalaryChange: UpdateEmployeePayload = {
   ...baseUpdatePayload,
