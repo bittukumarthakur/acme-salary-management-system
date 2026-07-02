@@ -1,145 +1,119 @@
 # Architecture
 
+The system is a monorepo with two independent services: a **React frontend** and
+an **Express backend**, backed by **PostgreSQL** via Prisma.
+
 ## High-Level Architecture
 
 ```mermaid
-flowchart TB
-    subgraph Monorepo["Single Repository (Monorepo)"]
-    FE["Frontend Service<br/>React + TypeScript + Vite<br/>Port 5173 (dev)"]
-        BE["Backend Service<br/>Node.js + Express + TypeScript<br/>Port 8080"]
+flowchart LR
+    User(("User")) --> FE
+
+    subgraph Monorepo["Monorepo"]
+        FE["Frontend<br/>React + Vite<br/>Port 3000"]
+        BE["Backend<br/>Express + TypeScript<br/>Port 8080"]
     end
 
-    FE -->|"HTTPS / REST API"| BE
+    FE -->|"REST /api/v1"| BE
     BE --> PRISMA["Prisma ORM<br/>(@prisma/adapter-pg)"]
-    PRISMA --> DB[("PostgreSQL Database")]
+    PRISMA --> DB[("PostgreSQL")]
 ```
 
-**Runtime model:** Frontend and backend run as separate services on separate ports, while sharing the same repository.
-
-## Frontend
-
-### Technology
-
-* React
-* TypeScript
-* Vite
-* Material UI
-* React Query
-* Recharts
-
-### Responsibilities
-
-* Employee management UI
-* Salary management UI
-* Dashboard visualizations
-* Search and filtering
+Frontend and backend run as separate services on separate ports. The frontend
+calls the backend over REST under `/api/v1`; the backend reads/writes PostgreSQL
+through Prisma.
 
 ## Backend
 
-### Technology
+Layered Express app: **routes → controllers → services → Prisma**. Services map
+Prisma rows to domain models (`src/models`) so ORM types never leak into the API.
 
-* Node.js
-* Express 5
-* TypeScript 6
-* Prisma 7 ORM with the `@prisma/adapter-pg` PostgreSQL adapter
+```mermaid
+flowchart TB
+    subgraph backend["backend/src"]
+        routes["routes/<br/>employees · dashboard"]
+        controllers["controllers/<br/>employeesController"]
+        services["services/<br/>employeesService<br/>updateEmployeeService<br/>salaryHistoryService<br/>salaryComponentsSync<br/>dashboardService<br/>employeeMapper · errors"]
+        models["models/<br/>domain DTOs"]
+        utils["utils/<br/>query parsing · salary calc"]
+    end
 
-### Responsibilities
+    routes --> controllers --> services
+    services --> models
+    services --> utils
+    services --> prisma[("Prisma / PostgreSQL")]
+```
 
-* Employee APIs (list with pagination/filtering/sorting, get by id) — *implemented*
-* Salary APIs — *planned*
-* Dashboard APIs (`GET /api/v1/dashboard`) — *implemented*
-* Salary history management — *planned*
-* Validation and business logic
+- **routes/** — endpoint definitions mounted under `/api/v1`.
+- **controllers/** — request/response handling and validation entry points.
+- **services/** — business logic and all Prisma access.
+- **models/** — application domain/DTO types.
+- **utils/** — query-param parsing and salary calculations.
 
-### Dashboard API (implemented)
+Schema and migrations live under `backend/prisma/`; the DB connection comes from
+`DATABASE_URL`.
 
-`GET /api/v1/dashboard` is implemented with:
+## Frontend
 
-* Query validation for `countryCode` and `limit`
-* Backend currency conversion and conversion metadata (`rate`, `convertedAt`)
-* Response sections: `summaryCards`, `recentPayrolls`, `meta`
-* Data sourced from Prisma `Payroll` records
+Feature-based structure. Each feature owns its pages/components; cross-cutting
+code lives in `shared/`.
 
-### Query parsing
+```mermaid
+flowchart TB
+    subgraph frontend["frontend/src"]
+        features["features/<br/>dashboard · employees · view-employees<br/>add-employee · edit-employees"]
+        shared["shared/<br/>api · components · constants · utils"]
+    end
 
-Incoming HTTP query parameters are parsed and validated into a typed
-`EmployeeQuery` (page, pageSize, sortBy, sortOrder, filters) before reaching
-the service layer. Generic parsing helpers live in `src/utils/queryParams.ts`;
-employee-specific validation lives in `src/services/employeeQuery.ts`. Invalid
-input results in a `400` response.
+    features --> shared
+    shared -->|"api client"| backend[("Backend REST API")]
+```
 
-### Domain models
+- **features/** — self-contained feature slices (pages + components + hooks).
+- **shared/** — API client, reusable components, constants, and helpers.
 
-The service layer maps Prisma rows to application domain models defined in
-`src/models` (e.g. `Employee`, `EmployeeQuery`, `PaginatedResult<T>`) rather
-than exposing ORM-generated types as the public contract.
+## API Endpoints
 
-## Database
+| Method | Endpoint                               | Description                     |
+| ------ | -------------------------------------- | ------------------------------- |
+| GET    | `/api/v1/employees`                    | List (paginated/filter/sort)    |
+| POST   | `/api/v1/employees`                    | Create an employee              |
+| GET    | `/api/v1/employees/:id`                | Get one employee                |
+| PUT    | `/api/v1/employees/:id`                | Update (incl. salary revision)  |
+| GET    | `/api/v1/employees/:id/salary-history` | Salary revision history         |
+| GET    | `/api/v1/dashboard`                    | Compensation dashboard analytics|
 
-PostgreSQL, accessed through Prisma using the `@prisma/adapter-pg` driver
-adapter. The connection string is supplied via the `DATABASE_URL` environment
-variable. Schema and migrations live under `backend/prisma/`.
+## Testing
 
-## Performance Considerations
+- **Backend** — Jest + ts-jest (unit) and Supertest (API integration); typed
+  fixtures under `test/data/`.
+- **Frontend** — Vitest + React Testing Library (jsdom).
 
-* Database indexing on:
+## CI/CD & Deployment
 
-    * Employee ID
-    * Department
-    * Country
-* Server-side pagination
-* Optimized dashboard aggregation queries
+GitHub Actions in `.github/workflows/` deploy each service independently from
+`main`. Every workflow runs a `test` job first and only deploys if it passes.
 
-## Testing Strategy
-
-### Backend
-
-* Service layer unit tests (Jest + ts-jest)
-* API integration tests (Supertest)
-* Coverage collected via Jest (`text`, `lcov`, `html`, `json-summary`) and a
-  JUnit report (`jest-junit`) for CI integrations
-* Typed fixtures under `test/data/` validated against domain types
-
-### Frontend
-
-* Component/page tests (Vitest + Testing Library)
-* Hook/service tests for dashboard data flow
-* Mock service contract tests for dashboard API stub
-
-## CI/CD
-
-GitHub Actions workflows in `.github/workflows/`:
-
-* **`tests-backend.yml`** — runs on pushes/PRs touching `backend/**`; installs
-  dependencies, runs `yarn test:ci`, publishes a coverage summary to the job
-  summary, and uploads the coverage report as an artifact.
-* **`deploy-backend.yml`** — runs on pushes to `main` touching `backend/**`
-  (or manual dispatch). A `test` job runs the suite first, and the `deploy`
-  job (`needs: test`) only runs if tests pass.
+- **`deploy-backend.yml`** — on push to `main` touching `backend/**`. Runs
+  `yarn test:ci`, builds with `tsc`, and deploys the compiled `dist/` artifact
+  to **Prisma Compute** via `@prisma/compute-cli`.
+- **`deploy-frontend.yml`** — on push to `main` touching `frontend/**`. Runs
+  `yarn test:coverage`, builds with Vite, and deploys `dist/` to
+  **Cloudflare Pages** via `wrangler-action`.
 
 ```mermaid
 flowchart LR
-    push["Push to main<br/>(backend/**)"] --> test["test job<br/>yarn test:ci"]
-    test -->|green| deploy["deploy job<br/>@prisma/compute-cli"]
-    test -->|red| stop["Deploy skipped"]
-    deploy --> compute[("Prisma Compute")]
+    push["Push to main"] --> beTest["backend test<br/>yarn test:ci"]
+    push --> feTest["frontend test<br/>yarn test:coverage"]
+    beTest -->|green| beDeploy["deploy<br/>@prisma/compute-cli"]
+    feTest -->|green| feDeploy["deploy<br/>Cloudflare Pages"]
+    beDeploy --> compute[("Prisma Compute")]
+    feDeploy --> pages[("Cloudflare Pages")]
 ```
 
-## Deployment
+Deployment config is supplied via the GitHub `dev` environment:
 
-The backend is deployed to **Prisma Compute** using the
-[`@prisma/compute-cli`](https://www.npmjs.com/package/@prisma/compute-cli) in
-pre-built (skip-build) mode: the workflow builds with `tsc`, then deploys the
-compiled `dist/` artifact with `src/main.js` as the entrypoint.
-
-Deployment configuration is supplied through the GitHub `dev` environment:
-
-| Type | Name | Description |
-|------|------|-------------|
-| Secret | `PRISMA_API_TOKEN` | Prisma API service token |
-| Secret | `DATABASE_URL` | Runtime PostgreSQL connection string |
-| Variable | `COMPUTE_SERVICE_ID` | Target Prisma Compute service ID |
-| Variable | `PORT` | HTTP port the service listens on |
-
-Frontend and backend can be deployed independently. Suggested frontend
-platform: Vercel.
+| Service  | Secrets                                       | Variables                                                        |
+| -------- | --------------------------------------------- | ---------------------------------------------------------------- |
+| Backend  | `PRISMA_API_TOKEN`, `DATABASE_URL`            | `BACKEND_COMPUTE_SERVICE_ID`, `BACKEND_PORT`                     |
+| Frontend | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | `CLOUDFLARE_PAGES_PROJECT`, `VITE_API_BASE_URL`                |

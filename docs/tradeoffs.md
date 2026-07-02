@@ -43,6 +43,68 @@ runtime database dependency clear and configurable per environment.
 
 ---
 
+## Why Domain Models over ORM Types?
+
+### Chosen
+
+The service layer maps Prisma rows to application domain/DTO types defined in
+`backend/src/models` (e.g. `Employee`, `EmployeeQuery`, `PaginatedResult<T>`)
+via mappers such as `employeeMapper.ts`.
+
+### Alternative
+
+Expose the Prisma-generated types directly as the API contract.
+
+### Reasoning
+
+Mapping at the service boundary keeps ORM-only concerns (e.g. `Date` columns,
+`createdAt`/`updatedAt`) out of the public shape and lets the API expose stable
+formats (e.g. `joiningDate` as `YYYY-MM-DD`). It also decouples the wire contract
+from the database schema, so Prisma changes don't leak into the frontend.
+
+---
+
+## Why Docker Compose for Local Postgres?
+
+### Chosen
+
+A `docker-compose.yml` runs PostgreSQL locally, with a `full` profile that also
+builds and runs the backend container.
+
+### Alternative
+
+Require a host-installed PostgreSQL or a hosted database for local development.
+
+### Reasoning
+
+Compose gives every developer the same database version with one command and no
+host setup, while the `full` profile allows running the whole stack in
+containers. Running just `postgres` (with `yarn dev` on the host) keeps the fast
+watch-mode loop for day-to-day work.
+
+---
+
+## Why a Self-Migrating `start`?
+
+### Chosen
+
+`start` runs `prisma migrate deploy` before launching the server; `postinstall`
+only runs `prisma generate`.
+
+### Alternative
+
+Apply migrations manually (or in `postinstall`) before every run.
+
+### Reasoning
+
+`generate` is a pure, local code-gen step and is safe on every install; applying
+migrations is a side-effecting write to a live database and belongs at
+startup/deploy time, when `DATABASE_URL` is reachable. Self-migrating `start`
+makes containers and Prisma Compute converge on the latest schema automatically,
+while schema authoring stays an explicit `prisma migrate dev` step.
+
+---
+
 ## Why Separate Salary History Table?
 
 ### Chosen
@@ -146,17 +208,40 @@ and ships only the compiled output.
 
 ---
 
-## Why Not Build Payroll Features?
+## Why Deploy the Frontend to Cloudflare Pages?
+
+### Chosen
+
+Build the frontend with Vite in CI and deploy the static `dist/` to
+**Cloudflare Pages** via `wrangler-action`.
+
+### Alternative
+
+Vercel, Netlify, or serving the built assets from the backend.
+
+### Reasoning
+
+The frontend is a static SPA, so a CDN-backed static host is the simplest, fast,
+low-cost fit. Cloudflare Pages integrates with GitHub Actions and keeps the
+frontend deploy fully independent of the backend, matching the monorepo's
+separate-services model.
+
+---
+
+## Why Not Build Payroll Processing?
 
 ### Excluded
 
-* Payroll processing
-* Payslips
+* Payroll runs / processing
+* Payslip generation
 * Tax calculations
 
 ### Reasoning
 
-The assessment focuses on compensation management rather than payroll execution. Excluding these features keeps the MVP focused and achievable.
+The assessment focuses on compensation management rather than payroll execution.
+Payroll records **are** seeded (`yarn seed:payroll`) and read by the dashboard
+for analytics (totals, deductions, net salary, recent payrolls), but there is no
+payroll-run or payslip workflow. Excluding those keeps the MVP focused.
 
 ---
 
@@ -164,8 +249,6 @@ The assessment focuses on compensation management rather than payroll execution.
 
 * Role-based access control
 * Employee self-service portal
-* Payslip generation
+* Payroll runs and payslip generation
 * Advanced reporting
-* Multi-currency conversion
-* Payroll integration
 * Export to Excel and CSV

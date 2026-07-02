@@ -67,7 +67,7 @@ Use the current date as the prefix. Place images in `docs/assets/`.
 As a <persona>, I want <capability> so that <benefit>.
 
 ## Background / Context
-<Why this feature matters; link to docs/requirements.md or related context.>
+<Why this feature matters; link to REQUIREMENTS.md or related context.>
 
 ## Scope
 ### In Scope
