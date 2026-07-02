@@ -37,16 +37,17 @@ yarn install
 
 ### Configure
 
-The UI reads the backend API base URL from an environment variable. Copy the
-example file and adjust if needed:
+The UI reads its configuration from environment variables. Copy the example
+file and adjust if needed:
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable            | Default                 | Description                      |
-| ------------------- | ----------------------- | -------------------------------- |
-| `VITE_API_BASE_URL` | `http://localhost:8080` | Base URL of the backend REST API |
+| Variable                     | Default                 | Description                      |
+| ---------------------------- | ----------------------- | -------------------------------- |
+| `ACME_BACKEND_API_BASE_URL`  | `http://localhost:8080` | Base URL of the backend REST API |
+| `PORT`                       | `3000`                  | Port the Vite dev server runs on |
 
 ### Run
 
@@ -81,24 +82,29 @@ frontend/
   .prettierrc             # Prettier formatting rules
   .env.example            # Documented environment variables
   src/
-    main.tsx              # React entry — mounts <App/>
-    App.tsx               # App shell (providers added in later plans)
-    pages/                # Page components (e.g. HomePage placeholder)
-    models/               # Frontend view-model/DTO types
-    test/setup.ts         # Testing Library + jsdom setup
-    **/*.test.tsx         # Tests live alongside the code they cover
+    main.tsx              # React entry — mounts the app
+    index.css             # Global styles
+    app/                  # App shell: App, layout, routing, theme
+    features/             # Feature modules (dashboard, employees,
+                          #   view-employees, add-employee, edit-employees),
+                          #   each with components/, services/, types/
+    shared/               # Cross-feature code: api/, components/,
+                          #   constants/, utils/
+    assets/               # Static assets
+    test/                 # Tests mirroring src/ + Testing Library setup
 ```
 
 ## Conventions
 
 - Keep components and modules small and focused; group related files by
-  feature/domain.
-- Define the app's own view-model/DTO types in `src/models` rather than leaking
-  backend transport shapes throughout the UI.
+  feature under `src/features` (each with `components/`, `services/`, `types/`).
+- Define the app's own view-model/DTO types per feature under `features/*/types`
+  (and shared types under `src/shared`) rather than leaking backend transport
+  shapes throughout the UI.
 - Follow Test-Driven Development (Red → Green → Refactor): write a failing test
   first, then the implementation. Every feature/change ships with tests.
-- Tests live alongside the source they cover and use Vitest + React Testing
-  Library.
+- Tests live under `src/test`, mirroring the `src/` structure, and use Vitest +
+  React Testing Library.
 
 ## Testing
 
