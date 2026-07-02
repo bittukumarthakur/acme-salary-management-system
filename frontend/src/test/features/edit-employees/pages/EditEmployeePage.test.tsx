@@ -175,6 +175,33 @@ describe('EditEmployeePage', () => {
     ).toBeInTheDocument()
   })
 
+  it('does not double-count basic salary when it is the only earning', async () => {
+    mockFetchEmployeeDetails.mockResolvedValue({
+      ...employeeDetailsFixture,
+      salaryStructure: {
+        ...employeeDetailsFixture.salaryStructure,
+        earnings: [{ component: 'Basic Salary', amount: 50000 }],
+        deductions: [{ component: 'PF', amount: 6000 }],
+        totalEarnings: 50000,
+        totalDeductions: 6000,
+        netPayMonthly: 44000,
+        ctcAnnual: 600000,
+        baseSalaryMonthly: 50000,
+      },
+    })
+
+    renderEditEmployeePage()
+
+    expect(await screen.findByDisplayValue('John Doe')).toBeInTheDocument()
+
+    expect(
+      screen.getByRole('heading', { name: /rs 44,000/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: /rs 94,000/i }),
+    ).not.toBeInTheDocument()
+  })
+
   it('maps server field errors to the form when save returns a conflict', async () => {
     const user = userEvent.setup()
     mockUpdateEmployee.mockRejectedValue({

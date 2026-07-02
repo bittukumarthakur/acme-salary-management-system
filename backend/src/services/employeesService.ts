@@ -189,17 +189,20 @@ export async function getEmployeeById(id: string): Promise<EmployeeDetailsRespon
 
   const salaryComponents = row.salaryComponents ?? [];
 
-  // Create SalaryLineItem format for SalaryStructure response (uses 'component' field)
-  const earningsLineItems = salaryComponents
-    .filter((item) => item.component.type === 'EARNING')
-    .map((item) => ({ component: item.component.name, amount: item.amount }));
+  // Basic Salary is stored on the salary structure, not as a component row, so it
+  // is always the first earning line. Any EARNING components (e.g. Allowances) are
+  // appended; a stray "Basic Salary" earning component is skipped to avoid double
+  // counting.
+  const earningsLineItems = [
+    { component: 'Basic Salary', amount: baseSalaryMonthly },
+    ...salaryComponents
+      .filter((item) => item.component.type === 'EARNING')
+      .filter((item) => !item.component.name.toLowerCase().includes('basic salary'))
+      .map((item) => ({ component: item.component.name, amount: item.amount })),
+  ];
   const deductionsLineItems = salaryComponents
     .filter((item) => item.component.type === 'DEDUCTION')
     .map((item) => ({ component: item.component.name, amount: item.amount }));
-
-  if (earningsLineItems.length === 0) {
-    earningsLineItems.push({ component: 'Basic Salary', amount: baseSalaryMonthly });
-  }
 
   const totalEarnings = earningsLineItems.reduce((total, item) => total + item.amount, 0);
   const totalDeductions = deductionsLineItems.reduce((total, item) => total + item.amount, 0);

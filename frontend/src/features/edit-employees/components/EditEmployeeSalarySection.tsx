@@ -50,14 +50,6 @@ export function EditEmployeeSalarySection({
   onFieldBlur,
   onFieldChange,
 }: EditEmployeeSalarySectionProps) {
-  const hasBasicSalaryInEarnings = useMemo(
-    () =>
-      salaryStructure.earnings.some((item) =>
-        isBaseSalaryComponent(item.component),
-      ),
-    [salaryStructure.earnings],
-  )
-
   const editedBaseMonthlySalary = useMemo(() => {
     const numericValue = Number(form.baseMonthlySalary)
     return Number.isNaN(numericValue)
@@ -66,33 +58,23 @@ export function EditEmployeeSalarySection({
   }, [form.baseMonthlySalary, salaryStructure.baseSalaryMonthly])
 
   const editableEarnings = useMemo(() => {
-    const sourceEarnings = salaryStructure.earnings.filter(
-      (item) => !isBaseSalaryComponent(item.component),
-    )
+    return salaryStructure.earnings
+      .filter((item) => !isBaseSalaryComponent(item.component))
+      .map((item) => {
+        const editedAmount = form.earnings[item.component]
+        const numericAmount = Number(editedAmount)
 
-    if (sourceEarnings.length === 0) {
-      return salaryStructure.earnings
-    }
-
-    return sourceEarnings.map((item) => {
-      const editedAmount = form.earnings[item.component]
-      const numericAmount = Number(editedAmount)
-
-      return {
-        ...item,
-        amount:
-          editedAmount !== undefined && !Number.isNaN(numericAmount)
-            ? numericAmount
-            : item.amount,
-      }
-    })
+        return {
+          ...item,
+          amount:
+            editedAmount !== undefined && !Number.isNaN(numericAmount)
+              ? numericAmount
+              : item.amount,
+        }
+      })
   }, [form.earnings, salaryStructure.earnings])
 
   const editedEarningsForSummary = useMemo(() => {
-    if (!hasBasicSalaryInEarnings) {
-      return editableEarnings
-    }
-
     const baseComponent =
       salaryStructure.earnings.find((item) =>
         isBaseSalaryComponent(item.component),
@@ -102,12 +84,7 @@ export function EditEmployeeSalarySection({
       { component: baseComponent, amount: editedBaseMonthlySalary },
       ...editableEarnings,
     ]
-  }, [
-    editableEarnings,
-    editedBaseMonthlySalary,
-    hasBasicSalaryInEarnings,
-    salaryStructure.earnings,
-  ])
+  }, [editableEarnings, editedBaseMonthlySalary, salaryStructure.earnings])
 
   const editedTotalEarnings = useMemo(
     () => editedEarningsForSummary.reduce((sum, item) => sum + item.amount, 0),

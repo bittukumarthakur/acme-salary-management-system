@@ -474,6 +474,58 @@ describe('getEmployeeById', () => {
     });
   });
 
+  it('includes Basic Salary once plus earning components in the totals', async () => {
+    mockedPrisma.employee.findUnique.mockResolvedValue({
+      ...aliceRow,
+      salaryStructures: [
+        {
+          basicSalary: 50000,
+          currency: 'INR',
+          effectiveDate: new Date('2026-07-02T00:00:00.000Z'),
+        },
+      ],
+      salaryComponents: [
+        { amount: 10000, component: { name: 'Allowances', type: 'EARNING' } },
+        { amount: 6000, component: { name: 'PF', type: 'DEDUCTION' } },
+      ],
+    });
+
+    const result = await getEmployeeById('EMP00001');
+
+    expect(result?.salaryStructure.earnings).toEqual([
+      { component: 'Basic Salary', amount: 50000 },
+      { component: 'Allowances', amount: 10000 },
+    ]);
+    expect(result?.salaryStructure.totalEarnings).toBe(60000);
+    expect(result?.salaryStructure.netPayMonthly).toBe(54000);
+    expect(result?.salaryStructure.ctcAnnual).toBe(720000);
+  });
+
+  it('does not double-count when a Basic Salary earning component exists', async () => {
+    mockedPrisma.employee.findUnique.mockResolvedValue({
+      ...aliceRow,
+      salaryStructures: [
+        {
+          basicSalary: 50000,
+          currency: 'INR',
+          effectiveDate: new Date('2026-07-02T00:00:00.000Z'),
+        },
+      ],
+      salaryComponents: [
+        { amount: 50000, component: { name: 'Basic Salary', type: 'EARNING' } },
+        { amount: 6000, component: { name: 'PF', type: 'DEDUCTION' } },
+      ],
+    });
+
+    const result = await getEmployeeById('EMP00001');
+
+    expect(result?.salaryStructure.earnings).toEqual([
+      { component: 'Basic Salary', amount: 50000 },
+    ]);
+    expect(result?.salaryStructure.totalEarnings).toBe(50000);
+    expect(result?.salaryStructure.ctcAnnual).toBe(600000);
+  });
+
   it('returns null for non-EMP style ids', async () => {
     const result = await getEmployeeById('1234');
 
