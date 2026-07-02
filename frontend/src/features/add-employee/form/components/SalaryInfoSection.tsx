@@ -33,6 +33,7 @@ export function SalaryInfoSection({
           <TextField
             label="Basic Salary (Monthly)"
             variant="outlined"
+            size="small"
             type="number"
             placeholder="Enter monthly basic salary"
             value={form.basicSalary}
@@ -48,14 +49,18 @@ export function SalaryInfoSection({
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <TextField
-            label="Allowances"
+            label="Allowances (Monthly)"
             variant="outlined"
+            size="small"
             type="number"
-            placeholder="Enter allowances"
+            placeholder="Enter monthly allowances"
             value={form.allowances}
             onChange={(event) => setField('allowances', event.target.value)}
             error={Boolean(errors.allowances)}
-            helperText={errors.allowances}
+            helperText={
+              errors.allowances ??
+              'Monthly allowances; included in annual CTC (×12)'
+            }
             fullWidth
           />
         </Grid>

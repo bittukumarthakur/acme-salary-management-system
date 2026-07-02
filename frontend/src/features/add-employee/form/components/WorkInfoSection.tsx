@@ -35,7 +35,12 @@ export function WorkInfoSection({
       </Typography>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth required error={Boolean(errors.department)}>
+          <FormControl
+            fullWidth
+            required
+            size="small"
+            error={Boolean(errors.department)}
+          >
             <InputLabel id="department-label">Department</InputLabel>
             <Select
               labelId="department-label"
@@ -61,6 +66,7 @@ export function WorkInfoSection({
           <TextField
             label="Designation"
             variant="outlined"
+            size="small"
             placeholder="Enter designation"
             value={form.designation}
             onChange={(event) => setField('designation', event.target.value)}
@@ -82,6 +88,7 @@ export function WorkInfoSection({
               textField: {
                 name: 'select joining date',
                 variant: 'outlined',
+                size: 'small',
                 fullWidth: true,
                 required: true,
                 error: Boolean(errors.joiningDate),
@@ -94,6 +101,7 @@ export function WorkInfoSection({
           <FormControl
             fullWidth
             required
+            size="small"
             error={Boolean(errors.employmentType)}
           >
             <InputLabel id="employment-type-label">Employment Type</InputLabel>

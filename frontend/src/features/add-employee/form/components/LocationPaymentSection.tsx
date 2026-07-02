@@ -36,6 +36,7 @@ export function LocationPaymentSection({
           <TextField
             label="Country"
             variant="outlined"
+            size="small"
             placeholder="Enter country"
             value={form.country}
             onChange={(event) => setField('country', event.target.value)}
@@ -46,7 +47,12 @@ export function LocationPaymentSection({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth required error={Boolean(errors.currency)}>
+          <FormControl
+            fullWidth
+            required
+            size="small"
+            error={Boolean(errors.currency)}
+          >
             <InputLabel id="currency-label">Currency</InputLabel>
             <Select
               labelId="currency-label"
@@ -72,6 +78,7 @@ export function LocationPaymentSection({
           <TextField
             label="Bank Account"
             variant="outlined"
+            size="small"
             placeholder="Enter bank account number"
             value={form.bankAccount}
             onChange={(event) => setField('bankAccount', event.target.value)}

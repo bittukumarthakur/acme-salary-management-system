@@ -38,6 +38,7 @@ export function PersonalInfoSection({
           <TextField
             label="Full Name"
             variant="outlined"
+            size="small"
             placeholder="Enter full name"
             value={form.fullName}
             onChange={(event) => setField('fullName', event.target.value)}
@@ -51,6 +52,7 @@ export function PersonalInfoSection({
           <TextField
             label="Email"
             variant="outlined"
+            size="small"
             type="email"
             placeholder="Enter email address"
             value={form.email}
@@ -65,6 +67,7 @@ export function PersonalInfoSection({
           <TextField
             label="Phone Number"
             variant="outlined"
+            size="small"
             placeholder="Enter phone number"
             value={form.phoneNumber}
             onChange={(event) => setField('phoneNumber', event.target.value)}
@@ -86,6 +89,7 @@ export function PersonalInfoSection({
               textField: {
                 name: 'select date of birth',
                 variant: 'outlined',
+                size: 'small',
                 fullWidth: true,
                 required: true,
                 error: Boolean(errors.dateOfBirth),
@@ -95,7 +99,12 @@ export function PersonalInfoSection({
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <FormControl fullWidth required error={Boolean(errors.gender)}>
+          <FormControl
+            fullWidth
+            required
+            size="small"
+            error={Boolean(errors.gender)}
+          >
             <InputLabel id="gender-label">Gender</InputLabel>
             <Select
               labelId="gender-label"
