@@ -31,19 +31,19 @@ describe('App', () => {
       screen.getByRole('button', { name: /^employees$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /^attendance$/i }),
+      screen.getByRole('button', { name: /^attendance \| coming soon$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /^payroll$/i }),
+      screen.getByRole('button', { name: /^payroll \| coming soon$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /^payslips$/i }),
+      screen.getByRole('button', { name: /^payslips \| coming soon$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /^reports$/i }),
+      screen.getByRole('button', { name: /^reports \| coming soon$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /^settings$/i }),
+      screen.getByRole('button', { name: /^settings \| coming soon$/i }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /collapse/i }),
@@ -94,4 +94,17 @@ describe('App', () => {
       screen.getByRole('heading', { name: /personal information/i }),
     ).toBeInTheDocument()
   })
+
+  it.each(['Attendance', 'Payroll', 'Payslips', 'Reports', 'Settings'])(
+    'disables the %s tab because it is not implemented yet',
+    (item) => {
+      render(<App />)
+
+      expect(
+        screen.getByRole('button', {
+          name: new RegExp(`^${item} \\| coming soon$`, 'i'),
+        }),
+      ).toBeDisabled()
+    },
+  )
 })

@@ -75,7 +75,7 @@ describe('HomePage', () => {
     expect(navItems.length).toBeGreaterThan(0)
 
     expect(screen.getByText('Employees')).toBeInTheDocument()
-    expect(screen.getByText('Payroll')).toBeInTheDocument()
+    expect(screen.getByText('Payroll | coming soon')).toBeInTheDocument()
   })
 
   it('should render user profile in header', () => {

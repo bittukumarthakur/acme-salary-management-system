@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import {
   NAV_ITEMS,
+  IMPLEMENTED_NAV_ITEMS,
   SIDEBAR_WIDTH,
   APP_NAME,
   type NavItem,
@@ -62,32 +63,42 @@ export function Sidebar({
 
       {/* Navigation Menu */}
       <List sx={{ p: 0, gap: 0.75, display: 'grid' }}>
-        {NAV_ITEMS.map((item) => (
-          <ListItem key={item} disablePadding>
-            <ListItemButton
-              component="button"
-              selected={item === activeItem}
-              onClick={() => onSelectItem?.(item)}
-              sx={{
-                borderRadius: 1.5,
-                minHeight: 42,
-                color: 'inherit',
-                '&.Mui-selected': {
-                  bgcolor: alpha('#ffffff', 0.18),
-                  '&:hover': { bgcolor: alpha('#ffffff', 0.22) },
-                },
-              }}
-            >
-              <ListItemText
-                primary={
-                  <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
-                    {item}
-                  </Typography>
-                }
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const isImplemented = IMPLEMENTED_NAV_ITEMS.includes(item)
+          const label = isImplemented ? item : `${item} | coming soon`
+
+          return (
+            <ListItem key={item} disablePadding>
+              <ListItemButton
+                component="button"
+                disabled={!isImplemented}
+                selected={item === activeItem}
+                onClick={() => onSelectItem?.(item)}
+                sx={{
+                  borderRadius: 1.5,
+                  minHeight: 42,
+                  color: 'inherit',
+                  '&.Mui-selected': {
+                    bgcolor: alpha('#ffffff', 0.18),
+                    '&:hover': { bgcolor: alpha('#ffffff', 0.22) },
+                  },
+                  '&.Mui-disabled': {
+                    opacity: 0.45,
+                    color: 'inherit',
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
+                      {label}
+                    </Typography>
+                  }
+                />
+              </ListItemButton>
+            </ListItem>
+          )
+        })}
       </List>
 
       {/* Collapse Button */}

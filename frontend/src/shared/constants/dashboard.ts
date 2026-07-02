@@ -58,6 +58,12 @@ export const NAV_ITEMS = [
 
 export type NavItem = (typeof NAV_ITEMS)[number]
 
+/** Nav items that have an implemented destination; others are shown as "coming soon". */
+export const IMPLEMENTED_NAV_ITEMS: readonly NavItem[] = [
+  'Dashboard',
+  'Employees',
+]
+
 export const EMPLOYEE_DEPARTMENTS = [
   'ENGINEERING',
   'MARKETING',
