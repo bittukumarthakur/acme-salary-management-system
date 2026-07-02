@@ -163,8 +163,13 @@ export function toSalaryHistoryEntry(
       ? salaryStructure.effectiveDate.toISOString().split('T')[0] || ''
       : String(salaryStructure.effectiveDate || '');
 
-  // Calculate earnings and deductions
-  const totalEarnings = components.earnings.reduce((sum, comp) => sum + comp.amount, 0);
+  // Basic Salary is stored on the salary structure, not as a component row, so it
+  // is always the first earning line. Any "Basic Salary" earning component is
+  // skipped to avoid double counting (mirrors the employee details salary path).
+  const additionalEarnings = components.earnings
+    .filter((comp) => !comp.name.toLowerCase().includes('basic salary'))
+    .reduce((sum, comp) => sum + comp.amount, 0);
+  const totalEarnings = salaryStructure.basicSalary + additionalEarnings;
   const totalDeductions = components.deductions.reduce((sum, comp) => sum + comp.amount, 0);
   const netPayMonthly = totalEarnings - totalDeductions;
   const ctcAnnual = totalEarnings * 12;
