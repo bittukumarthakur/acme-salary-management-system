@@ -150,24 +150,28 @@ async function seedEmployeeSalaryComponents() {
     effectiveDate: Date;
   }> = [];
 
-  // Assign components to each employee
+  // Seed only the lean master components (Allowances, PF, ESI). Any other
+  // component present in the table (e.g. stale rows from an older master seed)
+  // is skipped so it can't leak in as a ₹0 line item.
+  const ALLOWANCES_RATE = 0.1; // 10% of basic
+  const componentRateByName: Record<string, number> = {
+    Allowances: ALLOWANCES_RATE,
+    PF: PF_RATE, // 12% of basic
+    ESI: ESI_RATE, // 0.75% of basic
+  };
+
+  // Assign the known components to each employee
   for (const emp of employees) {
     for (const comp of components) {
-      let amount = 0;
-
-      // Calculate amounts based on component type
-      if (comp.name === 'Allowances') {
-        amount = emp.basicSalary * 0.1; // 10% of basic
-      } else if (comp.name === 'PF') {
-        amount = emp.basicSalary * PF_RATE; // 12% of basic
-      } else if (comp.name === 'ESI') {
-        amount = emp.basicSalary * ESI_RATE; // 0.75% of basic
+      const rate = componentRateByName[comp.name];
+      if (rate === undefined) {
+        continue; // Not part of the lean salary model — skip
       }
 
       salaryComponentMappings.push({
         employeeId: emp.id,
         salaryComponentId: comp.id,
-        amount: Math.round(amount),
+        amount: Math.round(emp.basicSalary * rate),
         effectiveDate: new Date('2024-01-01'),
       });
     }
