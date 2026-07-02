@@ -202,6 +202,30 @@ describe('EditEmployeePage', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('shows Basic Salary as a read-only row in the salary components section', async () => {
+    mockFetchEmployeeDetails.mockResolvedValue({
+      ...employeeDetailsFixture,
+      salaryStructure: {
+        ...employeeDetailsFixture.salaryStructure,
+        earnings: [{ component: 'Basic Salary', amount: 50000 }],
+        deductions: [{ component: 'PF', amount: 6000 }],
+        totalEarnings: 50000,
+        totalDeductions: 6000,
+        netPayMonthly: 44000,
+        ctcAnnual: 600000,
+        baseSalaryMonthly: 50000,
+      },
+    })
+
+    renderEditEmployeePage()
+
+    expect(await screen.findByDisplayValue('John Doe')).toBeInTheDocument()
+
+    const basicSalaryRow = screen.getByLabelText(/^basic salary$/i)
+    expect(basicSalaryRow).toHaveValue(50000)
+    expect(basicSalaryRow).toHaveAttribute('readonly')
+  })
+
   it('maps server field errors to the form when save returns a conflict', async () => {
     const user = userEvent.setup()
     mockUpdateEmployee.mockRejectedValue({

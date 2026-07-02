@@ -148,6 +148,23 @@ export function EditEmployeeSalarySection({
       </Box>
 
       <Stack spacing={1.25}>
+        <TextField
+          label="Basic Salary"
+          type="number"
+          size="small"
+          value={String(editedBaseMonthlySalary)}
+          fullWidth
+          slotProps={{
+            input: {
+              readOnly: true,
+              startAdornment: (
+                <InputAdornment position="start">
+                  {form.currency || salaryStructure.currency}
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
         {editableEarnings.map((item) => (
           <TextField
             key={item.component}
