@@ -12,6 +12,9 @@ export interface AddEmployeeFormState {
   allowances: string
   pfApplicable: boolean
   esiApplicable: boolean
+  country: string
+  currency: string
+  bankAccount: string
 }
 
 export type FormErrors = Partial<Record<keyof AddEmployeeFormState, string>>
@@ -35,4 +38,7 @@ export const initialFormState: AddEmployeeFormState = {
   allowances: '',
   pfApplicable: false,
   esiApplicable: false,
+  country: '',
+  currency: '',
+  bankAccount: '',
 }

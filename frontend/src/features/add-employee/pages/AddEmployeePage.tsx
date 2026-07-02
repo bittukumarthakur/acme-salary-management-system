@@ -21,6 +21,7 @@ import { validateAddEmployeeForm } from '../form/formValidation'
 import { PersonalInfoSection } from '../form/components/PersonalInfoSection'
 import { WorkInfoSection } from '../form/components/WorkInfoSection'
 import { SalaryInfoSection } from '../form/components/SalaryInfoSection'
+import { LocationPaymentSection } from '../form/components/LocationPaymentSection'
 import { AddEmployeeActions } from '../form/components/AddEmployeeActions'
 
 export function AddEmployeePage() {
@@ -52,15 +53,20 @@ export function AddEmployeePage() {
       designation: form.designation.trim(),
       joiningDate: form.joiningDate,
       employmentType: form.employmentType,
+      country: form.country.trim(),
     },
     salaryStructure: {
       basicSalary: Number(form.basicSalary),
+      currency: form.currency.trim(),
       pfApplicable: form.pfApplicable,
       esiApplicable: form.esiApplicable,
       ...(form.allowances.trim()
         ? { allowances: Number(form.allowances) }
         : {}),
     },
+    ...(form.bankAccount.trim()
+      ? { bankAccounts: [{ accountNumber: form.bankAccount.trim() }] }
+      : {}),
   })
 
   const onCancel = () => {
@@ -120,6 +126,11 @@ export function AddEmployeePage() {
                 setField={setField}
               />
               <SalaryInfoSection
+                form={form}
+                errors={errors}
+                setField={setField}
+              />
+              <LocationPaymentSection
                 form={form}
                 errors={errors}
                 setField={setField}

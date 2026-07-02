@@ -11,6 +11,9 @@ const requiredFields: Array<keyof AddEmployeeFormState> = [
   'joiningDate',
   'employmentType',
   'basicSalary',
+  'country',
+  'currency',
+  'bankAccount',
 ]
 
 const fieldLabels: Partial<Record<keyof AddEmployeeFormState, string>> = {
@@ -20,6 +23,7 @@ const fieldLabels: Partial<Record<keyof AddEmployeeFormState, string>> = {
   joiningDate: 'Joining Date',
   employmentType: 'Employment Type',
   basicSalary: 'Basic Salary',
+  bankAccount: 'Bank Account',
 }
 
 export function validateAddEmployeeForm(

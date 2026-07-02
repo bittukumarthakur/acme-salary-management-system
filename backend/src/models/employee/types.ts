@@ -92,10 +92,10 @@ export interface CreateSalaryStructureInput {
 
 /** Optional bank account details for transactional create payload. */
 export interface CreateBankAccountInput {
-  bankName: string;
   accountNumber: string;
-  ifscCode: string;
-  accountHolderName: string;
+  bankName?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
   accountType?: string;
   isPrimary?: boolean;
   isActive?: boolean;

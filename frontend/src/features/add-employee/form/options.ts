@@ -9,9 +9,10 @@ export const genderOptions: Option[] = [
   { value: 'OTHER', label: 'Other' },
 ]
 
-// Department and employment-type options are shared with the Edit form to keep
-// values (which must match the backend enums) and labels consistent.
+// Department, employment-type and currency options are shared with the Edit form
+// to keep values (which must match the backend enums) and labels consistent.
 export {
   departmentOptions,
   employmentTypeOptions,
+  currencyOptions,
 } from '../../../shared/constants/employeeOptions'

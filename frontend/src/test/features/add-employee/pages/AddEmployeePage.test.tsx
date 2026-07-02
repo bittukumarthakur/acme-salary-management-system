@@ -63,6 +63,10 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('option', { name: 'Full Time' }))
   setFieldValue(/basic salary/i, '100000')
   setFieldValue(/allowances/i, '5000')
+  setFieldValue(/country/i, 'India')
+  await user.click(screen.getByLabelText(/currency/i))
+  await user.click(await screen.findByRole('option', { name: 'INR' }))
+  setFieldValue(/bank account/i, '123456789012')
 }
 
 describe('AddEmployeePage', () => {
@@ -97,6 +101,9 @@ describe('AddEmployeePage', () => {
     expect(
       screen.getByRole('heading', { name: 'Salary Information' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Location & Payment' }),
+    ).toBeInTheDocument()
 
     // Representative field coverage across all form sections.
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument()
@@ -106,6 +113,9 @@ describe('AddEmployeePage', () => {
     expect(screen.getByLabelText(/designation/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/employment type/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/basic salary/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/country/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/currency/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/bank account/i)).toBeInTheDocument()
 
     expect(
       screen.getByRole('button', { name: 'Save Employee' }),
@@ -162,11 +172,16 @@ describe('AddEmployeePage', () => {
           email: 'ari@example.com',
           department: 'ENGINEERING',
           employmentType: 'PERMANENT',
+          country: 'India',
         }),
         salaryStructure: expect.objectContaining({
           basicSalary: 100000,
           allowances: 5000,
+          currency: 'INR',
         }),
+        bankAccounts: [
+          expect.objectContaining({ accountNumber: '123456789012' }),
+        ],
       }),
     )
     expect(await screen.findByText('Employee Details')).toBeInTheDocument()

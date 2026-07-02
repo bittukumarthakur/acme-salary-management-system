@@ -409,10 +409,10 @@ export async function createEmployee(payload: CreateEmployeePayload): Promise<Em
           await tx.bankAccount.create({
             data: {
               employeeId: createdEmployee.id,
-              bankName: bankAccount.bankName,
+              bankName: bankAccount.bankName ?? '',
               accountNumber: bankAccount.accountNumber,
-              ifscCode: bankAccount.ifscCode,
-              accountHolderName: bankAccount.accountHolderName,
+              ifscCode: bankAccount.ifscCode ?? '',
+              accountHolderName: bankAccount.accountHolderName ?? employee.fullName,
               accountType: (bankAccount.accountType ?? 'SAVINGS') as AccountType,
               isPrimary: bankAccount.isPrimary ?? true,
               isActive: bankAccount.isActive ?? true,

@@ -56,7 +56,7 @@ export const statusOptions: Array<{
   { value: 'TERMINATED', label: 'Terminated' },
 ]
 
-export const currencyOptions = ['INR', 'USD']
+export { currencyOptions } from '../../../shared/constants/employeeOptions'
 
 function parseDisplayDate(value: string | null | undefined): string {
   if (!value) {

@@ -29,3 +29,5 @@ export const genderOptions: EmployeeSelectOption[] = [
   { value: 'FEMALE', label: 'Female' },
   { value: 'OTHER', label: 'Other' },
 ]
+
+export const currencyOptions: string[] = ['INR', 'USD']

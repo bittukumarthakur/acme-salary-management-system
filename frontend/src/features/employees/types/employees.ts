@@ -189,10 +189,10 @@ export interface CreateEmployeePayload {
     allowances?: number
   }
   bankAccounts?: Array<{
-    bankName: string
     accountNumber: string
-    ifscCode: string
-    accountHolderName: string
+    bankName?: string
+    ifscCode?: string
+    accountHolderName?: string
     accountType?: string
     isPrimary?: boolean
     isActive?: boolean

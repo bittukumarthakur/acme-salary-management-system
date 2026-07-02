@@ -365,6 +365,61 @@ describe('createEmployee', () => {
     expect(result.employeeId).toBe('EMP00120');
     expect(mockedPrisma.bankAccount.create).not.toHaveBeenCalled();
   });
+
+  it('defaults bank details when only an account number is provided', async () => {
+    mockedPrisma.department.findUnique.mockResolvedValue({
+      id: 'DEPT-ENG',
+      name: 'ENGINEERING',
+    });
+    mockedPrisma.designation.upsert.mockResolvedValue({
+      id: 'DES-ENG',
+      title: 'Engineer',
+    });
+    const createdEmployee = {
+      id: 120,
+      employeeId: 'TMP-abc',
+      name: 'Ari Example',
+      email: 'ari@example.com',
+      country: 'India',
+      departmentId: 'DEPT-ENG',
+      department: { id: 'DEPT-ENG', name: 'ENGINEERING' },
+      designationId: 'DES-ENG',
+      designation: { id: 'DES-ENG', title: 'Engineer' },
+      employmentType: 'PERMANENT',
+      joiningDate: new Date('2023-01-11T00:00:00.000Z'),
+      status: 'ACTIVE',
+      basicSalary: 100000,
+      currency: 'INR',
+      avatarUrl: null,
+    };
+
+    mockedPrisma.employee.create.mockResolvedValue(createdEmployee);
+    mockedPrisma.employee.update.mockResolvedValue({
+      ...createdEmployee,
+      employeeId: 'EMP00120',
+    });
+    mockedPrisma.employeeSalaryStructure.create.mockResolvedValue({ id: 1 });
+
+    await createEmployee({
+      employee: payload.employee,
+      salaryStructure: { basicSalary: 100000 },
+      bankAccounts: [{ accountNumber: '123456789012' }],
+    });
+
+    expect(mockedPrisma.bankAccount.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          accountNumber: '123456789012',
+          accountHolderName: 'Ari Example',
+          bankName: '',
+          ifscCode: '',
+          accountType: 'SAVINGS',
+          isPrimary: true,
+          isActive: true,
+        }),
+      }),
+    );
+  });
 });
 
 describe('getEmployeeById', () => {

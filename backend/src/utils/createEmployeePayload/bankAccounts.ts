@@ -26,10 +26,10 @@ export function parseBankAccounts(
 
     const f = fieldReader(account, `bankAccounts.${index}`, errors);
 
-    const bankName = f.requiredString('bankName');
     const accountNumber = f.requiredString('accountNumber');
-    const ifscCode = f.requiredString('ifscCode');
-    const accountHolderName = f.requiredString('accountHolderName');
+    const bankName = f.optionalString('bankName');
+    const ifscCode = f.optionalString('ifscCode');
+    const accountHolderName = f.optionalString('accountHolderName');
 
     const accountType = f.optionalString('accountType')?.toUpperCase();
 
@@ -42,10 +42,10 @@ export function parseBankAccounts(
     const isActive = f.optionalBoolean('isActive');
 
     accounts.push({
-      bankName,
       accountNumber,
-      ifscCode,
-      accountHolderName,
+      ...(bankName !== undefined ? { bankName } : {}),
+      ...(ifscCode !== undefined ? { ifscCode } : {}),
+      ...(accountHolderName !== undefined ? { accountHolderName } : {}),
       ...(accountType !== undefined ? { accountType } : {}),
       ...(isPrimary !== undefined ? { isPrimary } : {}),
       ...(isActive !== undefined ? { isActive } : {}),
