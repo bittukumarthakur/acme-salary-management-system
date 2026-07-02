@@ -31,8 +31,8 @@ import { ESI_RATE, PF_RATE } from '../src/utils/salaryCalculation';
 // CONFIGURATION
 // ============================================================================
 
-export const TOTAL_EMPLOYEES = 100;
-export const BATCH_SIZE = 50;
+export const TOTAL_EMPLOYEES = 10000;
+export const BATCH_SIZE = 500;
 
 // ============================================================================
 // SEEDING FUNCTIONS
